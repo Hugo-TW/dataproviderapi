@@ -1,0 +1,46 @@
+{
+  "config_list": [
+    {
+      "identity": "INX-TN-J001",
+      "dbAccount": "DCSMOD2_AP",
+      "dbPassword": "pdcsmod2_ap2018",
+      "SERVICE_NAME": "10.55.8.65:1521/DCSMOD2"
+    },
+    {
+      "identity": "INX-TN-J003",
+      "dbAccount": "DCSMOD3_AP",
+      "dbPassword": "pdcsmod3_ap2018",
+      "SERVICE_NAME": "10.55.8.66:1521/DCSMOD3"
+    },
+    {
+      "identity": "INX-TN-J004",
+      "dbAccount": "dcsmod4_ap",
+      "dbPassword": "dcsmod4ap123",
+      "SERVICE_NAME": "TNVDCSMOD4DB.cminl.oa/DCSMOD4"
+    },
+    {
+      "identity": "INX-TN-M011",
+      "dbAccount": "dcsmod1_ap",
+      "dbPassword": "dcsmod1ap123",
+      "SERVICE_NAME": "10.55.8.66/DCSMOD3"
+    },
+    {
+      "identity": "INX-TN-J001-TEST",
+      "dbAccount": "DCS_MOD2",
+      "dbPassword": "tdcs_mod22017",
+      "SERVICE_NAME": "10.55.2.44:1521/MODDCS"
+    },
+    {
+      "identity": "INX-TN-DEV2",
+      "dbAccount": "dcs_dev2_ap",
+      "dbPassword": "tdcsdev2ap",
+      "SERVICE_NAME": "10.55.2.44:1521/MODDCS"
+    },
+    {
+      "identity": "IAMP",
+      "dbAccount": "IAMP_AP",
+      "dbPassword": "iamP@2019",
+      "SERVICE_NAME": "TNVIAMPDB.cminl.oa:1521/IAMP"
+    }
+  ]
+}

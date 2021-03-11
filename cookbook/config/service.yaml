@@ -1,0 +1,17 @@
+kind: Service
+apiVersion: v1
+# Modify your service name
+metadata:
+  name: wsl-collector-service
+spec:
+# !!! IMPORTANT !!! Modify your cloud service port (port) and source code target port (targetPort)
+# port      : for cloud service using
+# targetPort: for source code running using
+  ports:
+    - name: https
+      port: 5010
+      targetPort: 5000
+# Modify your deployment name
+  selector:
+    deploy: wslcollector
+  type: NodePort

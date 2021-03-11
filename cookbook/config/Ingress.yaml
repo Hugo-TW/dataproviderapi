@@ -1,0 +1,20 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+# Modify your project name and namespace
+# selfLink must be modify
+metadata:
+  name: iamp
+  namespace: iamp
+  selfLink: /apis/extensions/v1beta1/namespaces/iamp/ingresses/iamp
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+# Modify your service name and service port
+spec:
+  rules:
+    - host: tiamp.cminl.oa
+      http:
+        paths:
+          - path: /wslcollector(/|$)(.*)
+            backend:
+              serviceName: wsl-collector-service
+              servicePort: 5010

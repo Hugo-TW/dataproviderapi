@@ -1,0 +1,145 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>53b318f7-9071-4de8-b3d9-67b5b9709230</ProjectGuid>
+    <ProjectHome>.</ProjectHome>
+    <StartupFile>DataProviderApi.py</StartupFile>
+    <SearchPath>
+    </SearchPath>
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <Name>DataProviderApi</Name>
+    <RootNamespace>DataProviderApi</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="AlternateForSSE.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AuthListByAccountApi.py" />
+    <Compile Include="BaseType.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="CompensateDb2.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Dao.py" />
+    <Compile Include="DataForComponent.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DataProviderApi.py" />
+    <Compile Include="DataServiceApi.py" />
+    <Compile Include="GetAgvRouteInfo.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="GetAlarm.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="GetAlarmDetails.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="GetAppConfSysMain.py" />
+    <Compile Include="GetEQAlarmDetails.py" />
+    <Compile Include="GetEQAlarmHrs.py" />
+    <Compile Include="GetEQOFRHrs.py" />
+    <Compile Include="GetEQOFRHrsDetails.py" />
+    <Compile Include="GetFactoryOFRHrs.py" />
+    <Compile Include="GetFactoryOFRHrsDetail.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="GetFpyLogApplication.py" />
+    <Compile Include="Getmenu.py" />
+    <Compile Include="GetEQOEE.py" />
+    <Compile Include="GetFactoryAlarmHrs.py" />
+    <Compile Include="GetFactoryAlarmHrsDetail.py" />
+    <Compile Include="GetFactoryOEE.py" />
+    <Compile Include="GetFactoryOEEDetail.py" />
+    <Compile Include="GetOee.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="GetOeeCompare.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="GetOeeDetails.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="GetOfr.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="GetOfrCompare.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="GetOfrDetails.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="GetRealTimeEvent.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="GetSingleCollection.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="GetStockerInfoSha.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="GetStockerStageInfo.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="GetVLog.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="GetFpyLog.py" />
+    <Compile Include="GetDpsPlain.py" />
+    <Compile Include="GetWipLogNew.py" />
+    <Compile Include="GetWipLogNp.py" />
+    <Compile Include="GetWipLog.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="kafkaReplay.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="KpiProvider.py" />
+    <Compile Include="KpiSiteOEE.py" />
+    <Compile Include="Logger.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MongoFunction.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MongoFunctionDynamic.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RegisterStream.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="SetMongoInserMany.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="SsePublish.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="StreamComponentFunc.py">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="config.json" />
+    <Content Include="setting.ini" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
+  <!-- Uncomment the CoreCompile target to enable the Build command in
+       Visual Studio and specify your pre- and post-build commands in
+       the BeforeBuild and AfterBuild targets below. -->
+  <!--<Target Name="CoreCompile" />-->
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+</Project>
