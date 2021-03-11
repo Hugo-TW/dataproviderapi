@@ -11,3 +11,4 @@ $ docker run -it --rm dataprovider /bin/bash
 --rm: Automatically remove the container when it exits
 -p: Publish or expose port
     ex: -p 127.0.0.1:8082:5002, export container 5002 port to host 8082 port
+
