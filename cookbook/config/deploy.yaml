@@ -2,26 +2,26 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
 #  Modify your deployment_name and namespace
-  name: wslcollector
+  name: wslprovider
   namespace: iamp
 spec:
   replicas: 1
   selector:
 # Modify your deployment_name
     matchLabels:
-      deploy: wslcollector
+      deploy: wslprovider
   template:
     metadata:
       labels:
-        deploy: wslcollector
+        deploy: wslprovider
     spec:
 # Modify your service account and service account name
       serviceAccount: user
       serviceAccountName: user
 # Modify your deployment_name and docker image path
       containers:
-      - name: wslcollector
-        image: chbcld.cminl.oa/iamp/wslcollector:v1.0
+      - name: wslprovider
+        image: chbcld.cminl.oa/iamp/wslprovider:v1.0
         imagePullPolicy: Always
 # Modify your container port, this port should be same with service port and target port
         ports:

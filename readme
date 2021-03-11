@@ -1,8 +1,11 @@
 ## build datacollectorapi image
-$ docker build -t datacollector .
+$ docker build -t dataprovider .
 
 ## run datacollectorapi in background
-$ docker run -d --rm -p 127.0.0.1:8082:5002 datacollector
+$ docker run -d --rm -p 127.0.0.1:8082:5002 dataprovider
+
+## run datacollectorapi and start bash shell
+$ docker run -it --rm dataprovider /bin/bash
 
 -d: Run container in background and print container ID
 --rm: Automatically remove the container when it exits
