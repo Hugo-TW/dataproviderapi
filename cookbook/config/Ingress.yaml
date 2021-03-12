@@ -7,6 +7,9 @@ metadata:
   namespace: iamp
   selfLink: /apis/extensions/v1beta1/namespaces/iamp/ingresses/iamp
   annotations:
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "86400"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
     nginx.ingress.kubernetes.io/rewrite-target: /$2
 # Modify your service name and service port
 spec:
@@ -14,7 +17,23 @@ spec:
     - host: tiamp.cminl.oa
       http:
         paths:
+          - path: /iampweb(/|$)(.*)
+            backend:
+              serviceName: iampweb-service
+              servicePort: 8081
+          - path: /collector(/|$)(.*)
+            backend:
+              serviceName: datacollectorapi-service
+              servicePort: 5000
+          - path: /provider(/|$)(.*)
+            backend:
+              serviceName: dataproviderapi-service
+              servicePort: 5001
+          - path: /wslcollector(/|$)(.*)
+            backend:
+              serviceName: wsl-collector-service
+              servicePort: 5010
           - path: /wslprovider(/|$)(.*)
             backend:
               serviceName: wsl-provider-service
-              servicePort: 5010
+              servicePort: 5011
