@@ -2,16 +2,16 @@ kind: Service
 apiVersion: v1
 # Modify your service name
 metadata:
-  name: wsl-provider-service
+  name: dataproviderapi-service
 spec:
 # !!! IMPORTANT !!! Modify your cloud service port (port) and source code target port (targetPort)
 # port      : for cloud service using
 # targetPort: for source code running using
   ports:
     - name: https
-      port: 5011
+      port: 5001
       targetPort: 5001
 # Modify your deployment name
   selector:
-    deploy: wslprovider
+    deploy: provider
   type: NodePort

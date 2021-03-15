@@ -1,6 +1,6 @@
 config_list:
   project_name: iamp
-  deployment_name: wslprovider
+  deployment_name: provider
 Harbor_list:
   basic_auth: Q0lDRC50bjpBYTEyMzQ1Ng==
   account: robot$iamp

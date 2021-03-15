@@ -2,35 +2,35 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
 #  Modify your deployment_name and namespace
-  name: wslprovider
+  name: provider
   namespace: iamp
 spec:
   replicas: 1
   selector:
 # Modify your deployment_name
     matchLabels:
-      deploy: wslprovider
+      deploy: provider
   template:
     metadata:
       labels:
-        deploy: wslprovider
+        deploy: provider
     spec:
 # Modify your service account and service account name
       serviceAccount: user
       serviceAccountName: user
 # Modify your deployment_name and docker image path
       containers:
-      - name: wslprovider
-        image: chbcld.cminl.oa/iamp/wslprovider:v1.0
+      - name: provider
+        image: chbcld.cminl.oa/iamp/dataprovider:v1.0
         imagePullPolicy: Always
 # Modify your container port, this port should be same with service port and target port
         ports:
-        - containerPort: 5010
+        - containerPort: 5001
 # Modify your requests and limits resource
         resources:
           requests:
             cpu: 100m
             memory: "100Mi"
           limits:
-            cpu: 150m
-            memory: "250Mi"
+            cpu: 400m
+            memory: "500Mi"
