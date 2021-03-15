@@ -6,7 +6,7 @@ build_collector:
     stage: build
     script:
         - echo "Start docker build data collector stage....."
-        - python cookbook/script/buildimg.py wslprovider
+        - python cookbook/script/buildimg.py dataprovider
     tags:
         - docker-runner
 
@@ -14,7 +14,7 @@ deploy_collector_docker:
     stage: deploy
     script:
         - echo "Auto deploy to INX Cloud Platform...."
-        - python cookbook/script/deployimg.py wslprovider
+        - python cookbook/script/deployimg.py dataprovider
     tags:
         - docker-runner
     only:
