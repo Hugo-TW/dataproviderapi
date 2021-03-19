@@ -240,12 +240,12 @@ class OeeCompare(BaseType):
             data = self.zipDescriptionAndData(description, data)
             jsonData = json.loads(data)
             jsonDataAr = []
-            data = ""
+            data = []
             for i in range(1,len(jsonData) + 1):
                 jsonDataAr.append(jsonData[i-1])
                 if i % int(self.__DATA_SEQ) == 0:
                     #data.append(jsonDataAr)
-                    data = jsonDataAr
+                    data.extend(jsonDataAr)
                     jsonDataAr = []             
             self.writeLog(f"Json:\n {json.dumps(data,sort_keys=True, indent=2)}")
 
