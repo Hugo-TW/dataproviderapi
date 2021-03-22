@@ -29,11 +29,3 @@ spec:
             backend:
               serviceName: dataproviderapi-service
               servicePort: 5001
-          - path: /wslcollector(/|$)(.*)
-            backend:
-              serviceName: wsl-collector-service
-              servicePort: 5010
-          - path: /wslprovider(/|$)(.*)
-            backend:
-              serviceName: wsl-provider-service
-              servicePort: 5011

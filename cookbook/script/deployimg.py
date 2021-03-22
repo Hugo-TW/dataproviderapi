@@ -111,7 +111,7 @@ login_cmd = "docker login -u '" + account + "' -p " + harbor_token + " " + harbo
 print(">>> docker login cmd:", login_cmd)
 login = os.system(login_cmd)
 
-tag = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('utf-8').rstrip()
+tag = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('utf-8').rstrip()[:5]
 tag_cmd = 'docker tag ' + image_name + ':' + tag + ' ' + harbor_path + '/' + project_name + '/' + image_name + ':' + tag
 print(">>> docker tag cmd:", tag_cmd)
 tag_res = os.system(tag_cmd)

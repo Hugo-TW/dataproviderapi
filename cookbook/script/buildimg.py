@@ -6,7 +6,7 @@ import sys
 image_name = str(sys.argv[1])
 print(">>> image name:", image_name)
 
-tag = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('utf-8').rstrip()
+tag = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('utf-8').rstrip()[:5]
 print(">>> image tag :", tag)
 
 docker_bd_cmd = 'docker build -t '+image_name+':'+tag +' .'  # default file ./Dockerfile
