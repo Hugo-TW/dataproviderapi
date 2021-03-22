@@ -38,7 +38,7 @@ class Oee(BaseType):
             self.getRedisConnection()
             if self.searchRedisKeys(key):
                 self.writeLog(f"Cache Data From Redis")
-                return json.loads(self.getRedisData(key)), 200 ,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type',"Access-Control-Expose-Headers":"Expires,DataSource","Expires":time.mktime((datetime.datetime.now() + datetime.timedelta(seconds = self.getKeyExpirTime(key))).timetuple()),"DataSource":"Redis"}
+                #return json.loads(self.getRedisData(key)), 200 ,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type',"Access-Control-Expose-Headers":"Expires,DataSource","Expires":time.mktime((datetime.datetime.now() + datetime.timedelta(seconds = self.getKeyExpirTime(key))).timetuple()),"DataSource":"Redis"}
 
             self.getConnection(self.__indentity)
             description,data = self.SelectAndDescription(sql)
@@ -52,9 +52,9 @@ class Oee(BaseType):
                 w = dict(zip(col_names,da))
                 if w['STATUS_RUN'] is not None and w['STATUS_IDLE'] is not None and w['STATUS_DOWN'] is not None:
                     count += 1                   
-                    dictRUN['STATUS_RUN'] = dictRUN.get('STATUS_RUN', 0) + int(w['STATUS_RUN'])
-                    dictIDLE['STATUS_IDLE'] = dictIDLE.get('STATUS_IDLE', 0) + int(w['STATUS_IDLE'])
-                    dictDOWN['STATUS_DOWN'] = dictDOWN.get('STATUS_DOWN', 0) + int(w['STATUS_DOWN'])
+                    dictRUN['STATUS_RUN'] = dictRUN.get('STATUS_RUN', 0) + float(w['STATUS_RUN'])
+                    dictIDLE['STATUS_IDLE'] = dictIDLE.get('STATUS_IDLE', 0) + float(w['STATUS_IDLE'])
+                    dictDOWN['STATUS_DOWN'] = dictDOWN.get('STATUS_DOWN', 0) + float(w['STATUS_DOWN'])
            
             datajson=[{
                  "COMPANY_CODE":self.__COMPANY_CODE,
