@@ -1,6 +1,7 @@
 stages:
     - build
     - deploy
+    - cloud_config
 
 build_collector:
     stage: build
@@ -21,3 +22,20 @@ deploy_collector_docker:
         refs:
             - master
 
+gen_service:
+    stage: cloud_config
+    script:
+        - echo "Creating datacollectorapi-service"
+        - python cookbook/script/gen-service.py
+    tags:
+        - docker-runner
+    when: manual
+
+gen_ingress:
+    stage: cloud_config
+    script:
+        - echo "Creating ingress for iampweb, datacollector, dataprovider..."
+        - python cookbook/script/gen-ingress.py
+    tags:
+        - docker-runner
+    when: manual

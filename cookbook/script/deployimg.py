@@ -27,7 +27,7 @@ deploy_ingress_url = ''
 harbor_basic_auth = ''
 
 
-def get_image_info():
+def read_config():
     global account, harbor_token, k8s_token, image_name
     global harbor_path, image_name, deployment_name, project_name, deploy_yaml, service_yaml
     global deploy_url, del_url, get_deploy_status_url, pods_status_url, deploy_service_url
@@ -58,24 +58,6 @@ def get_image_info():
     deploy_ingress_url = 'https://10.55.8.214:6443/apis/extensions/v1beta1/namespaces/' + project_name + '/ingresses'
 
 
-def gen_service():
-    with open(service_yaml, 'r') as service_stream:
-        service_info = yaml.safe_load(service_stream)
-    service_res = requests.post(deploy_service_url,
-                        headers={'Authorization': 'bearer ' + k8s_token, 'Content-Type': 'application/yaml'},
-                        data=yaml.dump(service_info), verify=False)
-    return service_res
-
-
-def gen_ingress():
-    with open(ingress_yaml, 'r') as ingress_stream:
-        ingress_info = yaml.safe_load(ingress_stream)
-    ingress_res = requests.post(deploy_ingress_url,
-                        headers={'Authorization': 'bearer ' + k8s_token, 'Content-Type': 'application/yaml'},
-                        data=yaml.dump(ingress_info), verify=False)
-    return ingress_res
-
-
 def get_harbor_tags(current_tag):
     del_tags = []
     url = 'https://'+harbor_path+'/api/repositories/' + project_name + '/' + image_name + '/tags?detail=false'
@@ -100,7 +82,7 @@ def del_harbor_image():
         print("Delete images res:", response.reason)
 
 
-get_image_info()
+read_config()
 # Using commit id as docker tag
 logout = os.system('docker logout ' + harbor_path)
 
@@ -161,22 +143,6 @@ if res == 0 and login == 0:
             print(status)
             break
         print(status)
-    # Create service
-    service_r = gen_service()
-    if service_r.status_code == 201:
-        print('Service created')
-    elif service_r.status_code == 409:
-        print('Service already exist')
-    else:
-        print('Create service error, please check.')
-
-    ingress_r = gen_ingress()
-    if ingress_r.status_code == 201:
-        print('Ingress created')
-    elif ingress_r.status_code == 409:
-        print('Ingress already exist')
-    else:
-        print('Create Ingress error, please check.')
 
     # Delete harbor images
     del_harbor_image()
@@ -184,4 +150,3 @@ if res == 0 and login == 0:
 else:
     print('Push or login Fail. Please check your docker image or your login info.')
     sys.exit(1)
-
