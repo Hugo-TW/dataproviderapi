@@ -60,7 +60,7 @@ def read_config():
 
 def get_harbor_tags(current_tag):
     del_tags = []
-    url = 'https://'+harbor_path+'/api/repositories/' + project_name + '/' + image_name + '/tags?detail=false'
+    url = 'https://' + harbor_path + '/api/repositories/' + project_name + '/' + image_name + '/tags?detail=false'
     headers = {'Authorization': 'Basic '+harbor_basic_auth}
 
     response = requests.request("GET", url, headers=headers, verify=False)
@@ -74,10 +74,8 @@ def get_harbor_tags(current_tag):
 def del_harbor_image():
     tag_list = get_harbor_tags(tag)
     for i in range(len(tag_list)):
-        url = "https://chbcld.cminl.oa/api/repositories/iamp/"+image_name+"/tags/"+tag_list[i]
-        headers = {
-            'Authorization': 'Basic '+harbor_basic_auth
-        }
+        url = 'https://' + harbor_path + '/api/repositories/' + project_name + '/' + image_name + '/tags/' + tag_list[i]
+        headers = {'Authorization': 'Basic '+harbor_basic_auth}
         response = requests.request("DELETE", url, headers=headers, verify=False)
         print("Delete images res:", response.reason)
 
