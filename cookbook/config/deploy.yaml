@@ -1,27 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-#  Modify your deployment_name and namespace
-  name: provider
-  namespace: iamp
+  name: ''
+  namespace: ''
 spec:
   replicas: 1
   selector:
-# Modify your deployment_name
     matchLabels:
-      deploy: provider
+      deploy: ''
   template:
     metadata:
       labels:
-        deploy: provider
+        deploy: ''
     spec:
-# Modify your service account and service account name
-      serviceAccount: user
-      serviceAccountName: user
-# Modify your deployment_name and docker image path
       containers:
-      - name: provider
-        image: chbcld.cminl.oa/iamp/dataprovider:v1.0
+      - name: ''
+        command: []
+        args: []
+        image: ''
         imagePullPolicy: Always
 # Modify your container port, this port should be same with service port and target port
         ports:
@@ -34,3 +30,5 @@ spec:
           limits:
             cpu: 400m
             memory: "500Mi"
+      imagePullSecrets:
+        - name: harbor-login

@@ -1,6 +1,7 @@
 config_list:
   project_name: iamp
   deployment_name: provider
+  factory: []
 Harbor_list:
   basic_auth: Q0lDRC50bjpBYTExMTExMQ==
   account: robot$iamp
