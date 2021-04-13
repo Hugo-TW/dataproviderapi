@@ -137,7 +137,8 @@ for i in range(len(factory_arr)):
                     data=yaml.dump(fac_deploy_data), verify=False)
     print('>>> create deploy:', create_deploy)
 
-# While loop
+# check if pod status is running
+time.sleep(5)
 while (True):
     index = -1
 
@@ -147,6 +148,10 @@ while (True):
     res_data = json.loads(my_json)
 
     res_items = res_data["items"]
+    if len(res_items) == 0:
+        time.sleep(2)
+        continue
+
     for i in range(len(res_items)):
         if deployment_name in res_items[i]["metadata"]["name"]:
             index = i; break
