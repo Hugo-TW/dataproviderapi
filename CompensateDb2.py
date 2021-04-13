@@ -60,6 +60,9 @@ class compensate(BaseType):
     def getPASSSUMHIS(self, cuttime):
         sql = f"select FAC_ID, ACCT_DATE, PROD_NBR, MAIN_WC, TRANS_TYPE, LCM_OWNER, RW_COUNT, QTY, LCM_GRADE from {self.baseConfig['schema']}.V_PASSSUMHIS where ACCT_DATE = '{cuttime}' with ur"
         return self.db2Select(sql)
+    def getTOBESCRAPSUMHIS(self, cuttime):
+        sql = f"select CHAR(FAC_ID), ACCT_DATE, PROD_NBR, MAIN_WC, LCM_OWNER, RESP_OPER, RESP_OWNER, SCRAP_CODE, TOBESCRAP_QTY from {self.baseConfig['schema']}.V_TOBESCRAPSUMHIS where ACCT_DATE = '{cuttime}' with ur"
+        return self.db2Select(sql)
     def addJobTime(self, data, jobTime):
         for s in data:
             s["JobFinishTime"] = jobTime
@@ -68,6 +71,7 @@ class compensate(BaseType):
             "WIP":"scm-local-operation-raw-wip-v0",
             "PASS":"scm-local-operation-raw-pass-v0",
             "DEFT":"scm-local-operation-raw-deft-v0",
+            "SCRP":"scm-local-operation-raw-scrp-v0",
         }
         return switcher.get(TYPE,"scm-local-operation-raw-wip-v0")
     def returnDb2Funciton(self,TYPE):
@@ -75,5 +79,6 @@ class compensate(BaseType):
             "WIP":self.getWIPSUMHIS,
             "PASS":self.getPASSSUMHIS,
             "DEFT":self.getDEFTSUMHIS,
+            "SCRP":self.getTOBESCRAPSUMHIS,
         }
         return switcher.get(TYPE,self.getWIPSUMHIS)
