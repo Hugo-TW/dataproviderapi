@@ -1786,6 +1786,45 @@ class compensateDb2(Resource):
             return {'Result':'NG', 'Reason': 'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
         c = compensate(jsonData)
         return c.getData()
+
+MenuNS = api.namespace('GetMenu', description = '選單')
+MenuML = api.model('GetMenu', {
+    'COMPANY_CODE': fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+    'SITE': fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+    'FACTORY_ID': fields.String( required = True, description = 'FACTORY_ID', default = 'J001', example = 'J001'),
+    'SUPPLY_LINE': fields.String( required = True, description = 'SUPPLY_CATEGORY', default = 'CELL', example = 'CELL'),
+    'TYPE': fields.String( required = True, description = 'TYPE', default = 'AGV', example = 'AGV'),
+})
+@MenuNS.route('', methods = ['POST'])
+@MenuNS.response(200, 'Sucess')
+@MenuNS.response(201, 'Created Sucess')
+@MenuNS.response(204, 'No Content')
+@MenuNS.response(400, 'Bad Request')
+@MenuNS.response(401, 'Unauthorized')
+@MenuNS.response(403, 'Forbidden')
+@MenuNS.response(404, 'Not Found')
+@MenuNS.response(405, 'Method Not Allowed')
+@MenuNS.response(409, 'Conflict')
+@MenuNS.response(500, 'Internal Server Error')
+class getMenu(Resource):
+    @MenuNS.doc('Get Menu')
+    @MenuNS.expect(MenuML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+           return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        jsonData = request.json
+        if "COMPANY_CODE" not in jsonData or "FACTORY_ID" not in jsonData or "SITE" not in jsonData or "SUPPLY_LINE" not in jsonData or "TYPE" not in jsonData:
+            {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        COMPANY_CODE = jsonData["COMPANY_CODE"]
+        FACTORY_ID = jsonData["FACTORY_ID"]
+        SITE = jsonData["SITE"]
+        SUPPLY_LINE = jsonData["SUPPLY_LINE"]
+        TYPE = jsonData["TYPE"]
+        indentity="IAMP"
+        menu = Menu(COMPANY_CODE,SITE,FACTORY_ID,SUPPLY_LINE,TYPE,indentity)
+        return menu.getData()
 if __name__ == '__main__':
     app.run(threaded=True, use_reloader=False, host='0.0.0.0', port=5001, debug=False)#use_reloader=True,
 
