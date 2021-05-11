@@ -48,9 +48,9 @@ class singleCollectionFunc(BaseType):
             redisKey = m.hexdigest()
             self.getRedisConnection()
             seconds = 600 if self.collectionMapping(self.jsonData["COLLECTION"]) == "" else self.getKeyExpirTime(FACTORY_ID + self.collectionMapping(self.jsonData["COLLECTION"])) 
-            #if self.searchRedisKeys(redisKey):
-            #    self.writeLog(f"Cache Data From Redis")
-            #    return json.loads(self.getRedisData(redisKey)), 200 ,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type',"Access-Control-Expose-Headers":"Expires,DataSource","Expires":time.mktime((datetime.datetime.now() + datetime.timedelta(seconds =seconds )).timetuple()),"DataSource":"Redis"}
+            if self.searchRedisKeys(redisKey):
+                self.writeLog(f"Cache Data From Redis")
+                return json.loads(self.getRedisData(redisKey)), 200 ,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type',"Access-Control-Expose-Headers":"Expires,DataSource","Expires":time.mktime((datetime.datetime.now() + datetime.timedelta(seconds =seconds )).timetuple()),"DataSource":"Redis"}
             self.getMongoConnection()
             self.setMongoDb(self.jsonData["DATABASE"])
             self.setMongoCollection(self.jsonData["COLLECTION"])              
