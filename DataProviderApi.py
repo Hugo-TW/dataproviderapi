@@ -32,6 +32,7 @@ from GetEQOFRHrs import EQOFRHrs
 from GetEQOFRHrsDetails import EQOFRHrsDetails
 from GetFactoryOFRHrsDetail import OFRHrsDetail
 #---------------------------------------------
+from GetINTKPI import INTKPI
 from GetOeeDetails import OeeDetials
 from GetOee import Oee
 from GetAlarmDetails import AlarmDetails
@@ -1825,6 +1826,43 @@ class getMenu(Resource):
         indentity="IAMP"
         menu = Menu(COMPANY_CODE,SITE,FACTORY_ID,SUPPLY_LINE,TYPE,indentity)
         return menu.getData()
+
+INTKPINs = api.namespace('GetINTKPI', description = 'INT_KPI')
+INTKPIML = api.model('GetINTKPI', {
+    'COMPANY_CODE': fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+    'SITE': fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+    'FACTORY_ID': fields.String( required = True, description = 'FACTORY_ID', default = 'J001', example = 'J001'),
+    'KPITYPE': fields.String( required = True, description = 'KPITYPE', default = 'FPY', example = 'FPY'),
+    'ACCT_DATE': fields.String( required = True, description = 'ACCT_DATE', default = '20210801', example = '20210801')
+})
+@INTKPINs.route('', methods = ['POST'])
+@INTKPINs.response(200, 'Sucess')
+@INTKPINs.response(201, 'Created Sucess')
+@INTKPINs.response(204, 'No Content')
+@INTKPINs.response(400, 'Bad Request')
+@INTKPINs.response(401, 'Unauthorized')
+@INTKPINs.response(403, 'Forbidden')
+@INTKPINs.response(404, 'Not Found')
+@INTKPINs.response(405, 'Method Not Allowed')
+@INTKPINs.response(409, 'Conflict')
+@INTKPINs.response(500, 'Internal Server Error')
+class getINTKPI(Resource):
+    @INTKPINs.doc('Provide INT KPI')
+    @INTKPINs.expect(INTKPIML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+           return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+
+        jsonData = BaseType.validateType(request.json)
+        
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData or "KPITYPE" not in jsonData or "ACCT_DATE" not in jsonData:
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        
+        v = INTKPI(jsonData)
+        return v.getData()
+
 if __name__ == '__main__':
-    app.run(threaded=True, use_reloader=False, host='0.0.0.0', port=5001, debug=False)#use_reloader=True,
+    app.run(threaded=True, use_reloader=True, host='0.0.0.0', port=5001, debug=False)#use_reloader=True,
 
