@@ -412,7 +412,9 @@ class INTKPI(BaseType):
             oData["DEFECT_RATE"] = round(
                 oData["DeftSUMQty"] / oData["PassSUMQty"], 4)
             oData["FPY_RATE"] = round(1 - oData["DEFECT_RATE"], 4)
-            data.append(copy.deepcopy(oData))
+
+            if oData["DeftSUMQty"] < oData["PassSUMQty"] and oData["FPY_RATE"] > 0:
+                data.append(copy.deepcopy(oData))
             oData = {}
         return data
 
