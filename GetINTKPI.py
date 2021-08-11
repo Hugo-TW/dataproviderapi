@@ -71,7 +71,8 @@ class INTKPI(BaseType):
             className = f"{self.__class__.__name__}"
             tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
             tmpSITE = self.jsonData["SITE"]
-            tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+            tmpFACTORY_ID = self.jsonData["FACTORY_ID"]            
+            tmpAPPLICATION = self.jsonData["APPLICATION"]
             tmpKPITYPE = self.jsonData["KPITYPE"]
             tmpACCT_DATE = self.jsonData["ACCT_DATE"]
 
@@ -80,47 +81,90 @@ class INTKPI(BaseType):
             tmp.append(tmpCOMPANY_CODE)
             tmp.append(tmpSITE)
             tmp.append(tmpFACTORY_ID)
+            tmp.append(tmpAPPLICATION)
             tmp.append(tmpKPITYPE)
             tmp.append(tmpACCT_DATE)
             redisKey = bottomLine.join(tmp)
-            expirTimeKey = tmpFACTORY_ID + '_PASS'
+            
 
-            # Check Redis Data
-            self.getRedisConnection()
-            if self.searchRedisKeys(redisKey):
-                self.writeLog(f"Cache Data From Redis")
-                return json.loads(self.getRedisData(redisKey)), 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type', "Access-Control-Expose-Headers": "Expires,DataSource", "Expires": time.mktime((datetime.datetime.now() + datetime.timedelta(seconds=self.getKeyExpirTime(expirTimeKey))).timetuple()), "DataSource": "Redis"}
+            if tmpKPITYPE == "FPY": 
+                expirTimeKey = tmpFACTORY_ID + '_PASS'               
+                # Check Redis Data
+                self.getRedisConnection()
+                if self.searchRedisKeys(redisKey):
+                    self.writeLog(f"Cache Data From Redis")
+                    return json.loads(self.getRedisData(redisKey)), 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type', "Access-Control-Expose-Headers": "Expires,DataSource", "Expires": time.mktime((datetime.datetime.now() + datetime.timedelta(seconds=self.getKeyExpirTime(expirTimeKey))).timetuple()), "DataSource": "Redis"}
 
-            data = []
-            PCBIData = self._getFPYData("PCBI")
-            PCBIResult = self._groupPassDeftByPRODandOPER(
-                PCBIData["dData"], PCBIData["pData"])
-            LAMData = self._getFPYData("LAM")
-            LAMResult = self._groupPassDeftByPRODandOPER(
-                LAMData["dData"], LAMData["pData"])
-            AAFCData = self._getFPYData("AAFC")
-            AAFCResult = self._groupPassDeftByPRODandOPER(
-                AAFCData["dData"], AAFCData["pData"])
-            CKENData = self._getFPYData("CKEN")
-            CKENResult = self._groupPassDeftByPRODandOPER(
-                CKENData["dData"], CKENData["pData"])
-            DKENData = self._getFPYData("DKEN")
-            DKENResult = self._groupPassDeftByPRODandOPER(
-                DKENData["dData"], DKENData["pData"])
+                data = []
+                PCBIData = self._getFPYData("PCBI")
+                PCBIResult = self._groupPassDeftByPRODandOPER(
+                    PCBIData["dData"], PCBIData["pData"])
+                LAMData = self._getFPYData("LAM")
+                LAMResult = self._groupPassDeftByPRODandOPER(
+                    LAMData["dData"], LAMData["pData"])
+                AAFCData = self._getFPYData("AAFC")
+                AAFCResult = self._groupPassDeftByPRODandOPER(
+                    AAFCData["dData"], AAFCData["pData"])
+                CKENData = self._getFPYData("CKEN")
+                CKENResult = self._groupPassDeftByPRODandOPER(
+                    CKENData["dData"], CKENData["pData"])
+                DKENData = self._getFPYData("DKEN")
+                DKENResult = self._groupPassDeftByPRODandOPER(
+                    DKENData["dData"], DKENData["pData"])
 
-            returnData = self._calFPYData(
-                PCBIResult, LAMResult, AAFCResult, CKENResult, DKENResult)
+                PRODFPYBaseData = self._calPRODFPYBaseData(
+                    PCBIResult, LAMResult, AAFCResult, CKENResult, DKENResult)
+                returnData = self._calFPYData(PRODFPYBaseData)
 
-            # 存到 redis 暫存
-            self.getRedisConnection()
-            if self.searchRedisKeys(redisKey):
-                self.setRedisData(redisKey, json.dumps(
-                    returnData, sort_keys=True, indent=2), self.getKeyExpirTime(expirTimeKey))
-            else:
-                self.setRedisData(redisKey, json.dumps(
-                    returnData, sort_keys=True, indent=2), 60)
-            return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+                # 存到 redis 暫存
+                self.getRedisConnection()
+                if self.searchRedisKeys(redisKey):
+                    self.setRedisData(redisKey, json.dumps(
+                        returnData, sort_keys=True, indent=2), self.getKeyExpirTime(expirTimeKey))
+                else:
+                    self.setRedisData(redisKey, json.dumps(
+                        returnData, sort_keys=True, indent=2), 60)
+                return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+            
+            if tmpKPITYPE == "PRODFPY":  
+                expirTimeKey = tmpFACTORY_ID + '_PASS'
+                # Check Redis Data
+                self.getRedisConnection()
+                if self.searchRedisKeys(redisKey):
+                    self.writeLog(f"Cache Data From Redis")
+                    return json.loads(self.getRedisData(redisKey)), 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type', "Access-Control-Expose-Headers": "Expires,DataSource", "Expires": time.mktime((datetime.datetime.now() + datetime.timedelta(seconds=self.getKeyExpirTime(expirTimeKey))).timetuple()), "DataSource": "Redis"}
 
+                data = []
+                PCBIData = self._getFPYData("PCBI")
+                PCBIResult = self._groupPassDeftByPRODandOPER(
+                    PCBIData["dData"], PCBIData["pData"])
+                LAMData = self._getFPYData("LAM")
+                LAMResult = self._groupPassDeftByPRODandOPER(
+                    LAMData["dData"], LAMData["pData"])
+                AAFCData = self._getFPYData("AAFC")
+                AAFCResult = self._groupPassDeftByPRODandOPER(
+                    AAFCData["dData"], AAFCData["pData"])
+                CKENData = self._getFPYData("CKEN")
+                CKENResult = self._groupPassDeftByPRODandOPER(
+                    CKENData["dData"], CKENData["pData"])
+                DKENData = self._getFPYData("DKEN")
+                DKENResult = self._groupPassDeftByPRODandOPER(
+                    DKENData["dData"], DKENData["pData"])
+
+                PRODFPYBaseData = self._calPRODFPYBaseData(
+                    PCBIResult, LAMResult, AAFCResult, CKENResult, DKENResult)
+                returnData = self._calPRODFPYData(PRODFPYBaseData)
+
+                # 存到 redis 暫存
+                self.getRedisConnection()
+                if self.searchRedisKeys(redisKey):
+                    self.setRedisData(redisKey, json.dumps(
+                        returnData, sort_keys=True, indent=2), self.getKeyExpirTime(expirTimeKey))
+                else:
+                    self.setRedisData(redisKey, json.dumps(
+                        returnData, sort_keys=True, indent=2), 60)
+                return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+            
         except Exception as e:
             error_class = e.__class__.__name__  # 取得錯誤類型
             detail = e.args[0]  # 取得詳細內容
@@ -372,7 +416,7 @@ class INTKPI(BaseType):
             oData = {}
         return data
 
-    def _calFPYData(self, PCBI, LAM, AAFC, CKEN, DKEN):
+    def _calPRODFPYBaseData(self, PCBI, LAM, AAFC, CKEN, DKEN):
         PRODList = []
         for x in PCBI:
             if {"PROD_NBR": x["PROD_NBR"], "APPLICATION": x["APPLICATION"]} not in PRODList:
@@ -396,19 +440,23 @@ class INTKPI(BaseType):
                     {"PROD_NBR": x["PROD_NBR"], "APPLICATION": x["APPLICATION"]})
 
         PRODData = []
+        PASSQTYSUM = 0
         for prod in PRODList:
             d1 = list(filter(lambda d: d["PROD_NBR"]
                       == prod["PROD_NBR"], PCBI))
             if d1 == []:
                 PCBIFPY = 1
             else:
+                self.writeLog(d1)
                 PCBIFPY = copy.deepcopy(d1[0]["FPY_RATE"])
+                PASSQTYSUM += d1[0]["PassSUMQty"]
 
             d2 = list(filter(lambda d: d["PROD_NBR"] == prod["PROD_NBR"], LAM))
             if d2 == []:
                 LAMFPY = 1
             else:
                 LAMFPY = copy.deepcopy(d2[0]["FPY_RATE"])
+                PASSQTYSUM += d2[0]["PassSUMQty"]
 
             d3 = list(filter(lambda d: d["PROD_NBR"]
                       == prod["PROD_NBR"], AAFC))
@@ -416,6 +464,7 @@ class INTKPI(BaseType):
                 AAFCFPY = 1
             else:
                 AAFCFPY = copy.deepcopy(d3[0]["FPY_RATE"])
+                PASSQTYSUM += d3[0]["PassSUMQty"]
 
             d4 = list(filter(lambda d: d["PROD_NBR"]
                       == prod["PROD_NBR"], CKEN))
@@ -423,6 +472,7 @@ class INTKPI(BaseType):
                 CKENFPY = 1
             else:
                 CKENFPY = copy.deepcopy(d4[0]["FPY_RATE"])
+                PASSQTYSUM += d4[0]["PassSUMQty"]
 
             d5 = list(filter(lambda d: d["PROD_NBR"]
                       == prod["PROD_NBR"], DKEN))
@@ -430,9 +480,11 @@ class INTKPI(BaseType):
                 DKENFPY = 1
             else:
                 DKENFPY = copy.deepcopy(d5[0]["FPY_RATE"])
+                PASSQTYSUM += d5[0]["PassSUMQty"]
 
             FPY = round(PCBIFPY * LAMFPY * AAFCFPY * CKENFPY * DKENFPY, 4)
-
+            
+            self.writeLog(f"{PCBIFPY} * {LAMFPY} * {AAFCFPY} * {CKENFPY} * {DKENFPY} = {FPY}")
             PRODData.append({
                 "PROD_NBR": prod['PROD_NBR'],
                 "APPLICATION": prod["APPLICATION"],
@@ -441,9 +493,14 @@ class INTKPI(BaseType):
                 "AAFCFPY": AAFCFPY,
                 "CKENFPY": CKENFPY,
                 "DKENFPY": DKENFPY,
-                "FPY": FPY
+                "FPY": FPY,
+                "PASSQTYSUM": PASSQTYSUM
             })
+            PASSQTYSUM = 0
 
+        return PRODData
+    
+    def _calFPYData(self, PRODFPYBaseData):
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         getLimitData = self.operSetData[tmpFACTORY_ID]["FPY"]["limit"]
 
@@ -451,14 +508,13 @@ class INTKPI(BaseType):
         YELLOW_VALUE = 0
         RED_VALUE = 0
 
-        for x in PRODData:
+        for x in PRODFPYBaseData:
             targrt = getLimitData[x["APPLICATION"]]["FPY"]
-            self.writeLog(targrt)
             if x["FPY"] >= targrt:
                 GREEN_VALUE += 1
-            if targrt > x["FPY"] >= (targrt-(targrt*0.01)):
+            elif targrt > x["FPY"] >= (targrt-(targrt*0.01)):
                 YELLOW_VALUE += 1
-            if (targrt-(targrt*0.01)) > x["FPY"]:
+            elif (targrt-(targrt*0.01)) > x["FPY"]:
                 RED_VALUE += 1
 
         returnData = {
@@ -466,6 +522,41 @@ class INTKPI(BaseType):
             "GREEN_VALUE": GREEN_VALUE,
             "YELLOW_VALUE": YELLOW_VALUE,
             "RED_VALUE": RED_VALUE
+        }
+
+        return returnData
+
+    def _calPRODFPYData(self, PRODFPYBaseData):
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
+        getLimitData = self.operSetData[tmpFACTORY_ID]["FPY"]["limit"]
+        QTYLimit = getLimitData[tmpAPPLICATION]["qytlim"]
+        FPYLimit = getLimitData[tmpAPPLICATION]["FPY"]
+
+        COLOR = "#118AB2"
+        SYMBOL = "undefined"
+
+        DATASERIES = []
+        d = list(filter(lambda d: d["APPLICATION"]== tmpAPPLICATION, PRODFPYBaseData))    
+        for x in d:
+            if FPYLimit > x["FPY"] and x["PASSQTYSUM"] > QTYLimit :
+                COLOR = "#EF476F"
+                SYMBOL = "twinkle"
+            else :
+                COLOR = "#118AB2"
+                SYMBOL = "undefined"     
+            DATASERIES.append({
+                "PROD_NBR": x["PROD_NBR"],
+                "YIELD": x["FPY"],
+                "QTY": x["PASSQTYSUM"],
+                "COLOR": COLOR,
+                "SYMBOL": SYMBOL
+            })
+
+        returnData = {
+            "XLIMIT": QTYLimit,
+            "YLIMIT": FPYLimit*100,
+            "DATASERIES": DATASERIES
         }
 
         return returnData
