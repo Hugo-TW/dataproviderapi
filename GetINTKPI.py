@@ -441,15 +441,16 @@ class INTKPI(BaseType):
 
         PRODData = []
         PASSQTYSUM = 0
+        PASSOPER = 0
         for prod in PRODList:
             d1 = list(filter(lambda d: d["PROD_NBR"]
                       == prod["PROD_NBR"], PCBI))
             if d1 == []:
                 PCBIFPY = 1
-            else:
-                self.writeLog(d1)
+            else:                
                 PCBIFPY = copy.deepcopy(d1[0]["FPY_RATE"])
                 PASSQTYSUM += d1[0]["PassSUMQty"]
+                PASSOPER += 1
 
             d2 = list(filter(lambda d: d["PROD_NBR"] == prod["PROD_NBR"], LAM))
             if d2 == []:
@@ -457,6 +458,7 @@ class INTKPI(BaseType):
             else:
                 LAMFPY = copy.deepcopy(d2[0]["FPY_RATE"])
                 PASSQTYSUM += d2[0]["PassSUMQty"]
+                PASSOPER += 1
 
             d3 = list(filter(lambda d: d["PROD_NBR"]
                       == prod["PROD_NBR"], AAFC))
@@ -465,6 +467,7 @@ class INTKPI(BaseType):
             else:
                 AAFCFPY = copy.deepcopy(d3[0]["FPY_RATE"])
                 PASSQTYSUM += d3[0]["PassSUMQty"]
+                PASSOPER += 1
 
             d4 = list(filter(lambda d: d["PROD_NBR"]
                       == prod["PROD_NBR"], CKEN))
@@ -473,6 +476,7 @@ class INTKPI(BaseType):
             else:
                 CKENFPY = copy.deepcopy(d4[0]["FPY_RATE"])
                 PASSQTYSUM += d4[0]["PassSUMQty"]
+                PASSOPER += 1
 
             d5 = list(filter(lambda d: d["PROD_NBR"]
                       == prod["PROD_NBR"], DKEN))
@@ -481,10 +485,10 @@ class INTKPI(BaseType):
             else:
                 DKENFPY = copy.deepcopy(d5[0]["FPY_RATE"])
                 PASSQTYSUM += d5[0]["PassSUMQty"]
+                PASSOPER += 1
 
             FPY = round(PCBIFPY * LAMFPY * AAFCFPY * CKENFPY * DKENFPY, 4)
             
-            self.writeLog(f"{PCBIFPY} * {LAMFPY} * {AAFCFPY} * {CKENFPY} * {DKENFPY} = {FPY}")
             PRODData.append({
                 "PROD_NBR": prod['PROD_NBR'],
                 "APPLICATION": prod["APPLICATION"],
@@ -494,9 +498,10 @@ class INTKPI(BaseType):
                 "CKENFPY": CKENFPY,
                 "DKENFPY": DKENFPY,
                 "FPY": FPY,
-                "PASSQTYSUM": PASSQTYSUM
+                "AvegPASSQTY": round(PASSQTYSUM / PASSOPER, 0)
             })
             PASSQTYSUM = 0
+            PASSOPER = 0
 
         return PRODData
     
@@ -539,7 +544,7 @@ class INTKPI(BaseType):
         DATASERIES = []
         d = list(filter(lambda d: d["APPLICATION"]== tmpAPPLICATION, PRODFPYBaseData))    
         for x in d:
-            if FPYLimit > x["FPY"] and x["PASSQTYSUM"] > QTYLimit :
+            if FPYLimit > x["FPY"] and x["AvegPASSQTY"] > QTYLimit :
                 COLOR = "#EF476F"
                 SYMBOL = "twinkle"
             else :
@@ -548,7 +553,7 @@ class INTKPI(BaseType):
             DATASERIES.append({
                 "PROD_NBR": x["PROD_NBR"],
                 "YIELD": x["FPY"],
-                "QTY": x["PASSQTYSUM"],
+                "QTY": x["AvegPASSQTY"],
                 "COLOR": COLOR,
                 "SYMBOL": SYMBOL
             })
