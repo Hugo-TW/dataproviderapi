@@ -108,12 +108,8 @@ class INTKPI(BaseType):
             DKENResult = self._groupPassDeftByPRODandOPER(
                 DKENData["dData"], DKENData["pData"])
 
-            data = self._calFPYData(
+            returnData = self._calFPYData(
                 PCBIResult, LAMResult, AAFCResult, CKENResult, DKENResult)
-
-            returnData = {
-                "data": data
-            }
 
             # 存到 redis 暫存
             self.getRedisConnection()
