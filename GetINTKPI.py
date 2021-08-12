@@ -544,8 +544,8 @@ class INTKPI(BaseType):
         DATASERIES = []
         if tmpAPPLICATION == "ALL":
             d = PRODFPYBaseData
-            xLimit = 0
-            yLimit = 0
+            xLimit = None
+            yLimit = None
         else:
             d = list(filter(lambda d: d["APPLICATION"]== tmpAPPLICATION, PRODFPYBaseData))  
             xLimit = getLimitData[tmpAPPLICATION]["qytlim"]
