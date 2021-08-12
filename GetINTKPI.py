@@ -536,16 +536,24 @@ class INTKPI(BaseType):
     def _calPRODFPYData(self, PRODFPYBaseData):
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         tmpAPPLICATION = self.jsonData["APPLICATION"]
-        getLimitData = self.operSetData[tmpFACTORY_ID]["FPY"]["limit"]
-        QTYLimit = getLimitData[tmpAPPLICATION]["qytlim"]
-        FPYLimit = getLimitData[tmpAPPLICATION]["FPY"]
+        getLimitData = self.operSetData[tmpFACTORY_ID]["FPY"]["limit"]   
 
         COLOR = "#118AB2"
         SYMBOL = "undefined"
 
         DATASERIES = []
-        d = list(filter(lambda d: d["APPLICATION"]== tmpAPPLICATION, PRODFPYBaseData))    
+        if tmpAPPLICATION == "ALL":
+            d = PRODFPYBaseData
+            xLimit = ""
+            yLimit = ""
+        else:
+            d = list(filter(lambda d: d["APPLICATION"]== tmpAPPLICATION, PRODFPYBaseData))  
+            xLimit = getLimitData[tmpAPPLICATION]["qytlim"]
+            yLimit = getLimitData[tmpAPPLICATION]["FPY"]  
+
         for x in d:
+            QTYLimit = getLimitData[x["APPLICATION"]]["qytlim"]
+            FPYLimit = getLimitData[x["APPLICATION"]]["FPY"]            
             if FPYLimit > x["FPY"] and x["AvegPASSQTY"] > QTYLimit :
                 COLOR = "#EF476F"
                 SYMBOL = "twinkle"
@@ -553,6 +561,7 @@ class INTKPI(BaseType):
                 COLOR = "#118AB2"
                 SYMBOL = "undefined"     
             DATASERIES.append({
+                "APPLICATION": x["APPLICATION"],
                 "PROD_NBR": x["PROD_NBR"],
                 "YIELD": x["FPY"],
                 "QTY": x["AvegPASSQTY"],
@@ -561,8 +570,8 @@ class INTKPI(BaseType):
             })
 
         returnData = {
-            "XLIMIT": QTYLimit,
-            "YLIMIT": FPYLimit*100,
+            "XLIMIT": xLimit,
+            "YLIMIT": yLimit,
             "DATASERIES": DATASERIES
         }
 

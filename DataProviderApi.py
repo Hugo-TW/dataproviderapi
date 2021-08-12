@@ -1832,7 +1832,7 @@ INTKPIML = api.model('GetINTKPI', {
     'COMPANY_CODE': fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
     'SITE': fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
     'FACTORY_ID': fields.String( required = True, description = 'FACTORY_ID', default = 'J001', example = 'J001'),
-    'APPLICATION': fields.String( required = True, description = 'APPLICATION', default = 'CE', example = 'CE'),
+    'APPLICATION': fields.String( required = True, description = 'APPLICATION', default = 'ALL', example = 'CE'),
     'KPITYPE': fields.String( required = True, description = 'KPITYPE', default = 'FPY', example = 'FPY'),
     'ACCT_DATE': fields.String( required = True, description = 'ACCT_DATE', default = '20210801', example = '20210801')
 })
