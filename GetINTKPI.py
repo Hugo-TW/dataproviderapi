@@ -571,7 +571,7 @@ class INTKPI(BaseType):
 
         returnData = {
             "XLIMIT": xLimit,
-            "YLIMIT": yLimit,
+            "YLIMIT": yLimit * 100,
             "DATASERIES": DATASERIES
         }
 
