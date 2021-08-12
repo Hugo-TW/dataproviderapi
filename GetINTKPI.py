@@ -516,12 +516,14 @@ class INTKPI(BaseType):
         RED_VALUE = 0
 
         for x in PRODFPYBaseData:
-            targrt = getLimitData[x["APPLICATION"]]["FPY"]
-            if x["FPY"] >= targrt:
+            targrtFPY = getLimitData[x["APPLICATION"]]["FPY"]
+            targrtQTY = getLimitData[x["APPLICATION"]]["qytlim"]
+
+            if x["FPY"] >= targrtFPY:
                 GREEN_VALUE += 1
-            elif targrt > x["FPY"] >= (targrt-(targrt*0.01)):
+            elif targrtFPY > x["FPY"] >= (targrtFPY-(targrtFPY*0.01)):
                 YELLOW_VALUE += 1
-            elif (targrt-(targrt*0.01)) > x["FPY"]:
+            elif (targrtFPY-(targrtFPY*0.01)) > x["FPY"]:
                 RED_VALUE += 1
 
         returnData = {
@@ -549,7 +551,7 @@ class INTKPI(BaseType):
         else:
             d = list(filter(lambda d: d["APPLICATION"]== tmpAPPLICATION, PRODFPYBaseData))  
             xLimit = getLimitData[tmpAPPLICATION]["qytlim"]
-            yLimit = getLimitData[tmpAPPLICATION]["FPY"]  
+            yLimit = getLimitData[tmpAPPLICATION]["FPY"] * 100
 
         for x in d:
             QTYLimit = getLimitData[x["APPLICATION"]]["qytlim"]
