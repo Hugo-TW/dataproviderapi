@@ -21,7 +21,9 @@ class INTKPI(BaseType):
                     "limit": {
                         "CE": {"qytlim": 3000, "FPY": 0.95},
                         "TABLET": {"qytlim": 3000, "FPY": 0.90},
-                        "NB": {"qytlim": 3000, "FPY": 0.94}
+                        "NB": {"qytlim": 3000, "FPY": 0.94},
+                        "TV": {"qytlim": 3000, "FPY": 0.90},
+                        "AA": {"qytlim": 3000, "FPY": 0.95}                       
                     },
                     "numerator": {  # 分子
                         "PCBI": {"fromt": 1050, "tot": 1310},
@@ -42,7 +44,9 @@ class INTKPI(BaseType):
                     "limit": {
                         "CE": {"qytlim": 3000, "FPT": 0.97},
                         "TABLET": {"qytlim": 3000, "FPT": 0.955},
-                        "NB": {"qytlim": 3000, "FPT": 0.96}
+                        "NB": {"qytlim": 3000, "FPT": 0.96},
+                        "TV": {"qytlim": 3000, "FPY": 0.90},
+                        "AA": {"qytlim": 3000, "FPY": 0.95}
                     },
                     "numerator": {},
                     "denominator": {}
@@ -51,7 +55,150 @@ class INTKPI(BaseType):
                     "limit": {
                         "CE": {"qytlim": 1000, "FPT": 0.003},
                         "TABLET": {"qytlim": 1000, "FPT": 0.003},
-                        "NB": {"qytlim": 1000, "FPT": 0.003}
+                        "NB": {"qytlim": 1000, "FPT": 0.003},
+                        "TV": {"qytlim": 3000, "FPY": 0.003},
+                        "AA": {"qytlim": 3000, "FPY": 0.003}
+                    },
+                    "numerator": {},
+                    "denominator": {}
+                }
+            },
+            "J003": {
+                "FPY": {
+                    "limit": {
+                        "CE": {"qytlim": 3000, "FPY": 0.95},
+                        "TABLET": {"qytlim": 3000, "FPY": 0.90},
+                        "NB": {"qytlim": 3000, "FPY": 0.94},
+                        "TV": {"qytlim": 3000, "FPY": 0.90},
+                        "AA": {"qytlim": 3000, "FPY": 0.95}
+                    },
+                    "numerator": {  # 分子
+                        "PCBI": {"fromt": 1050, "tot": 1310},
+                        "LAM": {"fromt": 1340, "tot": 1399},
+                        "AAFC": {"fromt": 1400, "tot": 1499},
+                        "CKEN": {"fromt": 1500, "tot": 1699},
+                        "DKEN": {"fromt": 1700, "tot": 1799}
+                    },
+                    "denominator": {  # 分母
+                        "PCBI": [1300, 1301],
+                        "LAM": [1355],
+                        "AAFC": [1420],
+                        "CKEN": [1600],
+                        "DKEN": [1600]
+                    }
+                },
+                "M-SHIP": {
+                    "limit": {
+                        "CE": {"qytlim": 3000, "FPT": 0.97},
+                        "TABLET": {"qytlim": 3000, "FPT": 0.955},
+                        "NB": {"qytlim": 3000, "FPT": 0.96},
+                        "TV": {"qytlim": 3000, "FPY": 0.90},
+                        "AA": {"qytlim": 3000, "FPY": 0.95}
+                    },
+                    "numerator": {},
+                    "denominator": {}
+                },
+                "EFA": {
+                    "limit": {
+                        "CE": {"qytlim": 1000, "FPT": 0.003},
+                        "TABLET": {"qytlim": 1000, "FPT": 0.003},
+                        "NB": {"qytlim": 1000, "FPT": 0.003},
+                        "TV": {"qytlim": 3000, "FPY": 0.003},
+                        "AA": {"qytlim": 3000, "FPY": 0.003}
+                    },
+                    "numerator": {},
+                    "denominator": {}
+                }
+            },
+            "J004": {
+                "FPY": {
+                    "limit": {
+                        "CE": {"qytlim": 3000, "FPY": 0.95},
+                        "TABLET": {"qytlim": 3000, "FPY": 0.90},
+                        "NB": {"qytlim": 3000, "FPY": 0.94},
+                        "TV": {"qytlim": 3000, "FPY": 0.90},
+                        "AA": {"qytlim": 3000, "FPY": 0.95}
+                    },
+                    "numerator": {  # 分子
+                        "PCBI": {"fromt": 1050, "tot": 1310},
+                        "LAM": {"fromt": 1340, "tot": 1399},
+                        "AAFC": {"fromt": 1400, "tot": 1499},
+                        "CKEN": {"fromt": 1500, "tot": 1699},
+                        "DKEN": {"fromt": 1700, "tot": 1799}
+                    },
+                    "denominator": {  # 分母
+                        "PCBI": [1300, 1301],
+                        "LAM": [1355],
+                        "AAFC": [1420],
+                        "CKEN": [1600],
+                        "DKEN": [1600]
+                    }
+                },
+                "M-SHIP": {
+                    "limit": {
+                        "CE": {"qytlim": 3000, "FPT": 0.97},
+                        "TABLET": {"qytlim": 3000, "FPT": 0.955},
+                        "NB": {"qytlim": 3000, "FPT": 0.96},
+                        "TV": {"qytlim": 3000, "FPY": 0.90},
+                        "AA": {"qytlim": 3000, "FPY": 0.95}
+                    },
+                    "numerator": {},
+                    "denominator": {}
+                },
+                "EFA": {
+                    "limit": {
+                        "CE": {"qytlim": 1000, "FPT": 0.003},
+                        "TABLET": {"qytlim": 1000, "FPT": 0.003},
+                        "NB": {"qytlim": 1000, "FPT": 0.003},
+                        "TV": {"qytlim": 3000, "FPY": 0.003},
+                        "AA": {"qytlim": 3000, "FPY": 0.003}
+                    },
+                    "numerator": {},
+                    "denominator": {}
+                }
+            },
+            "M011": {
+                "FPY": {
+                    "limit": {
+                        "CE": {"qytlim": 3000, "FPY": 0.95},
+                        "TABLET": {"qytlim": 3000, "FPY": 0.90},
+                        "NB": {"qytlim": 3000, "FPY": 0.94},
+                        "TV": {"qytlim": 3000, "FPY": 0.90},
+                        "AA": {"qytlim": 3000, "FPY": 0.95}
+                    },
+                    "numerator": {  # 分子
+                        "PCBI": {"fromt": 1050, "tot": 1310},
+                        "LAM": {"fromt": 1340, "tot": 1399},
+                        "AAFC": {"fromt": 1400, "tot": 1499},
+                        "CKEN": {"fromt": 1500, "tot": 1699},
+                        "DKEN": {"fromt": 1700, "tot": 1799}
+                    },
+                    "denominator": {  # 分母
+                        "PCBI": [1300, 1301],
+                        "LAM": [1355],
+                        "AAFC": [1420],
+                        "CKEN": [1600],
+                        "DKEN": [1600]
+                    }
+                },
+                "M-SHIP": {
+                    "limit": {
+                        "CE": {"qytlim": 3000, "FPT": 0.97},
+                        "TABLET": {"qytlim": 3000, "FPT": 0.955},
+                        "NB": {"qytlim": 3000, "FPT": 0.96},
+                        "TV": {"qytlim": 3000, "FPY": 0.90},
+                        "AA": {"qytlim": 3000, "FPY": 0.95}
+                    },
+                    "numerator": {},
+                    "denominator": {}
+                },
+                "EFA": {
+                    "limit": {
+                        "CE": {"qytlim": 1000, "FPT": 0.003},
+                        "TABLET": {"qytlim": 1000, "FPT": 0.003},
+                        "NB": {"qytlim": 1000, "FPT": 0.003},
+                        "TV": {"qytlim": 3000, "FPY": 0.003},
+                        "AA": {"qytlim": 3000, "FPY": 0.003}
                     },
                     "numerator": {},
                     "denominator": {}
@@ -71,7 +218,7 @@ class INTKPI(BaseType):
             className = f"{self.__class__.__name__}"
             tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
             tmpSITE = self.jsonData["SITE"]
-            tmpFACTORY_ID = self.jsonData["FACTORY_ID"]            
+            tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
             tmpAPPLICATION = self.jsonData["APPLICATION"]
             tmpKPITYPE = self.jsonData["KPITYPE"]
             tmpACCT_DATE = self.jsonData["ACCT_DATE"]
@@ -85,17 +232,16 @@ class INTKPI(BaseType):
             tmp.append(tmpKPITYPE)
             tmp.append(tmpACCT_DATE)
             redisKey = bottomLine.join(tmp)
+            expirTimeKey = tmpFACTORY_ID + '_PASS'
+
             
+            # Check Redis Data
+            self.getRedisConnection()
+            if self.searchRedisKeys(redisKey):
+                self.writeLog(f"Cache Data From Redis")       
+                return json.loads(self.getRedisData(redisKey)), 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type', "Access-Control-Expose-Headers": "Expires,DataSource", "Expires": time.mktime((datetime.datetime.now() + datetime.timedelta(seconds=self.getKeyExpirTime(expirTimeKey))).timetuple()), "DataSource": "Redis"}
 
-            if tmpKPITYPE == "FPY": 
-                expirTimeKey = tmpFACTORY_ID + '_PASS'               
-                # Check Redis Data
-                self.getRedisConnection()
-                if self.searchRedisKeys(redisKey):
-                    self.writeLog(f"Cache Data From Redis")
-                    return json.loads(self.getRedisData(redisKey)), 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type', "Access-Control-Expose-Headers": "Expires,DataSource", "Expires": time.mktime((datetime.datetime.now() + datetime.timedelta(seconds=self.getKeyExpirTime(expirTimeKey))).timetuple()), "DataSource": "Redis"}
-
-                data = []
+            if tmpKPITYPE == "FPY":
                 PCBIData = self._getFPYData("PCBI")
                 PCBIResult = self._groupPassDeftByPRODandOPER(
                     PCBIData["dData"], PCBIData["pData"])
@@ -124,9 +270,10 @@ class INTKPI(BaseType):
                 else:
                     self.setRedisData(redisKey, json.dumps(
                         returnData, sort_keys=True, indent=2), 60)
+
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
-            
-            if tmpKPITYPE == "PRODFPY":  
+
+            elif tmpKPITYPE == "PRODFPY":
                 expirTimeKey = tmpFACTORY_ID + '_PASS'
                 # Check Redis Data
                 self.getRedisConnection()
@@ -134,7 +281,6 @@ class INTKPI(BaseType):
                     self.writeLog(f"Cache Data From Redis")
                     return json.loads(self.getRedisData(redisKey)), 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type', "Access-Control-Expose-Headers": "Expires,DataSource", "Expires": time.mktime((datetime.datetime.now() + datetime.timedelta(seconds=self.getKeyExpirTime(expirTimeKey))).timetuple()), "DataSource": "Redis"}
 
-                data = []
                 PCBIData = self._getFPYData("PCBI")
                 PCBIResult = self._groupPassDeftByPRODandOPER(
                     PCBIData["dData"], PCBIData["pData"])
@@ -164,7 +310,15 @@ class INTKPI(BaseType):
                     self.setRedisData(redisKey, json.dumps(
                         returnData, sort_keys=True, indent=2), 60)
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
-            
+
+            elif tmpKPITYPE == "MSHIP":
+                
+                return self._getMSHIPData(), {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+
+            else:
+                return {'Result': 'Fail', 'Reason': 'Parametes[KPITYPE] not in Rule'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+
+
         except Exception as e:
             error_class = e.__class__.__name__  # 取得錯誤類型
             detail = e.args[0]  # 取得詳細內容
@@ -183,12 +337,17 @@ class INTKPI(BaseType):
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         tmpKPITYPE = self.jsonData["KPITYPE"]
         tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
 
         getFabData = self.operSetData[tmpFACTORY_ID]
         numeratorData = getFabData["FPY"]["numerator"][OPER]
         denominatorValue = getFabData["FPY"]["denominator"][OPER]
 
-        passAggregate = [{
+        passAggregate = []
+        deftAggregate = []
+
+        #pass
+        passMatch1 = {
             "$match": {
                 "COMPANY_CODE": tmpCOMPANY_CODE,
                 "SITE": tmpSITE,
@@ -196,8 +355,8 @@ class INTKPI(BaseType):
                 "ACCT_DATE": tmpACCT_DATE,
                 "LCM_OWNER": {"$in": ["LCM0", "LCME", "PROD", "QTAP", "RES0"]}
             }
-        },
-            {
+        }
+        passGroup1 = {
             "$group": {
                 "_id": {
                     "COMPANY_CODE": "$COMPANY_CODE",
@@ -213,8 +372,8 @@ class INTKPI(BaseType):
                     "$sum": {"$toInt": "$QTY"}
                 }
             }
-        },
-            {
+        }
+        passProject1 = {
             "$project": {
                 "_id": 0,
                 "COMPANY_CODE": "$_id.COMPANY_CODE",
@@ -227,11 +386,11 @@ class INTKPI(BaseType):
                 "MAIN_WC": "$_id.MAIN_WC",
                 "PASS_QTY": "$PASS_QTY"
             }
-        },
-            {
+        }
+        passMatch2 = {
             "$match": {"MAIN_WC": {"$in": denominatorValue}}
-        },
-            {
+        }
+        passGroup2 = {
             "$group": {
                 "_id": {
                     "COMPANY_CODE": "$COMPANY_CODE",
@@ -245,9 +404,8 @@ class INTKPI(BaseType):
                     "$sum": {"$toInt": "$PASS_QTY"}
                 }
             }
-        },
-
-            {
+        }
+        passProject2 = {
             "$project": {
                 "_id": 0,
                 "COMPANY_CODE": "$_id.COMPANY_CODE",
@@ -259,8 +417,8 @@ class INTKPI(BaseType):
                 "OPER": OPER,
                 "PassSUMQty": "$PassSUMQty"
             }
-        },
-            {
+        }
+        passSort = {
             "$sort": {
                 "COMPANY_CODE": 1,
                 "SITE": 1,
@@ -270,10 +428,10 @@ class INTKPI(BaseType):
                 "MAIN_WC": 1,
                 "APPLICATION": 1
             }
-        }]
-        #self.writeLog(f'passAggregate:{passAggregate}')
+        }
 
-        deftAggregate = [{
+        #deft
+        deftMatch1 ={
             "$match": {
                 "COMPANY_CODE": tmpCOMPANY_CODE,
                 "SITE": tmpSITE,
@@ -281,8 +439,8 @@ class INTKPI(BaseType):
                 "ACCT_DATE": tmpACCT_DATE,
                 "LCM_OWNER": {"$in": ["LCM0", "LCME", "PROD", "QTAP", "RES0"]}
             }
-        },
-            {
+        }
+        deftGroup1 ={
             "$group": {
                 "_id": {
                     "COMPANY_CODE": "$COMPANY_CODE",
@@ -297,24 +455,24 @@ class INTKPI(BaseType):
                     "$sum": {"$toInt": "$QTY"}
                 }
             }
-        },
-            {
-                "$project": {
-                    "_id": 0,
-                    "COMPANY_CODE": "$_id.COMPANY_CODE",
-                    "SITE": "$_id.SITE",
-                    "FACTORY_ID": "$_id.FACTORY_ID",
-                    "PROD_NBR": "$_id.PROD_NBR",
-                    "ACCT_DATE": "$_id.ACCT_DATE",
-                    "APPLICATION": "$_id.APPLICATION",
-                    "MAIN_WC": "$_id.MAIN_WC",
-                    "DEFT_QTY": "$DEFT_QTY"
-                }
-        },
-            {
+        }
+        deftProject1 = {
+            "$project": {
+                "_id": 0,
+                "COMPANY_CODE": "$_id.COMPANY_CODE",
+                "SITE": "$_id.SITE",
+                "FACTORY_ID": "$_id.FACTORY_ID",
+                "PROD_NBR": "$_id.PROD_NBR",
+                            "ACCT_DATE": "$_id.ACCT_DATE",
+                            "APPLICATION": "$_id.APPLICATION",
+                            "MAIN_WC": "$_id.MAIN_WC",
+                            "DEFT_QTY": "$DEFT_QTY"
+            }
+        }
+        deftMatch2 = {
             "$match": {"MAIN_WC": {'$gt': numeratorData["fromt"], '$lt': numeratorData["tot"]}}
-        },
-            {
+        }
+        deftGroup2 = {
             "$group": {
                 "_id": {
                     "COMPANY_CODE": "$COMPANY_CODE",
@@ -328,8 +486,8 @@ class INTKPI(BaseType):
                     "$sum": {"$toInt": "$DEFT_QTY"}
                 }
             }
-        },
-            {
+        }
+        deftProject2 = {
             "$project": {
                 "_id": 0,
                 "COMPANY_CODE": "$_id.COMPANY_CODE",
@@ -341,19 +499,25 @@ class INTKPI(BaseType):
                 "OPER": OPER,
                 "DeftSUMQty": "$DeftSUMQty"
             }
-        },
-            {
-                "$sort": {
-                    "COMPANY_CODE": 1,
-                    "SITE": 1,
-                    "FACTORY_ID": 1,
-                    "PROD_NBR": 1,
-                    "ACCT_DATE": 1,
-                    "MAIN_WC": 1,
-                    "APPLICATION": 1
-                }
-        }]
-        #self.writeLog(f'deftAggregate:{deftAggregate}')
+        }
+        deftSort = {
+            "$sort": {
+                "COMPANY_CODE": 1,
+                "SITE": 1,
+                "FACTORY_ID": 1,
+                "PROD_NBR": 1,
+                "ACCT_DATE": 1,
+                "MAIN_WC": 1,
+                "APPLICATION": 1
+            }
+        }
+
+        if tmpAPPLICATION != "ALL":
+            passMatch1["$match"]["APPLICATION"] = tmpAPPLICATION
+            deftMatch1["$match"]["APPLICATION"] = tmpAPPLICATION
+
+        passAggregate.extend([passMatch1, passGroup1, passProject1, passMatch2, passGroup2, passProject2, passSort])
+        deftAggregate.extend([deftMatch1, deftGroup1, deftProject1, deftMatch2, deftGroup2, deftProject2, deftSort])
 
         try:
             self.getMongoConnection()
@@ -401,7 +565,10 @@ class INTKPI(BaseType):
             oData["PROD_NBR"] = copy.deepcopy(p["PROD_NBR"])
             oData["ACCT_DATE"] = datetime.datetime.strptime(
                 p["ACCT_DATE"], '%Y%m%d').strftime('%Y-%m-%d')
-            oData["APPLICATION"] = copy.deepcopy(p["APPLICATION"])
+            if "APPLICATION" in p.keys():
+                oData["APPLICATION"] = copy.deepcopy(p["APPLICATION"])
+            else:
+                oData["APPLICATION"] = None
             oData["PROD_NBR"] = copy.deepcopy(p["PROD_NBR"])
             oData["OPER"] = copy.deepcopy(p["OPER"])
             oData["PassSUMQty"] = copy.deepcopy(p["PassSUMQty"])
@@ -449,7 +616,7 @@ class INTKPI(BaseType):
                       == prod["PROD_NBR"], PCBI))
             if d1 == []:
                 PCBIFPY = 1
-            else:                
+            else:
                 PCBIFPY = copy.deepcopy(d1[0]["FPY_RATE"])
                 PASSQTYSUM += d1[0]["PassSUMQty"]
                 PASSOPER += 1
@@ -490,7 +657,7 @@ class INTKPI(BaseType):
                 PASSOPER += 1
 
             FPY = round(PCBIFPY * LAMFPY * AAFCFPY * CKENFPY * DKENFPY, 4)
-            
+
             PRODData.append({
                 "PROD_NBR": prod['PROD_NBR'],
                 "APPLICATION": prod["APPLICATION"],
@@ -506,9 +673,10 @@ class INTKPI(BaseType):
             PASSOPER = 0
 
         return PRODData
-    
+
     def _calFPYData(self, PRODFPYBaseData):
-        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]        
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
         getLimitData = self.operSetData[tmpFACTORY_ID]["FPY"]["limit"]
 
         GREEN_VALUE = 0
@@ -516,8 +684,9 @@ class INTKPI(BaseType):
         RED_VALUE = 0
 
         for x in PRODFPYBaseData:
-            targrtFPY = getLimitData[x["APPLICATION"]]["FPY"]
-            targrtQTY = getLimitData[x["APPLICATION"]]["qytlim"]
+            targrtFPY = 0.90
+            if tmpAPPLICATION in getLimitData.keys():
+                targrtFPY = getLimitData[x["APPLICATION"]]["FPY"]                
 
             if x["FPY"] >= targrtFPY:
                 GREEN_VALUE += 1
@@ -538,7 +707,7 @@ class INTKPI(BaseType):
     def _calPRODFPYData(self, PRODFPYBaseData):
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         tmpAPPLICATION = self.jsonData["APPLICATION"]
-        getLimitData = self.operSetData[tmpFACTORY_ID]["FPY"]["limit"]   
+        getLimitData = self.operSetData[tmpFACTORY_ID]["FPY"]["limit"] 
 
         COLOR = "#118AB2"
         SYMBOL = "undefined"
@@ -549,19 +718,24 @@ class INTKPI(BaseType):
             xLimit = None
             yLimit = None
         else:
-            d = list(filter(lambda d: d["APPLICATION"]== tmpAPPLICATION, PRODFPYBaseData))  
+            d = list(filter(lambda d: d["APPLICATION"]
+                     == tmpAPPLICATION, PRODFPYBaseData))
             xLimit = getLimitData[tmpAPPLICATION]["qytlim"]
             yLimit = getLimitData[tmpAPPLICATION]["FPY"] * 100
 
         for x in d:
-            QTYLimit = getLimitData[x["APPLICATION"]]["qytlim"]
-            FPYLimit = getLimitData[x["APPLICATION"]]["FPY"]            
-            if FPYLimit > x["FPY"] and x["AvegPASSQTY"] > QTYLimit :
+            QTYLimit = 3000
+            FPYLimit = 0.90
+            if tmpAPPLICATION in getLimitData.keys():
+                QTYLimit = getLimitData[x["APPLICATION"]]["qytlim"]
+                FPYLimit = getLimitData[x["APPLICATION"]]["FPY"]
+            
+            if FPYLimit > x["FPY"] and x["AvegPASSQTY"] > QTYLimit:
                 COLOR = "#EF476F"
                 SYMBOL = "twinkle"
-            else :
+            else:
                 COLOR = "#118AB2"
-                SYMBOL = "undefined"     
+                SYMBOL = "undefined"
             DATASERIES.append({
                 "APPLICATION": x["APPLICATION"],
                 "PROD_NBR": x["PROD_NBR"],
@@ -578,3 +752,197 @@ class INTKPI(BaseType):
         }
 
         return returnData
+
+    def _getMSHIPData(self):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpKPITYPE = self.jsonData["KPITYPE"]
+        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
+
+        scrapAggregate = []
+        shipAggregate = []
+        gradeAggregate = []
+
+        # scrap
+        scrapMatch = {
+            "$match": {
+                "COMPANY_CODE": tmpCOMPANY_CODE,
+                "SITE": tmpSITE,
+                "FACTORY_ID": tmpFACTORY_ID,
+                "ACCT_DATE": tmpACCT_DATE,
+                "LCM_OWNER": {"$in": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]}
+            }
+        }
+        scrapGroup = {
+            "$group": {
+                "_id": {
+                    "COMPANY_CODE": "$COMPANY_CODE",
+                    "SITE": "$SITE",
+                    "FACTORY_ID": "$FACTORY_ID",
+                    "ACCT_DATE": "$ACCT_DATE",
+                    "APPLICATION": "$APPLICATION",
+                    "PROD_NBR": "$PROD_NBR"
+                },
+                "TOBESCRAP_QTY": {
+                    "$sum": {"$toInt": "$TOBESCRAP_QTY"}
+                }
+            }
+        }
+        scrapProject = {
+            "$project": {
+                "_id": 0,
+                "COMPANY_CODE": "$APPLICATION",
+                "SITE": "$ACCT_DATE",
+                "FACTORY_ID": "$_id.PROD_NBR",
+                "ACCT_DATE": "$ACCT_DATE",
+                "APPLICATION": "$APPLICATION",
+                "PROD_NBR": "$PROD_NBR",
+                            "TOBESCRAP_SUMQTY": "$TOBESCRAP_QTY"
+            }
+        }
+        scrapSort = {
+            "$sort": {
+
+                "_id.SCRAP_CODE": 1,
+                "_id.RESP_OWNER": 1
+            }
+        }
+
+        # ship
+        shipAggregate = []
+        shipMatch = {
+            "$match": {
+                "COMPANY_CODE": tmpCOMPANY_CODE,
+                "SITE": tmpSITE,
+                "FACTORY_ID": tmpFACTORY_ID,
+                "ACCT_DATE": tmpACCT_DATE,
+                "TRANS_TYPE": "SHIP",
+                "LCM_OWNER": {"$in": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]}
+            }
+        }
+        shipGroup = {
+            "$group": {
+                "_id": {
+                    "ACCT_DATE": "$ACCT_DATE",
+                    "APPLICATION": "$APPLICATION",
+                    "PROD_NBR": "$PROD_NBR"
+                },
+                "SHIPSUM": {
+                    "$sum": {"$toInt": "$QTY"}
+                }
+            }
+        }
+        shipProject = {
+            "$project": {
+                "_id": 0,
+                "APPLICATION": "$APPLICATION",
+                "ACCT_DATE": "$ACCT_DATE",
+                "PROD_NBR": "$_id.PROD_NBR",
+                            "SHIP_SUMQTY": "$SHIPSUM"
+            }
+        }
+        shipSort = {
+            "$sort": {
+                "APPLICATION": 1,
+                "ACCT_DATE": 1,
+                "PROD_NBR": 1
+            }
+        }
+
+        # grade
+        gradeMatch = {
+            "$match": {
+                "COMPANY_CODE": tmpCOMPANY_CODE,
+                "FACTORY_ID": tmpFACTORY_ID,
+                "SITE": tmpSITE,
+                "ACCT_DATE": tmpACCT_DATE,
+                "MAIN_WC": {"$in": ["1600"]},
+                "LCM_OWNER": {"$in": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]}
+            }
+        }
+        gradeGroup = {
+            "$group": {
+                "_id": {
+                    "APPLICATION": "$APPLICATION",
+                    "PROD_NBR": "$PROD_NBR",
+                    "ACCT_DATE": "$ACCT_DATE"
+                },
+                "DOWNGRADE_QTY": {
+                    "$sum": {
+                        "$cond": [
+                            {
+                                "$eq": ["$IS_DOWNGRADE", "Y"]
+                            },
+                            {
+                                "$toInt": "$QTY"
+                            },
+                            {
+                                "$toInt": 0
+                            }
+                        ]
+                    }
+                },
+                "TOTAL_QTY": {
+                    "$sum": {"$toInt": "$QTY"}
+                }
+            }
+        }
+        gradeProject = {
+            "$project": {
+                "_id": 0,
+                "APPLICATION": "$_id.APPLICATION",
+                "ACCT_DATE": "$_id.ACCT_DATE",
+                "PROD_NBR": "$_id.PROD_NBR",
+                "DOWNGRADE_SUMQTY": "$PassSUMQty",
+                "TOTAL_SUMQTY": "$PassSUMQty"
+            }
+        }
+        gradeSort = {
+            "$sort": {
+                "APPLICATION": 1,
+                "ACCT_DATE": 1,
+                "PROD_NBR": 1
+            }
+        }
+
+        if tmpAPPLICATION != "ALL":
+            scrapMatch["$match"]["APPLICATION"] = tmpAPPLICATION
+            shipMatch["$match"]["APPLICATION"] = tmpAPPLICATION
+            gradeMatch["$match"]["APPLICATION"] = tmpAPPLICATION
+
+        scrapAggregate.extend([scrapMatch, scrapGroup, scrapProject, scrapSort])
+        shipAggregate.extend([shipMatch, shipGroup, shipProject, shipSort])
+        gradeAggregate.extend([gradeMatch, gradeGroup, gradeProject, gradeSort])
+
+        try:
+            self.getMongoConnection()
+            self.setMongoDb("IAMP")
+            self.setMongoCollection("passHisAndCurrent")
+            scrapData = self.aggregate(scrapAggregate)
+            self.setMongoCollection("scrapHisAndCurrent")
+            shipData = self.aggregate(shipAggregate)
+            self.setMongoCollection("passHisAndCurrent")
+            gradeData = self.aggregate(gradeAggregate)
+            self.closeMongoConncetion()
+
+            returnData = {
+                "scrapData": scrapData,
+                "shipData": shipData,
+                "gradeData": gradeData
+            }
+
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
