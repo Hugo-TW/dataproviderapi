@@ -26,7 +26,7 @@ class INTKPI(BaseType):
                         "TABLET": {"qytlim": 3000, "FPY": 0.90},
                         "NB": {"qytlim": 3000, "FPY": 0.94},
                         "TV": {"qytlim": 3000, "FPY": 0.90},
-                        "AA": {"qytlim": 3000, "FPY": 0.95}                       
+                        "AA": {"qytlim": 3000, "FPY": 0.95}
                     },
                     "numerator": {  # 分子
                         "PCBI": {"fromt": 1050, "tot": 1310},
@@ -196,7 +196,7 @@ class INTKPI(BaseType):
             # Check Redis Data
             self.getRedisConnection()
             if self.searchRedisKeys(redisKey):
-                self.writeLog(f"Cache Data From Redis")       
+                self.writeLog(f"Cache Data From Redis")
                 return json.loads(self.getRedisData(redisKey)), 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type', "Access-Control-Expose-Headers": "Expires,DataSource", "Expires": time.mktime((datetime.datetime.now() + datetime.timedelta(seconds=self.getKeyExpirTime(expirTimeKey))).timetuple()), "DataSource": "Redis"}
 
             if tmpKPITYPE == "FPY":
@@ -283,9 +283,198 @@ class INTKPI(BaseType):
                         returnData, sort_keys=True, indent=2), 60)
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
+            elif tmpKPITYPE == "EFA":
+                OPERDATA = [
+                    {"PROCESS": "BONDING", "OPER": 1300, "DESC": "PCBI(HMT)"},
+                    {"PROCESS": "BONDING", "OPER": 1301,
+                        "DESC": "PCBT(串線PCBI)"},
+                    {"PROCESS": "LAM", "OPER": 1340, "DESC": "BT"},
+                    {"PROCESS": "LAM", "OPER": 1370, "DESC": "PT"},
+                    {"PROCESS": "ASSY", "OPER": 1419,
+                        "DESC": "OTPA(OTP AAFC)"},
+                    {"PROCESS": "ASSY", "OPER": 1420, "DESC": "AAFC(同C-)"},
+                    {"PROCESS": "TPI", "OPER": 1510, "DESC": "TPI"},
+                    {"PROCESS": "OTPC", "OPER": 1590, "DESC": "Flicker check"},
+                    {"PROCESS": "C-KEN", "OPER": 1600,
+                        "DESC": "(A+B) Panel C-"}
+                ]
+
+                PRODDATA = [
+                    {
+                        "APPLICATION": "CE",
+                        "PROD_NBR": "GZJ055IA0200S",
+                        "MODULE": "ZJ055IA-27B",
+                        "PROJECT": "Juno_T1_VE",
+                        "CUSTOMER": "FOXCONN"
+                    },
+                    {
+                        "APPLICATION": "CE",
+                        "PROD_NBR": "GP062CCAC100S",
+                        "MODULE": "P062CCA-AZ2 ",
+                        "PROJECT": "Giant_T2_VE",
+                        "CUSTOMER": "FOXCONN"
+                    },
+                    {
+                        "APPLICATION": "CE",
+                        "PROD_NBR": "GZD070SA4030S",
+                        "MODULE": "ZD070SA-14N",
+                        "PROJECT": "GARMIN_TOD(小CG)",
+                        "CUSTOMER": "GARMIN"
+                    },
+                    {
+                        "APPLICATION": "CE",
+                        "PROD_NBR": "GZD070SAB020S",
+                        "MODULE": "ZD070SA-14M",
+                        "PROJECT": "GARMIN_TOD(中CG)",
+                        "CUSTOMER": "GARMIN"
+                    },
+                    {
+                        "APPLICATION": "CE",
+                        "PROD_NBR": "GNJ101IA0030S",
+                        "MODULE": "NJ101IA-01S",
+                        "PROJECT": "10.1_01S",
+                        "CUSTOMER": "白牌"
+                    },
+                    {
+                        "APPLICATION": "CE",
+                        "PROD_NBR": "GZJ101ZA3010S",
+                        "MODULE": "ZJ101ZA-03B",
+                        "PROJECT": "RICOH",
+                        "CUSTOMER": "RICOH"
+                    },
+                    {
+                        "APPLICATION": "CE",
+                        "PROD_NBR": "GP062CCAY010S",
+                        "MODULE": "GP062XXX",
+                        "PROJECT": "GP062XXX",
+                        "CUSTOMER": "GP062"
+                    },
+                    {
+                        "APPLICATION": "NB",
+                        "PROD_NBR": "GN116BCNA030S",
+                        "MODULE": "N116BCN-EA1",
+                        "PROJECT": "11.6_TOD",
+                        "CUSTOMER": "HP"
+                    },
+                    {
+                        "APPLICATION": "NB",
+                        "PROD_NBR": "GN140HCNA0C0S",
+                        "MODULE": "N140HCN-EA1",
+                        "PROJECT": "14_HCN",
+                        "CUSTOMER": "LENOVO"
+                    },
+                    {
+                        "APPLICATION": "NB",
+                        "PROD_NBR": "GN140HCNA0M0S",
+                        "MODULE": "N140HCN-EA1",
+                        "PROJECT": "14_HCN",
+                        "CUSTOMER": "LENOVO"
+                    },
+                    {
+                        "APPLICATION": "NB",
+                        "PROD_NBR": "GN140HCNA0N0S",
+                        "MODULE": "N140HCN-EA1",
+                        "PROJECT": "14_HCN",
+                        "CUSTOMER": "LENOVO"
+                    },
+                    {
+                        "APPLICATION": "NB",
+                        "PROD_NBR": "GN140HCNA0R0S",
+                        "MODULE": "N140HCN-EA1",
+                        "PROJECT": "14_HCN",
+                        "CUSTOMER": "LENOVO"
+                    },
+                    {
+                        "APPLICATION": "Open Cell",
+                        "PROD_NBR": "2HE080IA1010S",
+                        "MODULE": "HE080IA-01D",
+                        "PROJECT": "IPS",
+                        "CUSTOMER": "白牌"
+                    },
+                    {
+                        "APPLICATION": "Open Cell",
+                        "PROD_NBR": "2P101DEZ0020S",
+                        "MODULE": "P101DEZ-3Z3",
+                        "PROJECT": "10.1_3Z3",
+                        "CUSTOMER": "白牌"
+                    },
+                    {
+                        "APPLICATION": "TAB",
+                        "PROD_NBR": "GP080DZD00B0S",
+                        "MODULE": "P080DZD-DB2",
+                        "PROJECT": "8_ TAB5 M8(黑)",
+                        "CUSTOMER": "LENOVO"
+                    },
+                    {
+                        "APPLICATION": "TAB",
+                        "PROD_NBR": "GP080DZD00C0S",
+                        "MODULE": "P080DZD-DBE",
+                        "PROJECT": "8_TAB6(N)",
+                        "CUSTOMER": "LENOVO"
+                    },
+                    {
+                        "APPLICATION": "TAB",
+                        "PROD_NBR": "GP101KZD0210S",
+                        "MODULE": "P101KZD-DFB",
+                        "PROJECT": "Agassi3(白)",
+                        "CUSTOMER": "榮耀"
+                    },
+                    {
+                        "APPLICATION": "TAB",
+                        "PROD_NBR": "GP104ZZD0220S",
+                        "MODULE": "P104ZZD-DFA",
+                        "PROJECT": "N19(黑)",
+                        "CUSTOMER": "SAMSUNG"
+                    },
+                    {
+                        "APPLICATION": "TAB",
+                        "PROD_NBR": "GP104ZZD0240S",
+                        "MODULE": "P104ZZD-DF3",
+                        "PROJECT": "N19(黑)",
+                        "CUSTOMER": "SAMSUNG"
+                    },
+                    {
+                        "APPLICATION": "TAB",
+                        "PROD_NBR": "GP130ZFZ1020S",
+                        "MODULE": "P130ZFZ-BH2",
+                        "PROJECT": "13_Zeus",
+                        "CUSTOMER": "LENOVO"
+                    },
+                    {
+                        "APPLICATION": "TAB",
+                        "PROD_NBR": "GP130ZFA0010S",
+                        "MODULE": "P130ZFA-BA1",
+                        "PROJECT": "Wright",
+                        "CUSTOMER": "明華光電"
+                    },
+                    {
+                        "APPLICATION": "TAB",
+                        "PROD_NBR": "GP140ZKA0020S",
+                        "MODULE": "P140ZKA-BZ1",
+                        "PROJECT": "14_Kelvin",
+                        "CUSTOMER": "明華光電"
+                    }
+                ]
+
+                efaData = self._getEFAData(OPERDATA, PRODDATA)
+                groupEFAData = self._groupEFAData(efaData)
+                returnData = self._calEFAData(groupEFAData)
+
+                # 存到 redis 暫存
+                """
+                self.getRedisConnection()
+                if self.searchRedisKeys(redisKey):
+                    self.setRedisData(redisKey, json.dumps(
+                        returnData, sort_keys=True, indent=2), self.getKeyExpirTime(expirTimeKey))
+                else:
+                    self.setRedisData(redisKey, json.dumps(
+                        returnData, sort_keys=True, indent=2), 60)
+                """
+
+                return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+
             else:
                 return {'Result': 'Fail', 'Reason': 'Parametes[KPITYPE] not in Rule'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
-
 
         except Exception as e:
             error_class = e.__class__.__name__  # 取得錯誤類型
@@ -399,7 +588,7 @@ class INTKPI(BaseType):
         }
 
         #deft
-        deftMatch1 ={
+        deftMatch1 = {
             "$match": {
                 "COMPANY_CODE": tmpCOMPANY_CODE,
                 "SITE": tmpSITE,
@@ -408,7 +597,7 @@ class INTKPI(BaseType):
                 "LCM_OWNER": {"$in": ["LCM0", "LCME", "PROD", "QTAP", "RES0"]}
             }
         }
-        deftGroup1 ={
+        deftGroup1 = {
             "$group": {
                 "_id": {
                     "COMPANY_CODE": "$COMPANY_CODE",
@@ -484,8 +673,10 @@ class INTKPI(BaseType):
             passMatch1["$match"]["APPLICATION"] = tmpAPPLICATION
             deftMatch1["$match"]["APPLICATION"] = tmpAPPLICATION
 
-        passAggregate.extend([passMatch1, passGroup1, passProject1, passMatch2, passGroup2, passProject2, passSort])
-        deftAggregate.extend([deftMatch1, deftGroup1, deftProject1, deftMatch2, deftGroup2, deftProject2, deftSort])
+        passAggregate.extend([passMatch1, passGroup1, passProject1,
+                             passMatch2, passGroup2, passProject2, passSort])
+        deftAggregate.extend([deftMatch1, deftGroup1, deftProject1,
+                             deftMatch2, deftGroup2, deftProject2, deftSort])
 
         try:
             self.getMongoConnection()
@@ -543,7 +734,7 @@ class INTKPI(BaseType):
             if d == []:
                 oData["DeftSUMQty"] = 0
             else:
-                oData["DeftSUMQty"] = copy.deepcopy(d[0]["DeftSUMQty"])            
+                oData["DeftSUMQty"] = copy.deepcopy(d[0]["DeftSUMQty"])
             if oData["DeftSUMQty"] == 0:
                 oData["DEFECT_RATE"] = 0
             else:
@@ -645,7 +836,7 @@ class INTKPI(BaseType):
         return PRODData
 
     def _calFPYData(self, PRODFPYBaseData):
-        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]   
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         getLimitData = self.operSetData[tmpFACTORY_ID]["FPY"]["limit"]
 
         GREEN_VALUE = 0
@@ -655,7 +846,7 @@ class INTKPI(BaseType):
         for x in PRODFPYBaseData:
             targrtFPY = 0.90
             if x["APPLICATION"] in getLimitData.keys():
-                targrtFPY = getLimitData[x["APPLICATION"]]["FPY"]                
+                targrtFPY = getLimitData[x["APPLICATION"]]["FPY"]
 
             if x["FPY"] >= targrtFPY:
                 GREEN_VALUE += 1
@@ -676,7 +867,7 @@ class INTKPI(BaseType):
     def _calPRODFPYData(self, PRODFPYBaseData):
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         tmpAPPLICATION = self.jsonData["APPLICATION"]
-        getLimitData = self.operSetData[tmpFACTORY_ID]["FPY"]["limit"] 
+        getLimitData = self.operSetData[tmpFACTORY_ID]["FPY"]["limit"]
 
         COLOR = "#118AB2"
         SYMBOL = "undefined"
@@ -698,7 +889,7 @@ class INTKPI(BaseType):
             if x["APPLICATION"] in getLimitData.keys():
                 QTYLimit = getLimitData[x["APPLICATION"]]["qytlim"]
                 FPYLimit = getLimitData[x["APPLICATION"]]["FPY"]
-            
+
             if FPYLimit > x["FPY"] and x["AvegPASSQTY"] > QTYLimit:
                 COLOR = "#EF476F"
                 SYMBOL = "twinkle"
@@ -905,9 +1096,11 @@ class INTKPI(BaseType):
             shipMatch["$match"]["APPLICATION"] = tmpAPPLICATION
             gradeMatch["$match"]["APPLICATION"] = tmpAPPLICATION
 
-        scrapAggregate.extend([scrapMatch, scrapGroup, scrapProject, scrapSort])
+        scrapAggregate.extend(
+            [scrapMatch, scrapGroup, scrapProject, scrapSort])
         shipAggregate.extend([shipMatch, shipGroup, shipProject, shipSort])
-        gradeAggregate.extend([gradeMatch, gradeGroup, gradeProject, gradeSort])
+        gradeAggregate.extend(
+            [gradeMatch, gradeGroup, gradeProject, gradeSort])
 
         try:
             self.getMongoConnection()
@@ -965,15 +1158,20 @@ class INTKPI(BaseType):
         mshipData = []
         oData = {}
         for prod in PRODList:
-            _scrapdata = list(filter(lambda d: d["PROD_NBR"]== prod["PROD_NBR"], scrapData))
-            _shipData = list(filter(lambda d: d["PROD_NBR"]== prod["PROD_NBR"], shipData))
-            _gradeData = list(filter(lambda d: d["PROD_NBR"]== prod["PROD_NBR"], gradeData))
+            _scrapdata = list(
+                filter(lambda d: d["PROD_NBR"] == prod["PROD_NBR"], scrapData))
+            _shipData = list(
+                filter(lambda d: d["PROD_NBR"] == prod["PROD_NBR"], shipData))
+            _gradeData = list(
+                filter(lambda d: d["PROD_NBR"] == prod["PROD_NBR"], gradeData))
             if _shipData != [] and _gradeData != []:
-                oData["COMPANY_CODE"] = copy.deepcopy(_shipData[0]["COMPANY_CODE"])
+                oData["COMPANY_CODE"] = copy.deepcopy(
+                    _shipData[0]["COMPANY_CODE"])
                 oData["SITE"] = copy.deepcopy(_shipData[0]["SITE"])
                 oData["FACTORY_ID"] = copy.deepcopy(_shipData[0]["FACTORY_ID"])
                 if "APPLICATION" in _shipData[0].keys():
-                    oData["APPLICATION"] = copy.deepcopy(_shipData[0]["APPLICATION"])
+                    oData["APPLICATION"] = copy.deepcopy(
+                        _shipData[0]["APPLICATION"])
                 else:
                     oData["APPLICATION"] = None
                 oData["PROD_NBR"] = copy.deepcopy(_shipData[0]["PROD_NBR"])
@@ -982,25 +1180,34 @@ class INTKPI(BaseType):
                 if _scrapdata == []:
                     oData["TOBESCRAP_SUMQTY"] = 0
                 else:
-                    oData["TOBESCRAP_SUMQTY"] = copy.deepcopy(_scrapdata[0]["TOBESCRAP_SUMQTY"])
-                oData["SHIP_SUMQTY"] = copy.deepcopy(_shipData[0]["SHIP_SUMQTY"])
+                    oData["TOBESCRAP_SUMQTY"] = copy.deepcopy(
+                        _scrapdata[0]["TOBESCRAP_SUMQTY"])
+                oData["SHIP_SUMQTY"] = copy.deepcopy(
+                    _shipData[0]["SHIP_SUMQTY"])
                 if oData["TOBESCRAP_SUMQTY"] == 0:
                     oData["GRADW_YIELD"] = 1
-                else:                        
-                    oData["GRADW_YIELD"] = 1 - round( oData["TOBESCRAP_SUMQTY"] / oData["SHIP_SUMQTY"], 4)
-                oData["DOWNGRADE_SUMQTY"] = copy.deepcopy(_gradeData[0]["DOWNGRADE_SUMQTY"])
-                oData["TOTAL_SUMQTY"] = copy.deepcopy(_gradeData[0]["TOTAL_SUMQTY"])
+                else:
+                    oData["GRADW_YIELD"] = 1 - \
+                        round(oData["TOBESCRAP_SUMQTY"] /
+                              oData["SHIP_SUMQTY"], 4)
+                oData["DOWNGRADE_SUMQTY"] = copy.deepcopy(
+                    _gradeData[0]["DOWNGRADE_SUMQTY"])
+                oData["TOTAL_SUMQTY"] = copy.deepcopy(
+                    _gradeData[0]["TOTAL_SUMQTY"])
                 if oData["DOWNGRADE_SUMQTY"] == 0:
                     oData["TOTAL_YIELD"] = 1
-                else:                        
-                    oData["TOTAL_YIELD"] = 1 - round( oData["DOWNGRADE_SUMQTY"] / oData["TOTAL_SUMQTY"], 4)
-                oData["MSHIP"] = round(oData["GRADW_YIELD"] / oData["TOTAL_YIELD"], 4)
+                else:
+                    oData["TOTAL_YIELD"] = 1 - \
+                        round(oData["DOWNGRADE_SUMQTY"] /
+                              oData["TOTAL_SUMQTY"], 4)
+                oData["MSHIP"] = round(
+                    oData["GRADW_YIELD"] / oData["TOTAL_YIELD"], 4)
                 mshipData.append(copy.deepcopy(oData))
                 oData = {}
         return mshipData
 
     def _calMSHIPData(self, groupMSHIPData):
-        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]      
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         getLimitData = self.operSetData[tmpFACTORY_ID]["M-SHIP"]["limit"]
 
         GREEN_VALUE = 0
@@ -1010,7 +1217,7 @@ class INTKPI(BaseType):
         for x in groupMSHIPData:
             targrt = 0.90
             if x["APPLICATION"] in getLimitData.keys():
-                targrt = getLimitData[x["APPLICATION"]]["target"] 
+                targrt = getLimitData[x["APPLICATION"]]["target"]
 
             if x["MSHIP"] >= targrt:
                 GREEN_VALUE += 1
@@ -1021,6 +1228,243 @@ class INTKPI(BaseType):
 
         returnData = {
             "CLASS_TYPE": "M-SHIP",
+            "GREEN_VALUE": GREEN_VALUE,
+            "YELLOW_VALUE": YELLOW_VALUE,
+            "RED_VALUE": RED_VALUE
+        }
+
+        return returnData
+
+    def _getEFAData(self, OPERDATA, PRODDATA):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
+
+        OPERList = []
+        for x in OPERDATA:
+            OPERList.append(f'{x.get("OPER")}')
+
+        PRODList = []
+        for x in PRODDATA:
+            PRODList.append(x.get("PROD_NBR"))
+
+        EFA_Aggregate = [
+            {
+                "$match": {
+                    "COMPANY_CODE": tmpCOMPANY_CODE,
+                    "SITE": tmpSITE,
+                    "FACTORY_ID": tmpFACTORY_ID,
+                    "ACCT_DATE": tmpACCT_DATE,
+                    "MAIN_WC": {"$in": OPERList},
+                    "PROD_NBR": {"$in": PRODList }
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "deftCodeView",
+                            "as": "deftCodeList",
+                            "let": {
+                                "dfctCode": "$DFCT_CODE"
+                            },
+                    "pipeline": [
+                                {
+                                    "$match": {
+                                        "$expr": {
+                                            "$and": [
+                                                {
+                                                    "$eq": [
+                                                        "$$dfctCode",
+                                                        "$DEFECT_CODE"
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    }
+                                },
+                                {
+                                    "$project": {
+                                        "DEFECT_CODE": 1
+                                    }
+                                }
+                            ]
+                }
+            },
+            {
+                "$unwind": "$deftCodeList"
+            },
+            {
+                "$group": {
+                    "_id": {
+                        "APPLICATION" : "$APPLICATION",
+                        "PROD_NBR": "$PROD_NBR"
+                    },
+                    "deftQty": {
+                        "$sum": {"$toInt": "$QTY"}
+                    }
+                }
+            },
+            {
+                "$addFields": {
+                    "APPLICATION" : "$_id.APPLICATION",
+                    "PROD_NBR": "$_id.PROD_NBR",
+                    "deftQty": "$deftQty",
+                    "passQty": 0
+                }
+            },
+            {
+                "$project": {
+                    "_id": 0
+                }
+            },
+            {
+                "$unionWith": {
+                    "coll": "passHisAndCurrent",
+                            "pipeline": [
+                                {
+                                    "$match": {
+                                        "COMPANY_CODE": tmpCOMPANY_CODE,
+                                        "SITE": tmpSITE,
+                                        "FACTORY_ID": tmpFACTORY_ID,
+                                        "ACCT_DATE": tmpACCT_DATE,
+                                        "MAIN_WC": {"$in": OPERList},
+                                        "PROD_NBR": {"$in": PRODList }
+                                    }
+                                },
+                                {
+                                    "$group": {
+                                        "_id": {
+                                            "APPLICATION" : "$APPLICATION",
+                                            "PROD_NBR": "$PROD_NBR"
+                                        },
+                                        "passQty": {
+                                            "$sum": {
+                                                "$toInt": "$QTY"
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "$addFields": {
+                                        "APPLICATION" : "$_id.APPLICATION",
+                                        "PROD_NBR": "$_id.PROD_NBR",
+                                        "passQty": "$passQty",
+                                        "deftQty": 0
+                                    }
+                                },
+                                {
+                                    "$project": {
+                                        "_id": 0
+                                    }
+                                }
+                            ]
+                }
+            },
+            {
+                "$group": {
+                    "_id": {
+                        "APPLICATION" : "$APPLICATION",
+                        "PROD_NBR": "$PROD_NBR"
+                    },
+                    "deftQty": {
+                        "$sum": "$deftQty"
+                    },
+                    "passQty": {
+                        "$sum": "$passQty"
+                    }
+                }
+            },
+            {
+                "$addFields": {
+                    "APPLICATION" : "$_id.APPLICATION",
+                    "PROD_NBR": "$_id.PROD_NBR",
+                    "EFA": {
+                        "$cond": [
+                            {
+                                "$eq": [
+                                    "$passQty",
+                                    0
+                                ]
+                            },
+                            0,
+                            {
+                                "$divide": [
+                                    "$deftQty",
+                                    "$passQty"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "$project": {
+                    "_id": 0
+                }
+            },
+            {
+                "$sort": {
+                    "APPLICATION" : 1,
+                    "PROD_NBR": 1
+                }
+            }
+        ]
+
+        if tmpAPPLICATION != "ALL":
+            EFA_Aggregate[0]["$match"]["APPLICATION"] = tmpAPPLICATION
+            EFA_Aggregate[6]["$unionWith"]["pipeline"][0]["$match"]["APPLICATION"] = tmpAPPLICATION
+       
+        try:
+            self.getMongoConnection()
+            self.setMongoDb("IAMP")
+            self.setMongoCollection("deftHisAndCurrent")
+            returnData = self.aggregate(EFA_Aggregate)
+            self.closeMongoConncetion()
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+    def _groupEFAData(self, EFAData):
+        returnData = []
+        for x in EFAData:
+            returnData.append(x)
+        return returnData
+
+    def _calEFAData(self, EFAData):
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        getLimitData = self.operSetData[tmpFACTORY_ID]["EFA"]["limit"]
+
+        GREEN_VALUE = 0
+        YELLOW_VALUE = 0
+        RED_VALUE = 0
+
+        self.writeLog(EFAData)
+        for x in EFAData:            
+            self.writeLog(x)
+            targrt = 0.90
+            if x["APPLICATION"] in getLimitData.keys():
+                targrt = getLimitData[x["APPLICATION"]]["target"]
+
+            if x["EFA"] >= targrt:
+                GREEN_VALUE += 1
+            elif targrt > x["EFA"] >= (targrt-(targrt*0.01)):
+                YELLOW_VALUE += 1
+            elif (targrt-(targrt*0.01)) > x["EFA"]:
+                RED_VALUE += 1
+
+        returnData = {
+            "CLASS_TYPE": "EFA",
             "GREEN_VALUE": GREEN_VALUE,
             "YELLOW_VALUE": YELLOW_VALUE,
             "RED_VALUE": RED_VALUE
