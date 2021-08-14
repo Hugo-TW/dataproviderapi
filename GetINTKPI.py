@@ -472,7 +472,7 @@ class INTKPI(BaseType):
                 """
 
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
-
+           
             else:
                 return {'Result': 'Fail', 'Reason': 'Parametes[KPITYPE] not in Rule'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
@@ -1414,6 +1414,8 @@ class INTKPI(BaseType):
         if tmpAPPLICATION != "ALL":
             EFA_Aggregate[0]["$match"]["APPLICATION"] = tmpAPPLICATION
             EFA_Aggregate[6]["$unionWith"]["pipeline"][0]["$match"]["APPLICATION"] = tmpAPPLICATION
+
+        self.writeLog(EFA_Aggregate)
        
         try:
             self.getMongoConnection()
@@ -1442,32 +1444,42 @@ class INTKPI(BaseType):
         return returnData
 
     def _calEFAData(self, EFAData):
-        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
-        getLimitData = self.operSetData[tmpFACTORY_ID]["EFA"]["limit"]
+        deftData = []
+        for d in dData:
+            deftData.append(d)
+        passData = []
+        for p in pData:
+            passData.append(p)
+        data = []
+        oData = {}
+        for p in passData:
+            d = list(filter(lambda d: d["PROD_NBR"]
+                     == p["PROD_NBR"], deftData))
+            oData["COMPANY_CODE"] = copy.deepcopy(p["COMPANY_CODE"])
+            oData["SITE"] = copy.deepcopy(p["SITE"])
+            oData["FACTORY_ID"] = copy.deepcopy(p["FACTORY_ID"])
+            oData["PROD_NBR"] = copy.deepcopy(p["PROD_NBR"])
+            oData["ACCT_DATE"] = datetime.datetime.strptime(
+                p["ACCT_DATE"], '%Y%m%d').strftime('%Y-%m-%d')
+            if "APPLICATION" in p.keys():
+                oData["APPLICATION"] = copy.deepcopy(p["APPLICATION"])
+            else:
+                oData["APPLICATION"] = None
+            oData["PROD_NBR"] = copy.deepcopy(p["PROD_NBR"])
+            oData["OPER"] = copy.deepcopy(p["OPER"])
+            oData["PassSUMQty"] = copy.deepcopy(p["PassSUMQty"])
+            if d == []:
+                oData["DeftSUMQty"] = 0
+            else:
+                oData["DeftSUMQty"] = copy.deepcopy(d[0]["DeftSUMQty"])
+            if oData["DeftSUMQty"] == 0:
+                oData["DEFECT_RATE"] = 0
+            else:
+                oData["DEFECT_RATE"] = round(
+                    oData["DeftSUMQty"] / oData["PassSUMQty"], 4)
+            oData["FPY_RATE"] = round(1 - oData["DEFECT_RATE"], 4)
+            if oData["DeftSUMQty"] < oData["PassSUMQty"] and oData["FPY_RATE"] > 0:
+                data.append(copy.deepcopy(oData))
+            oData = {}
+        return data
 
-        GREEN_VALUE = 0
-        YELLOW_VALUE = 0
-        RED_VALUE = 0
-
-        self.writeLog(EFAData)
-        for x in EFAData:            
-            self.writeLog(x)
-            targrt = 0.90
-            if x["APPLICATION"] in getLimitData.keys():
-                targrt = getLimitData[x["APPLICATION"]]["target"]
-
-            if x["EFA"] >= targrt:
-                GREEN_VALUE += 1
-            elif targrt > x["EFA"] >= (targrt-(targrt*0.01)):
-                YELLOW_VALUE += 1
-            elif (targrt-(targrt*0.01)) > x["EFA"]:
-                RED_VALUE += 1
-
-        returnData = {
-            "CLASS_TYPE": "EFA",
-            "GREEN_VALUE": GREEN_VALUE,
-            "YELLOW_VALUE": YELLOW_VALUE,
-            "RED_VALUE": RED_VALUE
-        }
-
-        return returnData

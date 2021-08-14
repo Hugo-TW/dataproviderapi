@@ -32,6 +32,7 @@ from GetEQOFRHrs import EQOFRHrs
 from GetEQOFRHrsDetails import EQOFRHrsDetails
 from GetFactoryOFRHrsDetail import OFRHrsDetail
 #---------------------------------------------
+from GetINTFPYLV2 import INTFPYLV2
 from GetINTKPI import INTKPI
 from GetOeeDetails import OeeDetials
 from GetOee import Oee
@@ -1834,7 +1835,8 @@ INTKPIML = api.model('GetINTKPI', {
     'FACTORY_ID': fields.String( required = True, description = 'FACTORY_ID', default = 'J001', example = 'J001'),
     'APPLICATION': fields.String( required = True, description = 'APPLICATION', default = 'ALL', example = 'CE'),
     'KPITYPE': fields.String( required = True, description = 'KPITYPE', default = 'FPY', example = 'FPY'),
-    'ACCT_DATE': fields.String( required = True, description = 'ACCT_DATE', default = '20210801', example = '20210801')
+    'ACCT_DATE': fields.String( required = True, description = 'ACCT_DATE', default = '20210801', example = '20210801'),
+    'PROD_NBR' : fields.String( required = False, description = '機種編碼', default = 'GP062CCAC100S', example = 'GP062CCAC100S') 
 })
 @INTKPINs.route('', methods = ['POST'])
 @INTKPINs.response(200, 'Sucess')
@@ -1862,6 +1864,44 @@ class getINTKPI(Resource):
             return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
         
         v = INTKPI(jsonData)
+        return v.getData()
+
+INTFPYLV2Ns = api.namespace('GetINTFPYLV2', description = 'INTFPYLV2')
+INTFPYLV2ML = api.model('GetINTFPYLV2', {
+    'COMPANY_CODE': fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+    'SITE': fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+    'FACTORY_ID': fields.String( required = True, description = 'FACTORY_ID', default = 'J001', example = 'J001'),
+    'APPLICATION': fields.String( required = True, description = 'APPLICATION', default = 'ALL', example = 'ALL'),
+    'KPITYPE': fields.String( required = True, description = 'KPITYPE', default = 'FPYLV2PIE', example = 'FPYLV2PIE'),
+    'ACCT_DATE': fields.String( required = True, description = 'ACCT_DATE', default = '20210801', example = '20210801'),
+    'PROD_NBR' : fields.String( required = True, description = '機種編碼', default = 'GP062CCAC100S', example = 'GP062CCAC100S') 
+})
+@INTFPYLV2Ns.route('', methods = ['POST'])
+@INTFPYLV2Ns.response(200, 'Sucess')
+@INTFPYLV2Ns.response(201, 'Created Sucess')
+@INTFPYLV2Ns.response(204, 'No Content')
+@INTFPYLV2Ns.response(400, 'Bad Request')
+@INTFPYLV2Ns.response(401, 'Unauthorized')
+@INTFPYLV2Ns.response(403, 'Forbidden')
+@INTFPYLV2Ns.response(404, 'Not Found')
+@INTFPYLV2Ns.response(405, 'Method Not Allowed')
+@INTFPYLV2Ns.response(409, 'Conflict')
+@INTFPYLV2Ns.response(500, 'Internal Server Error')
+class getINTKPI(Resource):
+    @INTFPYLV2Ns.doc('INTFPYLV2')
+    @INTFPYLV2Ns.expect(INTFPYLV2ML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+           return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+
+        jsonData = BaseType.validateType(request.json)
+        
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData or "KPITYPE" not in jsonData or "ACCT_DATE" not in jsonData:
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        
+        v = INTFPYLV2(jsonData)
         return v.getData()
 
 if __name__ == '__main__':
