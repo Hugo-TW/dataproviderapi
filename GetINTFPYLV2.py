@@ -400,11 +400,12 @@ class INTFPYLV2(BaseType):
         for x in tempData:
             if x != None:
                 DATASERIES.append({
-                    "name": x["OPER"],
-                    "y": round(x["DeftSUMQty"] / TotalDeftSUMQty , 2) if TotalDeftSUMQty !=0 else 0,
-                    "color": None,
-                    "select": None,
-                    "sliced": None
+                    "OPER": x["OPER"],
+                    "VALUE": round(x["DeftSUMQty"] / TotalDeftSUMQty , 2) if TotalDeftSUMQty !=0 else 0,
+                    "COLOR": None,
+                    "SELECT": None,
+                    "SLICED": None,
+                    "DeftSUMQty": x["DeftSUMQty"]
                 })
 
         returnData = {                    
