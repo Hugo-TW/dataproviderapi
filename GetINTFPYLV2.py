@@ -187,6 +187,7 @@ class INTFPYLV2(BaseType):
             tmp.append(tmpAPPLICATION)
             tmp.append(tmpKPITYPE)
             tmp.append(tmpACCT_DATE)
+            tmp.append(tmpPROD_NBR)
             redisKey = bottomLine.join(tmp)
             expirTimeKey = tmpFACTORY_ID + '_DEFT'
 
