@@ -404,13 +404,21 @@ class INTFPYLV2(BaseType):
                 tmpAPPLICATION = x["APPLICATION"]
                 TotalDeftSUMQty += x["DeftSUMQty"]
         
+        colorMap = {
+            "PCBI": {"colorName": "red", "HEX":"#ef476f"},
+            "LAM": {"colorName": "yellow", "HEX":"#ffd166"},
+            "AAFC": {"colorName": "green", "HEX":"#06d6a0"},
+            "CKEN": {"colorName": "blue", "HEX":"#118AB2"},
+            "DKEN": {"colorName": "midGreen", "HEX":"#073b4c"}
+        }
+
         DATASERIES = []
         for x in tempData:
             if x != None:
                 DATASERIES.append({
                     "OPER": x["OPER"],
                     "VALUE": round(x["DeftSUMQty"] / TotalDeftSUMQty , 2) if TotalDeftSUMQty !=0 else 0,
-                    "COLOR": None,
+                    "COLOR": colorMap[x["OPER"]]["HEX"] if x["OPER"] in colorMap.keys() else None,
                     "SELECT": None,
                     "SLICED": None,
                     "DeftSUMQty": x["DeftSUMQty"]
