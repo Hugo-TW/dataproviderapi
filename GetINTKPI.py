@@ -890,12 +890,31 @@ class INTKPI(BaseType):
                 QTYLimit = getLimitData[x["APPLICATION"]]["qytlim"]
                 FPYLimit = getLimitData[x["APPLICATION"]]["FPY"]
 
+            if x["FPY"] >= FPYLimit:
+                COLOR = "#06d6a0"
+                SYMBOL = "undefined"
+            elif FPYLimit > x["FPY"] >= (FPYLimit-(FPYLimit*0.01)):
+                COLOR = "#ffd166"
+                SYMBOL = "undefined"
+            elif (FPYLimit-(FPYLimit*0.01)) > x["FPY"]:
+                COLOR = "#EF476F" 
+                SYMBOL = "twinkle"
+
+            # red ef476f
+            #yellow ffd166
+            #green 06d6a0
+            #blue 118AB2
+            
+
+            """
             if FPYLimit > x["FPY"] and x["AvegPASSQTY"] > QTYLimit:
                 COLOR = "#EF476F"
                 SYMBOL = "twinkle"
             else:
                 COLOR = "#118AB2"
                 SYMBOL = "undefined"
+            """
+                
             DATASERIES.append({
                 "APPLICATION": x["APPLICATION"],
                 "PROD_NBR": x["PROD_NBR"],
@@ -1414,8 +1433,6 @@ class INTKPI(BaseType):
         if tmpAPPLICATION != "ALL":
             EFA_Aggregate[0]["$match"]["APPLICATION"] = tmpAPPLICATION
             EFA_Aggregate[6]["$unionWith"]["pipeline"][0]["$match"]["APPLICATION"] = tmpAPPLICATION
-
-        self.writeLog(EFA_Aggregate)
        
         try:
             self.getMongoConnection()
@@ -1451,8 +1468,7 @@ class INTKPI(BaseType):
         YELLOW_VALUE = 0
         RED_VALUE = 0
 
-        for x in EFAData:            
-            self.writeLog(x)
+        for x in EFAData:    
             targrt = 0.90
             if x["APPLICATION"] in getLimitData.keys():
                 targrt = getLimitData[x["APPLICATION"]]["target"]
