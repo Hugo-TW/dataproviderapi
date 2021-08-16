@@ -1835,9 +1835,8 @@ INTKPIML = api.model('GetINTKPI', {
     'FACTORY_ID': fields.String( required = True, description = 'FACTORY_ID', default = 'J001', example = 'J001'),
     'APPLICATION': fields.String( required = True, description = 'APPLICATION', default = 'ALL', example = 'CE'),
     'KPITYPE': fields.String( required = True, description = 'KPITYPE', default = 'FPY', example = 'FPY'),
-    'ACCT_DATE': fields.String( required = True, description = 'ACCT_DATE', default = '20210801', example = '20210801'),
-    'PROD_NBR' : fields.String( required = False, description = '機種編碼', default = 'GP062CCAC100S', example = 'GP062CCAC100S') 
-})
+    'ACCT_DATE': fields.String( required = True, description = 'ACCT_DATE', default = '20210801', example = '20210801')
+    })
 @INTKPINs.route('', methods = ['POST'])
 @INTKPINs.response(200, 'Sucess')
 @INTKPINs.response(201, 'Created Sucess')
