@@ -18,14 +18,14 @@ class INTFPYLV2(BaseType):
         #J001 => MOD2
         #J003 => MOD3
         self.operSetData = {
-            "J001": {
+            "M011": {
                 "FPY": {
                     "limit": {
-                        "CE": {"qytlim": 3000, "FPY": 0.95},
-                        "TABLET": {"qytlim": 3000, "FPY": 0.90},
-                        "NB": {"qytlim": 3000, "FPY": 0.94},
-                        "TV": {"qytlim": 3000, "FPY": 0.90},
-                        "AA": {"qytlim": 3000, "FPY": 0.95}
+                        "CE": {"qytlim": 1000, "FPY": 0.94},
+                        "TABLET": {"qytlim": 1000, "FPY": 0.89},
+                        "NB": {"qytlim": 1000, "FPY": 0.93},
+                        "TV": {"qytlim": 1000, "FPY": 0.90},
+                        "AA": {"qytlim": 1000, "FPY": 0.95}
                     },
                     "numerator": {  # 分子
                         "PCBI": {"fromt": 1050, "tot": 1310},
@@ -44,11 +44,11 @@ class INTFPYLV2(BaseType):
                 },
                 "M-SHIP": {
                     "limit": {
-                        "CE": {"qytlim": 3000, "target": 0.97},
-                        "TABLET": {"qytlim": 3000, "target": 0.955},
-                        "NB": {"qytlim": 3000, "target": 0.96},
-                        "TV": {"qytlim": 3000, "target": 0.90},
-                        "AA": {"qytlim": 3000, "target": 0.95}
+                        "CE": {"qytlim": 1000, "target": 0.97},
+                        "TABLET": {"qytlim": 1000, "target": 0.955},
+                        "NB": {"qytlim": 1000, "target": 0.96},
+                        "TV": {"qytlim": 1000, "target": 0.90},
+                        "AA": {"qytlim": 1000, "target": 0.95}
                     },
                     "numerator": {},
                     "denominator": {}
@@ -58,8 +58,55 @@ class INTFPYLV2(BaseType):
                         "CE": {"qytlim": 1000, "target": 0.003},
                         "TABLET": {"qytlim": 1000, "target": 0.003},
                         "NB": {"qytlim": 1000, "target": 0.003},
-                        "TV": {"qytlim": 3000, "target": 0.003},
-                        "AA": {"qytlim": 3000, "target": 0.003}
+                        "TV": {"qytlim": 1000, "target": 0.003},
+                        "AA": {"qytlim": 1000, "target": 0.003}
+                    },
+                    "numerator": {},
+                    "denominator": {}
+                }
+            },
+            "J001": {
+                "FPY": {
+                    "limit": {
+                        "CE": {"qytlim": 1000, "FPY": 0.94},
+                        "TABLET": {"qytlim": 1000, "FPY": 0.89},
+                        "NB": {"qytlim": 1000, "FPY": 0.93},
+                        "TV": {"qytlim": 1000, "FPY": 0.90},
+                        "AA": {"qytlim": 1000, "FPY": 0.95}
+                    },
+                    "numerator": {  # 分子
+                        "PCBI": {"fromt": 1050, "tot": 1310},
+                        "LAM": {"fromt": 1340, "tot": 1399},
+                        "AAFC": {"fromt": 1400, "tot": 1499},
+                        "CKEN": {"fromt": 1500, "tot": 1699},
+                        "DKEN": {"fromt": 1700, "tot": 1799}
+                    },
+                    "denominator": {  # 分母
+                        "PCBI": [1300, 1301],
+                        "LAM": [1355],
+                        "AAFC": [1420],
+                        "CKEN": [1600],
+                        "DKEN": [1600]
+                    }
+                },
+                "M-SHIP": {
+                    "limit": {
+                        "CE": {"qytlim": 1000, "target": 0.97},
+                        "TABLET": {"qytlim": 1000, "target": 0.955},
+                        "NB": {"qytlim": 1000, "target": 0.96},
+                        "TV": {"qytlim": 1000, "target": 0.90},
+                        "AA": {"qytlim": 1000, "target": 0.95}
+                    },
+                    "numerator": {},
+                    "denominator": {}
+                },
+                "EFA": {
+                    "limit": {
+                        "CE": {"qytlim": 1000, "target": 0.003},
+                        "TABLET": {"qytlim": 1000, "target": 0.003},
+                        "NB": {"qytlim": 1000, "target": 0.003},
+                        "TV": {"qytlim": 1000, "target": 0.003},
+                        "AA": {"qytlim": 1000, "target": 0.003}
                     },
                     "numerator": {},
                     "denominator": {}
@@ -68,11 +115,11 @@ class INTFPYLV2(BaseType):
             "J003": {
                 "FPY": {
                     "limit": {
-                        "CE": {"qytlim": 3000, "FPY": 0.95},
-                        "TABLET": {"qytlim": 3000, "FPY": 0.90},
-                        "NB": {"qytlim": 3000, "FPY": 0.94},
-                        "TV": {"qytlim": 3000, "FPY": 0.90},
-                        "AA": {"qytlim": 3000, "FPY": 0.95}
+                        "CE": {"qytlim": 1000, "FPY": 0.94},
+                        "TABLET": {"qytlim": 1000, "FPY": 0.89},
+                        "NB": {"qytlim": 1000, "FPY": 0.93},
+                        "TV": {"qytlim": 1000, "FPY": 0.90},
+                        "AA": {"qytlim": 1000, "FPY": 0.95}
                     },
                     "numerator": {  # 分子
                         "PCBI": {"fromt": 1050, "tot": 1310},
@@ -91,11 +138,11 @@ class INTFPYLV2(BaseType):
                 },
                 "M-SHIP": {
                     "limit": {
-                        "CE": {"qytlim": 3000, "target": 0.97},
-                        "TABLET": {"qytlim": 3000, "target": 0.955},
-                        "NB": {"qytlim": 3000, "target": 0.96},
-                        "TV": {"qytlim": 3000, "target": 0.90},
-                        "AA": {"qytlim": 3000, "target": 0.95}
+                        "CE": {"qytlim": 1000, "target": 0.97},
+                        "TABLET": {"qytlim": 1000, "target": 0.955},
+                        "NB": {"qytlim": 1000, "target": 0.96},
+                        "TV": {"qytlim": 1000, "target": 0.90},
+                        "AA": {"qytlim": 1000, "target": 0.95}
                     },
                     "numerator": {},
                     "denominator": {}
@@ -105,55 +152,8 @@ class INTFPYLV2(BaseType):
                         "CE": {"qytlim": 1000, "target": 0.003},
                         "TABLET": {"qytlim": 1000, "target": 0.003},
                         "NB": {"qytlim": 1000, "target": 0.003},
-                        "TV": {"qytlim": 3000, "target": 0.003},
-                        "AA": {"qytlim": 3000, "target": 0.003}
-                    },
-                    "numerator": {},
-                    "denominator": {}
-                }
-            },
-            "M011": {
-                "FPY": {
-                    "limit": {
-                        "CE": {"qytlim": 3000, "FPY": 0.95},
-                        "TABLET": {"qytlim": 3000, "FPY": 0.90},
-                        "NB": {"qytlim": 3000, "FPY": 0.94},
-                        "TV": {"qytlim": 3000, "FPY": 0.90},
-                        "AA": {"qytlim": 3000, "FPY": 0.95}
-                    },
-                    "numerator": {  # 分子
-                        "PCBI": {"fromt": 1050, "tot": 1310},
-                        "LAM": {"fromt": 1340, "tot": 1399},
-                        "AAFC": {"fromt": 1400, "tot": 1499},
-                        "CKEN": {"fromt": 1500, "tot": 1699},
-                        "DKEN": {"fromt": 1700, "tot": 1799}
-                    },
-                    "denominator": {  # 分母
-                        "PCBI": [1300, 1301],
-                        "LAM": [1355],
-                        "AAFC": [1420],
-                        "CKEN": [1600],
-                        "DKEN": [1600]
-                    }
-                },
-                "M-SHIP": {
-                    "limit": {
-                        "CE": {"qytlim": 3000, "target": 0.97},
-                        "TABLET": {"qytlim": 3000, "target": 0.955},
-                        "NB": {"qytlim": 3000, "target": 0.96},
-                        "TV": {"qytlim": 3000, "target": 0.90},
-                        "AA": {"qytlim": 3000, "target": 0.95}
-                    },
-                    "numerator": {},
-                    "denominator": {}
-                },
-                "EFA": {
-                    "limit": {
-                        "CE": {"qytlim": 1000, "target": 0.003},
-                        "TABLET": {"qytlim": 1000, "target": 0.003},
-                        "NB": {"qytlim": 1000, "target": 0.003},
-                        "TV": {"qytlim": 3000, "target": 0.003},
-                        "AA": {"qytlim": 3000, "target": 0.003}
+                        "TV": {"qytlim": 1000, "target": 0.003},
+                        "AA": {"qytlim": 1000, "target": 0.003}
                     },
                     "numerator": {},
                     "denominator": {}
@@ -199,7 +199,8 @@ class INTFPYLV2(BaseType):
             if self.searchRedisKeys(redisKey):
                 self.writeLog(f"Cache Data From Redis")
                 return json.loads(self.getRedisData(redisKey)), 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type', "Access-Control-Expose-Headers": "Expires,DataSource", "Expires": time.mktime((datetime.datetime.now() + datetime.timedelta(seconds=self.getKeyExpirTime(expirTimeKey))).timetuple()), "DataSource": "Redis"}
-           
+            
+
             if tmpKPITYPE == "FPYLV2PIE":
                 PCBIData = self._getFPYLV2PIEData("PCBI", tmpPROD_NBR)
                 PCBIResult = self._groupFPYLV2PIEOPER(PCBIData)
@@ -222,6 +223,28 @@ class INTFPYLV2(BaseType):
                     self.setRedisData(redisKey, json.dumps(
                         returnData, sort_keys=True, indent=2), 60)
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+
+            if tmpKPITYPE == "FPYLV2HISTO":
+                PCBIData = self._getFPYLV2PIEData("PCBI", tmpPROD_NBR)
+                LAMData = self._getFPYLV2PIEData("LAM", tmpPROD_NBR) 
+                AAFCData = self._getFPYLV2PIEData("AAFC", tmpPROD_NBR)
+                CKENData = self._getFPYLV2PIEData("CKEN", tmpPROD_NBR)
+                DKENData = self._getFPYLV2PIEData("DKEN", tmpPROD_NBR)
+
+                tempData = self._groupFPYLV2HISTOOPER(PCBIData, LAMData, AAFCData, CKENData, DKENData)
+
+                returnData = self._calFPYLV2HISTOOPER(tempData)
+                
+                self.getRedisConnection()
+                if self.searchRedisKeys(redisKey):     
+                    self.setRedisData(redisKey, json.dumps(
+                        returnData, sort_keys=True, indent=2), self.getKeyExpirTime(expirTimeKey))
+                else:
+                    self.setRedisData(redisKey, json.dumps(
+                        returnData, sort_keys=True, indent=2), 60)
+                        
+                return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+
 
             else:
                 return {'Result': 'Fail', 'Reason': 'Parametes[KPITYPE] not in Rule'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
@@ -257,7 +280,7 @@ class INTFPYLV2(BaseType):
                 "FACTORY_ID": tmpFACTORY_ID,
                 "ACCT_DATE": tmpACCT_DATE,
                 "LCM_OWNER": {"$in": ["LCM0", "LCME", "PROD", "QTAP", "RES0"]},
-                "PROD_NBR": PROD_NBR
+                "PROD_NBR": PROD_NBR,
             }
         }
         deftGroup1 = {
@@ -270,7 +293,8 @@ class INTFPYLV2(BaseType):
                     "ACCT_DATE": "$ACCT_DATE",
                     "APPLICATION": "$APPLICATION",
                     "MAIN_WC": {"$toInt": "$MAIN_WC"},                 
-                    "DFCT_CODE" : "$DFCT_CODE"
+                    "DFCT_CODE" : "$DFCT_CODE",
+                    "ERRC_DESCR" : "$ERRC_DESCR"
                 },
                 "DEFT_QTY": {
                     "$sum": {"$toInt": "$QTY"}
@@ -287,12 +311,13 @@ class INTFPYLV2(BaseType):
                 "ACCT_DATE": "$_id.ACCT_DATE",
                 "APPLICATION": "$_id.APPLICATION",
                 "MAIN_WC": "$_id.MAIN_WC",
-                "DFCT_CODE" : "$_id.DFCT_CODE",
+                "DFCT_CODE" : "$_id.DFCT_CODE",                
+                "ERRC_DESCR" : "$_id.ERRC_DESCR",
                 "DEFT_QTY": "$DEFT_QTY"
             }
         }
         deftMatch2 = {
-            "$match": {"MAIN_WC": {'$gt': numeratorData["fromt"], '$lt': numeratorData["tot"]}}
+            "$match": {"MAIN_WC": {'$gte': numeratorData["fromt"], '$lte': numeratorData["tot"]}}
         }
         deftGroup2 = {
             "$group": {
@@ -303,7 +328,8 @@ class INTFPYLV2(BaseType):
                     "PROD_NBR": "$PROD_NBR",
                     "ACCT_DATE": "$ACCT_DATE",
                     "APPLICATION": "$APPLICATION",
-                    "DFCT_CODE" : "$DFCT_CODE"
+                    "DFCT_CODE" : "$DFCT_CODE",
+                    "ERRC_DESCR" : "$ERRC_DESCR"
                 },
                 "DeftSUMQty": {
                     "$sum": {"$toInt": "$DEFT_QTY"}
@@ -321,6 +347,7 @@ class INTFPYLV2(BaseType):
                 "APPLICATION": "$_id.APPLICATION",
                 "OPER": OPER,                
                 "DFCT_CODE" : "$_id.DFCT_CODE",
+                "ERRC_DESCR" : "$_id.ERRC_DESCR",
                 "DeftSUMQty": "$DeftSUMQty"
             }
         }
@@ -332,10 +359,10 @@ class INTFPYLV2(BaseType):
                 "PROD_NBR": 1,
                 "ACCT_DATE": 1,
                 "APPLICATION": 1,
-                "DFCT_CODE" : 1
+                "DFCT_CODE" : 1,
+                "ERRC_DESCR" : 1
             }
         }
-
         deftAggregate.extend([deftMatch1, deftGroup1, deftProject1,
                              deftMatch2, deftGroup2, deftProject2, deftSort])
         
@@ -370,7 +397,7 @@ class INTFPYLV2(BaseType):
         if deftData != []:  
             deftSUM = 0
             for p in deftData:            
-                deftSUM += d["DeftSUMQty"]
+                deftSUM += p["DeftSUMQty"]
             p = deftData[0]
             data = {
                 "COMPANY_CODE": p["COMPANY_CODE"],
@@ -423,6 +450,72 @@ class INTFPYLV2(BaseType):
                     "SLICED": None,
                     "DeftSUMQty": x["DeftSUMQty"]
                 })
+
+        returnData = {                    
+                    "KPITYPE": tmpKPITYPE,
+                    "COMPANY_CODE": tmpCOMPANY_CODE,
+                    "SITE": tmpSITE,
+                    "FACTORY_ID": tmpFACTORY_ID,
+                    "APPLICATION": tmpAPPLICATION,
+                    "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
+                    "PROD_NBR": tmpPROD_NBR,
+                    "DATASERIES": DATASERIES
+                }
+
+        return returnData
+
+    def _groupFPYLV2HISTOOPER(self, PCBI, LAM, AAFC, CKEN, DKEN): 
+        deftData = []            
+        for d in PCBI:       
+            deftData.append(d) 
+        for d in LAM:       
+            deftData.append(d) 
+        for d in AAFC:       
+            deftData.append(d) 
+        for d in CKEN:       
+            deftData.append(d) 
+        for d in DKEN:       
+            deftData.append(d) 
+
+        return deftData
+
+    def _calFPYLV2HISTOOPER(self, tempData):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]        
+        tmpAPPLICATION =self.jsonData["APPLICATION"]
+        tmpKPITYPE = self.jsonData["KPITYPE"]
+        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        tmpPROD_NBR = self.jsonData["PROD_NBR"]
+
+        allDFCTCount = {}
+        for x in tempData:     
+            if x["DFCT_CODE"] in allDFCTCount.keys():
+                allDFCTCount[x["DFCT_CODE"]] += x["DeftSUMQty"]
+            else:
+                allDFCTCount[x["DFCT_CODE"]] = x["DeftSUMQty"]
+        top10 = dict(sorted(allDFCTCount.items(),key=lambda item:item[1],reverse=True) [:10])
+               
+        operMap = {"PCBI":0,"LAM":1,"AAFC":2,"CKEN":3,"DKEN":4}
+
+        DATASERIES = []
+        for x in tempData:  
+            cDFct = x["DFCT_CODE"]  if x["DFCT_CODE"] in top10.keys() else "OTHER"
+            cERRC = x["ERRC_DESCR"] if x["DFCT_CODE"] in top10.keys() else "OTHER"   
+
+            d = list(filter(lambda d: d["DFCT_CODE"] == cDFct and d["OPER"] == x["OPER"], DATASERIES))
+            if d == []:
+                DATASERIES.append({
+                        "OPER": x["OPER"],
+                        "XVALUE": operMap.get(x["OPER"], None),
+                        "YVALUE": x["DeftSUMQty"],
+                        "DFCT_CODE" : cDFct,
+                        "ERRC_DESCR" : cERRC
+                    })
+            else:
+                for cx in DATASERIES:
+                    if cx["OPER"] == x["OPER"] and cx["DFCT_CODE"] == cDFct :
+                       cx["YVALUE"] += x["DeftSUMQty"]
 
         returnData = {                    
                     "KPITYPE": tmpKPITYPE,

@@ -19,14 +19,14 @@ class INTKPI(BaseType):
         #J001 => MOD2
         #J003 => MOD3
         self.operSetData = {
-            "J001": {
+            "M011": {
                 "FPY": {
                     "limit": {
-                        "CE": {"qytlim": 3000, "FPY": 0.95},
-                        "TABLET": {"qytlim": 3000, "FPY": 0.90},
-                        "NB": {"qytlim": 3000, "FPY": 0.94},
-                        "TV": {"qytlim": 3000, "FPY": 0.90},
-                        "AA": {"qytlim": 3000, "FPY": 0.95}
+                        "CE": {"qytlim": 1000, "FPY": 0.94},
+                        "TABLET": {"qytlim": 1000, "FPY": 0.89},
+                        "NB": {"qytlim": 1000, "FPY": 0.93},
+                        "TV": {"qytlim": 1000, "FPY": 0.90},
+                        "AA": {"qytlim": 1000, "FPY": 0.95}
                     },
                     "numerator": {  # 分子
                         "PCBI": {"fromt": 1050, "tot": 1310},
@@ -45,11 +45,11 @@ class INTKPI(BaseType):
                 },
                 "M-SHIP": {
                     "limit": {
-                        "CE": {"qytlim": 3000, "target": 0.97},
-                        "TABLET": {"qytlim": 3000, "target": 0.955},
-                        "NB": {"qytlim": 3000, "target": 0.96},
-                        "TV": {"qytlim": 3000, "target": 0.90},
-                        "AA": {"qytlim": 3000, "target": 0.95}
+                        "CE": {"qytlim": 1000, "target": 0.97},
+                        "TABLET": {"qytlim": 1000, "target": 0.955},
+                        "NB": {"qytlim": 1000, "target": 0.96},
+                        "TV": {"qytlim": 1000, "target": 0.90},
+                        "AA": {"qytlim": 1000, "target": 0.95}
                     },
                     "numerator": {},
                     "denominator": {}
@@ -59,8 +59,55 @@ class INTKPI(BaseType):
                         "CE": {"qytlim": 1000, "target": 0.003},
                         "TABLET": {"qytlim": 1000, "target": 0.003},
                         "NB": {"qytlim": 1000, "target": 0.003},
-                        "TV": {"qytlim": 3000, "target": 0.003},
-                        "AA": {"qytlim": 3000, "target": 0.003}
+                        "TV": {"qytlim": 1000, "target": 0.003},
+                        "AA": {"qytlim": 1000, "target": 0.003}
+                    },
+                    "numerator": {},
+                    "denominator": {}
+                }
+            },
+            "J001": {
+                "FPY": {
+                    "limit": {
+                        "CE": {"qytlim": 1000, "FPY": 0.94},
+                        "TABLET": {"qytlim": 1000, "FPY": 0.89},
+                        "NB": {"qytlim": 1000, "FPY": 0.93},
+                        "TV": {"qytlim": 1000, "FPY": 0.90},
+                        "AA": {"qytlim": 1000, "FPY": 0.95}
+                    },
+                    "numerator": {  # 分子
+                        "PCBI": {"fromt": 1050, "tot": 1310},
+                        "LAM": {"fromt": 1340, "tot": 1399},
+                        "AAFC": {"fromt": 1400, "tot": 1499},
+                        "CKEN": {"fromt": 1500, "tot": 1699},
+                        "DKEN": {"fromt": 1700, "tot": 1799}
+                    },
+                    "denominator": {  # 分母
+                        "PCBI": [1300, 1301],
+                        "LAM": [1355],
+                        "AAFC": [1420],
+                        "CKEN": [1600],
+                        "DKEN": [1600]
+                    }
+                },
+                "M-SHIP": {
+                    "limit": {
+                        "CE": {"qytlim": 1000, "target": 0.97},
+                        "TABLET": {"qytlim": 1000, "target": 0.955},
+                        "NB": {"qytlim": 1000, "target": 0.96},
+                        "TV": {"qytlim": 1000, "target": 0.90},
+                        "AA": {"qytlim": 1000, "target": 0.95}
+                    },
+                    "numerator": {},
+                    "denominator": {}
+                },
+                "EFA": {
+                    "limit": {
+                        "CE": {"qytlim": 1000, "target": 0.003},
+                        "TABLET": {"qytlim": 1000, "target": 0.003},
+                        "NB": {"qytlim": 1000, "target": 0.003},
+                        "TV": {"qytlim": 1000, "target": 0.003},
+                        "AA": {"qytlim": 1000, "target": 0.003}
                     },
                     "numerator": {},
                     "denominator": {}
@@ -69,11 +116,11 @@ class INTKPI(BaseType):
             "J003": {
                 "FPY": {
                     "limit": {
-                        "CE": {"qytlim": 3000, "FPY": 0.95},
-                        "TABLET": {"qytlim": 3000, "FPY": 0.90},
-                        "NB": {"qytlim": 3000, "FPY": 0.94},
-                        "TV": {"qytlim": 3000, "FPY": 0.90},
-                        "AA": {"qytlim": 3000, "FPY": 0.95}
+                        "CE": {"qytlim": 1000, "FPY": 0.94},
+                        "TABLET": {"qytlim": 1000, "FPY": 0.89},
+                        "NB": {"qytlim": 1000, "FPY": 0.93},
+                        "TV": {"qytlim": 1000, "FPY": 0.90},
+                        "AA": {"qytlim": 1000, "FPY": 0.95}
                     },
                     "numerator": {  # 分子
                         "PCBI": {"fromt": 1050, "tot": 1310},
@@ -92,11 +139,11 @@ class INTKPI(BaseType):
                 },
                 "M-SHIP": {
                     "limit": {
-                        "CE": {"qytlim": 3000, "target": 0.97},
-                        "TABLET": {"qytlim": 3000, "target": 0.955},
-                        "NB": {"qytlim": 3000, "target": 0.96},
-                        "TV": {"qytlim": 3000, "target": 0.90},
-                        "AA": {"qytlim": 3000, "target": 0.95}
+                        "CE": {"qytlim": 1000, "target": 0.97},
+                        "TABLET": {"qytlim": 1000, "target": 0.955},
+                        "NB": {"qytlim": 1000, "target": 0.96},
+                        "TV": {"qytlim": 1000, "target": 0.90},
+                        "AA": {"qytlim": 1000, "target": 0.95}
                     },
                     "numerator": {},
                     "denominator": {}
@@ -106,55 +153,8 @@ class INTKPI(BaseType):
                         "CE": {"qytlim": 1000, "target": 0.003},
                         "TABLET": {"qytlim": 1000, "target": 0.003},
                         "NB": {"qytlim": 1000, "target": 0.003},
-                        "TV": {"qytlim": 3000, "target": 0.003},
-                        "AA": {"qytlim": 3000, "target": 0.003}
-                    },
-                    "numerator": {},
-                    "denominator": {}
-                }
-            },
-            "M011": {
-                "FPY": {
-                    "limit": {
-                        "CE": {"qytlim": 3000, "FPY": 0.95},
-                        "TABLET": {"qytlim": 3000, "FPY": 0.90},
-                        "NB": {"qytlim": 3000, "FPY": 0.94},
-                        "TV": {"qytlim": 3000, "FPY": 0.90},
-                        "AA": {"qytlim": 3000, "FPY": 0.95}
-                    },
-                    "numerator": {  # 分子
-                        "PCBI": {"fromt": 1050, "tot": 1310},
-                        "LAM": {"fromt": 1340, "tot": 1399},
-                        "AAFC": {"fromt": 1400, "tot": 1499},
-                        "CKEN": {"fromt": 1500, "tot": 1699},
-                        "DKEN": {"fromt": 1700, "tot": 1799}
-                    },
-                    "denominator": {  # 分母
-                        "PCBI": [1300, 1301],
-                        "LAM": [1355],
-                        "AAFC": [1420],
-                        "CKEN": [1600],
-                        "DKEN": [1600]
-                    }
-                },
-                "M-SHIP": {
-                    "limit": {
-                        "CE": {"qytlim": 3000, "target": 0.97},
-                        "TABLET": {"qytlim": 3000, "target": 0.955},
-                        "NB": {"qytlim": 3000, "target": 0.96},
-                        "TV": {"qytlim": 3000, "target": 0.90},
-                        "AA": {"qytlim": 3000, "target": 0.95}
-                    },
-                    "numerator": {},
-                    "denominator": {}
-                },
-                "EFA": {
-                    "limit": {
-                        "CE": {"qytlim": 1000, "target": 0.003},
-                        "TABLET": {"qytlim": 1000, "target": 0.003},
-                        "NB": {"qytlim": 1000, "target": 0.003},
-                        "TV": {"qytlim": 3000, "target": 0.003},
-                        "AA": {"qytlim": 3000, "target": 0.003}
+                        "TV": {"qytlim": 1000, "target": 0.003},
+                        "AA": {"qytlim": 1000, "target": 0.003}
                     },
                     "numerator": {},
                     "denominator": {}
@@ -216,7 +216,7 @@ class INTKPI(BaseType):
                 DKENResult = self._groupPassDeftByPRODandOPER(
                     DKENData["dData"], DKENData["pData"])
 
-                PRODFPYBaseData = self._calPRODFPYBaseData(
+                PRODFPYBaseData = self._groupPRODFPYBaseData(
                     PCBIResult, LAMResult, AAFCResult, CKENResult, DKENResult)
                 returnData = self._calFPYData(PRODFPYBaseData)
 
@@ -627,7 +627,7 @@ class INTKPI(BaseType):
             }
         }
         deftMatch2 = {
-            "$match": {"MAIN_WC": {'$gt': numeratorData["fromt"], '$lt': numeratorData["tot"]}}
+            "$match": {"MAIN_WC": {'$gte': numeratorData["fromt"], '$lte': numeratorData["tot"]}}
         }
         deftGroup2 = {
             "$group": {
@@ -746,7 +746,7 @@ class INTKPI(BaseType):
             oData = {}
         return data
 
-    def _calPRODFPYBaseData(self, PCBI, LAM, AAFC, CKEN, DKEN):
+    def _groupPRODFPYBaseData(self, PCBI, LAM, AAFC, CKEN, DKEN):
         PRODList = []
         for x in PCBI:
             if {"PROD_NBR": x["PROD_NBR"], "APPLICATION": x["APPLICATION"]} not in PRODList:
@@ -845,15 +845,18 @@ class INTKPI(BaseType):
 
         for x in PRODFPYBaseData:
             targrtFPY = 0.90
+            targrtQTY = 1000
             if x["APPLICATION"] in getLimitData.keys():
                 targrtFPY = getLimitData[x["APPLICATION"]]["FPY"]
+                targrtQTY = getLimitData[x["APPLICATION"]]["qytlim"]
 
             if x["FPY"] >= targrtFPY:
-                GREEN_VALUE += 1
-            elif targrtFPY > x["FPY"] >= (targrtFPY-(targrtFPY*0.01)):
-                YELLOW_VALUE += 1
-            elif (targrtFPY-(targrtFPY*0.01)) > x["FPY"]:
-                RED_VALUE += 1
+                GREEN_VALUE += 1                
+            else:
+                if targrtQTY > x["AvegPASSQTY"]:
+                    YELLOW_VALUE += 1
+                else:                
+                    RED_VALUE += 1
 
         returnData = {
             "CLASS_TYPE": "FPY",
@@ -882,39 +885,30 @@ class INTKPI(BaseType):
                      == tmpAPPLICATION, PRODFPYBaseData))
             xLimit = getLimitData[tmpAPPLICATION]["qytlim"]
             yLimit = getLimitData[tmpAPPLICATION]["FPY"] * 100
+        
+        # red ef476f
+        #yellow ffd166
+        #green 06d6a0
+        #blue 118AB2
+        #midGreen 073b4c
 
         for x in d:
-            QTYLimit = 3000
-            FPYLimit = 0.90
+            targrtFPY = 0.90
+            targrtQTY = 1000
             if x["APPLICATION"] in getLimitData.keys():
-                QTYLimit = getLimitData[x["APPLICATION"]]["qytlim"]
-                FPYLimit = getLimitData[x["APPLICATION"]]["FPY"]
+                targrtFPY = getLimitData[x["APPLICATION"]]["FPY"]
+                targrtQTY = getLimitData[x["APPLICATION"]]["qytlim"]
 
-            if x["FPY"] >= FPYLimit:
+            if x["FPY"] >= targrtFPY:
                 COLOR = "#06d6a0"
-                SYMBOL = "undefined"
-            elif FPYLimit > x["FPY"] >= (FPYLimit-(FPYLimit*0.01)):
-                COLOR = "#ffd166"
-                SYMBOL = "undefined"
-            elif (FPYLimit-(FPYLimit*0.01)) > x["FPY"]:
-                COLOR = "#EF476F" 
-                SYMBOL = "twinkle"
-
-            # red ef476f
-            #yellow ffd166
-            #green 06d6a0
-            #blue 118AB2
-            #midGreen 073b4c
-            
-
-            """
-            if FPYLimit > x["FPY"] and x["AvegPASSQTY"] > QTYLimit:
-                COLOR = "#EF476F"
-                SYMBOL = "twinkle"
+                SYMBOL = "undefined"                
             else:
-                COLOR = "#118AB2"
-                SYMBOL = "undefined"
-            """
+                if targrtQTY > x["AvegPASSQTY"]:
+                    COLOR = "#ffd166"
+                    SYMBOL = "undefined"
+                else:                
+                    COLOR = "#EF476F" 
+                    SYMBOL = "twinkle"   
                 
             DATASERIES.append({
                 "APPLICATION": x["APPLICATION"],
@@ -1236,15 +1230,18 @@ class INTKPI(BaseType):
 
         for x in groupMSHIPData:
             targrt = 0.90
+            targrtQTY = 1000
             if x["APPLICATION"] in getLimitData.keys():
                 targrt = getLimitData[x["APPLICATION"]]["target"]
+                targrtQTY = getLimitData[x["APPLICATION"]]["qytlim"]
 
             if x["MSHIP"] >= targrt:
-                GREEN_VALUE += 1
-            elif targrt > x["MSHIP"] >= (targrt-(targrt*0.01)):
-                YELLOW_VALUE += 1
-            elif (targrt-(targrt*0.01)) > x["MSHIP"]:
-                RED_VALUE += 1
+                GREEN_VALUE += 1             
+            else:
+                if targrtQTY > x["TOTAL_SUMQTY"]:
+                    YELLOW_VALUE += 1
+                else:                
+                    RED_VALUE += 1
 
         returnData = {
             "CLASS_TYPE": "M-SHIP",
@@ -1470,16 +1467,19 @@ class INTKPI(BaseType):
         RED_VALUE = 0
 
         for x in EFAData:    
-            targrt = 0.90
+            targrt = 0.003
+            targrtQTY = 1000
             if x["APPLICATION"] in getLimitData.keys():
                 targrt = getLimitData[x["APPLICATION"]]["target"]
+                targrtQTY = getLimitData[x["APPLICATION"]]["qytlim"]
 
             if x["EFA"] >= targrt:
-                GREEN_VALUE += 1
-            elif targrt > x["EFA"] >= (targrt-(targrt*0.01)):
-                YELLOW_VALUE += 1
-            elif (targrt-(targrt*0.01)) > x["EFA"]:
-                RED_VALUE += 1
+                GREEN_VALUE += 1             
+            else:
+                if targrtQTY > x["passQty"]:
+                    YELLOW_VALUE += 1
+                else:                
+                    RED_VALUE += 1
 
         returnData = {
             "CLASS_TYPE": "EFA",
