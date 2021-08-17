@@ -242,7 +242,7 @@ class INTFPYLV2(BaseType):
                 else:
                     self.setRedisData(redisKey, json.dumps(
                         returnData, sort_keys=True, indent=2), 60)
-                        
+
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
 
@@ -501,7 +501,18 @@ class INTFPYLV2(BaseType):
         DATASERIES = []
         for x in tempData:  
             cDFct = x["DFCT_CODE"]  if x["DFCT_CODE"] in top10.keys() else "OTHER"
-            cERRC = x["ERRC_DESCR"] if x["DFCT_CODE"] in top10.keys() else "OTHER"   
+            cERRC = x["ERRC_DESCR"] if x["DFCT_CODE"] in top10.keys() else "OTHER" 
+
+            rank = 999
+            if cDFct in top10.keys():
+                rank = 1
+                for i in top10:
+                    if i != x["DFCT_CODE"]:
+                        rank +=1 
+                    else:
+                        break
+            
+            self.writeLog(rank)
 
             d = list(filter(lambda d: d["DFCT_CODE"] == cDFct and d["OPER"] == x["OPER"], DATASERIES))
             if d == []:
@@ -509,6 +520,7 @@ class INTFPYLV2(BaseType):
                         "OPER": x["OPER"],
                         "XVALUE": operMap.get(x["OPER"], None),
                         "YVALUE": x["DeftSUMQty"],
+                        "RANK": rank,
                         "DFCT_CODE" : cDFct,
                         "ERRC_DESCR" : cERRC
                     })
