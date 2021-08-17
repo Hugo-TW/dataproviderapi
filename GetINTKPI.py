@@ -255,7 +255,7 @@ class INTKPI(BaseType):
                 DKENResult = self._groupPassDeftByPRODandOPER(
                     DKENData["dData"], DKENData["pData"])
 
-                PRODFPYBaseData = self._calPRODFPYBaseData(
+                PRODFPYBaseData = self._groupPRODFPYBaseData(
                     PCBIResult, LAMResult, AAFCResult, CKENResult, DKENResult)
                 returnData = self._calPRODFPYData(PRODFPYBaseData)
 
