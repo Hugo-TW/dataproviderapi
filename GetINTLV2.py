@@ -259,15 +259,6 @@ class INTLV2(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return {'Result': 'NG', 'Reason': f'{funcName} erro'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
-    def _dataArray(self, sd , ed):
-        dataArray = []
-        ed = ed + datetime.timedelta(days=1)
-        d = datetime.datetime
-        for i in range(int((ed - sd).days)):
-            x = sd + datetime.timedelta(i)
-            dataArray.append( d.strftime(x, '%Y%m%d'))
-        return dataArray
-
     def _getFPYLV2PIEData(self, OPER, PROD_NBR):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]

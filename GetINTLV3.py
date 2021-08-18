@@ -211,32 +211,32 @@ class INTLV3(BaseType):
             elif tmpKPITYPE == "FPYLV3LINE":
                 dataRange =  self._dataRange(tmpACCT_DATE)
 
-                n1d_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, "n1d_array", dataRange["n1d_array"])
-                n2d_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, "n2d_array", dataRange["n2d_array"])
-                n3d_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, "n3d_array", dataRange["n3d_array"])
-                n4d_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, "n4d_array", dataRange["n4d_array"])
-                n5d_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, "n5d_array", dataRange["n5d_array"])
-                n6d_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, "n6d_array", dataRange["n6d_array"])
-                n1w_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, "n1w_array", dataRange["n1w_array"])
-                n2w_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, "n2w_array", dataRange["n2w_array"])
-                n3w_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, "n3w_array", dataRange["n2w_array"])
-                n1m_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, "n1m_array", dataRange["n1m_array"])
-                n2m_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, "n2m_array", dataRange["n2m_array"])
-                n1s_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, "n1s_array", dataRange["n1s_array"])
+                n1d_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n1d"], dataRange["n1d_array"])
+                n2d_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n2d"], dataRange["n2d_array"])
+                n3d_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n3d"], dataRange["n3d_array"])
+                n4d_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n4d"], dataRange["n4d_array"])
+                n5d_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n5d"], dataRange["n5d_array"])
+                n6d_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n6d"], dataRange["n6d_array"])
+                n1w_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n1w"], dataRange["n1w_array"])
+                n2w_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n2w"], dataRange["n2w_array"])
+                n3w_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n3w"], dataRange["n2w_array"])
+                n1m_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n1m"], dataRange["n1m_array"])
+                n2m_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n2m"], dataRange["n2m_array"])
+                n1s_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n1s"], dataRange["n1s_array"])
                 
-                returnData = {
-                    "n1d": list(n1d_DATA),
-                    "n2d": list(n2d_DATA),
-                    "n3d": list(n3d_DATA),
-                    "n4d": list(n4d_DATA),
-                    "n5d": list(n5d_DATA),
-                    "n6d": list(n6d_DATA),
-                    "n1w": list(n1w_DATA),
-                    "n2w": list(n2w_DATA),
-                    "n3w": list(n3w_DATA),
-                    "n1m": list(n1m_DATA),
-                    "n2m": list(n2m_DATA),
-                    "n1s": list(n1s_DATA)
+                magerData = self._groupFPYLV3(n1d_DATA,n2d_DATA,n3d_DATA,n4d_DATA,n5d_DATA,n6d_DATA,n1w_DATA,n2w_DATA,n3w_DATA,n1m_DATA,n2m_DATA,n1s_DATA)
+
+                returnData = {                    
+                    "KPITYPE": tmpKPITYPE,
+                    "COMPANY_CODE": tmpCOMPANY_CODE,
+                    "SITE": tmpSITE,
+                    "FACTORY_ID": tmpFACTORY_ID,
+                    "APPLICATION": tmpAPPLICATION,
+                    "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
+                    "PROD_NBR": tmpPROD_NBR,
+                    "OPER": tmpOPER,
+                    "CHECKCODE": tmpCHECKCODE,
+                    "DATASERIES": magerData
                 }
 
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
@@ -291,33 +291,39 @@ class INTLV3(BaseType):
         n1s_start = n1s_end.replace(month= n1s_end.month-2).replace(day=1)
         
         returnData = {
-            "n1d": d.strftime(n1d_sd,'%Y%m%d %U %j'),
+            "n1d": d.strftime(n1d_sd,'%Y%m%d'),
             "n1d_array": self._dataArray(n1d_sd,n1d_sd),
-            "n2d": d.strftime(n2d_sd,'%Y%m%d %U %j'),
+            "n2d": d.strftime(n2d_sd,'%Y%m%d'),
             "n2d_array": self._dataArray(n2d_sd,n2d_sd),
-            "n3d": d.strftime(n3d_sd,'%Y%m%d %U %j'),
+            "n3d": d.strftime(n3d_sd,'%Y%m%d'),
             "n3d_array": self._dataArray(n3d_sd,n3d_sd),
-            "n4d": d.strftime(n4d_sd,'%Y%m%d %U %j'),
+            "n4d": d.strftime(n4d_sd,'%Y%m%d'),
             "n4d_array": self._dataArray(n4d_sd,n4d_sd),
-            "n5d": d.strftime(n5d_sd,'%Y%m%d %U %j'),
+            "n5d": d.strftime(n5d_sd,'%Y%m%d'),
             "n5d_array": self._dataArray(n5d_sd,n5d_sd),
-            "n6d": d.strftime(n6d_sd,'%Y%m%d %U %j'),
+            "n6d": d.strftime(n6d_sd,'%Y%m%d'),
             "n6d_array": self._dataArray(n6d_sd,n6d_sd),
+            "n1w": f'W {d.strftime(n1w_start,"%U")}',
             "n1w_start": d.strftime(n1w_start,'%Y%m%d %U %j'),
             "n1w_end": d.strftime(n1w_end,'%Y%m%d %U %j'),
             "n1w_array": self._dataArray(n1w_start,n1w_end),
+            "n2w": f'W {d.strftime(n2w_start,"%U")}',
             "n2w_start": d.strftime(n2w_start,'%Y%m%d %U %j'),
             "n2w_end": d.strftime(n2w_end,'%Y%m%d %U %j'),
             "n2w_array": self._dataArray(n2w_start,n2w_end),
+            "n3w": f'W {d.strftime(n3w_start,"%U")}',
             "n3w_start": d.strftime(n3w_start,'%Y%m%d %U %j'),
             "n3w_end": d.strftime(n3w_end,'%Y%m%d %U %j'),
             "n3w_array": self._dataArray(n3w_start,n3w_end),
+            "n1m": f'{d.strftime(n1m_start,"%Y%m")}',
             "n1m_start": d.strftime(n1m_start,'%Y%m%d %U %j'),
             "n1m_end": d.strftime(n1m_end,'%Y%m%d %U %j'),
             "n1m_array": self._dataArray(n1m_start,n1m_end),
+            "n2m": f'{d.strftime(n2m_start,"%Y%m")}',
             "n2m_start": d.strftime(n2m_start,'%Y%m%d %U %j'),
             "n2m_end": d.strftime(n2m_end,'%Y%m%d %U %j'),
             "n2m_array": self._dataArray(n2m_start,n2m_end),
+            "n1s": f'{d.strftime(n1s_start,"%Y%m")} - {d.strftime(n1s_end,"%Y%m")}',
             "n1s_start": d.strftime(n1s_start,'%Y%m%d %U %j'),
             "n1s_end": d.strftime(n1s_end,'%Y%m%d %U %j'),
             "n1s_array": self._dataArray(n1s_start,n1s_end),
@@ -447,7 +453,7 @@ class INTLV3(BaseType):
                     "PROD_NBR": "$_id.PROD_NBR",
                     "OPER" : OPER,
                     "DATARANGE": DATARANGENAME,
-                    "FPY": {
+                    "DEFECT_YIELD": {
                         "$cond": [
                             {
                                 "$eq": [
@@ -502,5 +508,46 @@ class INTLV3(BaseType):
             self.writeError(
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
+
+    def _groupFPYLV3(self, n1d,n2d,n3d,n4d,n5d,n6d,n1w,n2w,n3w,n1m,n2m,n1s): 
+            magerData = []            
+            for d in n1d:       
+                d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0
+                magerData.append(d) 
+            for d in n2d:   
+                d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0    
+                magerData.append(d) 
+            for d in n3d:       
+                d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0
+                magerData.append(d) 
+            for d in n4d:  
+                d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0     
+                magerData.append(d) 
+            for d in n5d:   
+                d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0    
+                magerData.append(d) 
+            for d in n6d:   
+                d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0    
+                magerData.append(d) 
+            for d in n1w: 
+                d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0      
+                magerData.append(d) 
+            for d in n2w:   
+                d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0    
+                magerData.append(d) 
+            for d in n3w:   
+                d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0    
+                magerData.append(d) 
+            for d in n1m:   
+                d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0    
+                magerData.append(d) 
+            for d in n2m:
+                d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0       
+                magerData.append(d)  
+            for d in n1s:   
+                d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0    
+                magerData.append(d)
+
+            return magerData
 
 
