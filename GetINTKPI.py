@@ -198,7 +198,8 @@ class INTKPI(BaseType):
             if self.searchRedisKeys(redisKey):
                 self.writeLog(f"Cache Data From Redis")
                 return json.loads(self.getRedisData(redisKey)), 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type', "Access-Control-Expose-Headers": "Expires,DataSource", "Expires": time.mktime((datetime.datetime.now() + datetime.timedelta(seconds=self.getKeyExpirTime(expirTimeKey))).timetuple()), "DataSource": "Redis"}
-
+            
+            #一階 FPY KPI API
             if tmpKPITYPE == "FPY":
                 PCBIData = self._getFPYData("PCBI")
                 PCBIResult = self._groupPassDeftByPRODandOPER(
@@ -231,6 +232,7 @@ class INTKPI(BaseType):
 
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
+            #二階 FPY 泡泡圖 API
             elif tmpKPITYPE == "PRODFPY":
                 expirTimeKey = tmpFACTORY_ID + '_PASS'
                 # Check Redis Data
@@ -269,6 +271,7 @@ class INTKPI(BaseType):
                         returnData, sort_keys=True, indent=2), 60)
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
+            # 一階 MSHIP KPI API    
             elif tmpKPITYPE == "MSHIP":
                 MSHIPData = self._getMSHIPData()
                 groupMSHIPDAT = self._groupMSHIPData(MSHIPData)
@@ -283,6 +286,7 @@ class INTKPI(BaseType):
                         returnData, sort_keys=True, indent=2), 60)
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
+            # 一階 EFA KPI API
             elif tmpKPITYPE == "EFA":
                 OPERDATA = [
                     {"PROCESS": "BONDING", "OPER": 1300, "DESC": "PCBI(HMT)"},
@@ -510,7 +514,8 @@ class INTKPI(BaseType):
                 "SITE": tmpSITE,
                 "FACTORY_ID": tmpFACTORY_ID,
                 "ACCT_DATE": tmpACCT_DATE,
-                "LCM_OWNER": {"$in": ["LCM0", "LCME", "PROD", "QTAP", "RES0"]}
+                "LCM_OWNER": {"$in": ["LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, denominatorValue]}
             }
         }
         passGroup1 = {
@@ -543,9 +548,6 @@ class INTKPI(BaseType):
                 "MAIN_WC": "$_id.MAIN_WC",
                 "PASS_QTY": "$PASS_QTY"
             }
-        }
-        passMatch2 = {
-            "$match": {"MAIN_WC": {"$in": denominatorValue}}
         }
         passGroup2 = {
             "$group": {
@@ -594,7 +596,13 @@ class INTKPI(BaseType):
                 "SITE": tmpSITE,
                 "FACTORY_ID": tmpFACTORY_ID,
                 "ACCT_DATE": tmpACCT_DATE,
-                "LCM_OWNER": {"$in": ["LCM0", "LCME", "PROD", "QTAP", "RES0"]}
+                "LCM_OWNER": {"$in": ["LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                "$expr": {
+                    "$and": [
+                        {"$gte": [{"$toInt": "$MAIN_WC"},numeratorData["fromt"]]},
+                        {"$lte": [{"$toInt": "$MAIN_WC"},numeratorData["tot"]]}
+                    ]
+                }
             }
         }
         deftGroup1 = {
@@ -625,9 +633,6 @@ class INTKPI(BaseType):
                             "MAIN_WC": "$_id.MAIN_WC",
                             "DEFT_QTY": "$DEFT_QTY"
             }
-        }
-        deftMatch2 = {
-            "$match": {"MAIN_WC": {'$gte': numeratorData["fromt"], '$lte': numeratorData["tot"]}}
         }
         deftGroup2 = {
             "$group": {
@@ -673,10 +678,8 @@ class INTKPI(BaseType):
             passMatch1["$match"]["APPLICATION"] = tmpAPPLICATION
             deftMatch1["$match"]["APPLICATION"] = tmpAPPLICATION
 
-        passAggregate.extend([passMatch1, passGroup1, passProject1,
-                             passMatch2, passGroup2, passProject2, passSort])
-        deftAggregate.extend([deftMatch1, deftGroup1, deftProject1,
-                             deftMatch2, deftGroup2, deftProject2, deftSort])
+        passAggregate.extend([passMatch1, passGroup1, passProject1, passGroup2, passProject2, passSort])
+        deftAggregate.extend([deftMatch1, deftGroup1, deftProject1, deftGroup2, deftProject2, deftSort])
 
         try:
             self.getMongoConnection()
@@ -1489,4 +1492,5 @@ class INTKPI(BaseType):
         }
 
         return returnData
+
 

@@ -8,7 +8,7 @@ import datetime
 import copy
 from BaseType import BaseType
 
-class INTFPYLV2(BaseType):
+class INTLV2(BaseType):
     def __init__(self, jsonData):
         super().__init__()
         self.writeLog(
@@ -200,7 +200,6 @@ class INTFPYLV2(BaseType):
                 self.writeLog(f"Cache Data From Redis")
                 return json.loads(self.getRedisData(redisKey)), 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type', "Access-Control-Expose-Headers": "Expires,DataSource", "Expires": time.mktime((datetime.datetime.now() + datetime.timedelta(seconds=self.getKeyExpirTime(expirTimeKey))).timetuple()), "DataSource": "Redis"}
             
-
             if tmpKPITYPE == "FPYLV2PIE":
                 PCBIData = self._getFPYLV2PIEData("PCBI", tmpPROD_NBR)
                 PCBIResult = self._groupFPYLV2PIEOPER(PCBIData)
@@ -224,7 +223,7 @@ class INTFPYLV2(BaseType):
                         returnData, sort_keys=True, indent=2), 60)
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
-            if tmpKPITYPE == "FPYLV2HISTO":
+            elif tmpKPITYPE == "FPYLV2HISTO":
                 PCBIData = self._getFPYLV2PIEData("PCBI", tmpPROD_NBR)
                 LAMData = self._getFPYLV2PIEData("LAM", tmpPROD_NBR) 
                 AAFCData = self._getFPYLV2PIEData("AAFC", tmpPROD_NBR)
@@ -245,7 +244,6 @@ class INTFPYLV2(BaseType):
 
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
-
             else:
                 return {'Result': 'Fail', 'Reason': 'Parametes[KPITYPE] not in Rule'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
@@ -260,6 +258,15 @@ class INTFPYLV2(BaseType):
             self.writeError(
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return {'Result': 'NG', 'Reason': f'{funcName} erro'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+
+    def _dataArray(self, sd , ed):
+        dataArray = []
+        ed = ed + datetime.timedelta(days=1)
+        d = datetime.datetime
+        for i in range(int((ed - sd).days)):
+            x = sd + datetime.timedelta(i)
+            dataArray.append( d.strftime(x, '%Y%m%d'))
+        return dataArray
 
     def _getFPYLV2PIEData(self, OPER, PROD_NBR):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
@@ -281,6 +288,12 @@ class INTFPYLV2(BaseType):
                 "ACCT_DATE": tmpACCT_DATE,
                 "LCM_OWNER": {"$in": ["LCM0", "LCME", "PROD", "QTAP", "RES0"]},
                 "PROD_NBR": PROD_NBR,
+                "$expr": {
+                    "$and": [
+                        {"$gte": [{"$toInt": "$MAIN_WC"},numeratorData["fromt"]]},
+                        {"$lte": [{"$toInt": "$MAIN_WC"},numeratorData["tot"]]}
+                    ]
+                }
             }
         }
         deftGroup1 = {
@@ -315,9 +328,6 @@ class INTFPYLV2(BaseType):
                 "ERRC_DESCR" : "$_id.ERRC_DESCR",
                 "DEFT_QTY": "$DEFT_QTY"
             }
-        }
-        deftMatch2 = {
-            "$match": {"MAIN_WC": {'$gte': numeratorData["fromt"], '$lte': numeratorData["tot"]}}
         }
         deftGroup2 = {
             "$group": {
@@ -363,8 +373,7 @@ class INTFPYLV2(BaseType):
                 "ERRC_DESCR" : 1
             }
         }
-        deftAggregate.extend([deftMatch1, deftGroup1, deftProject1,
-                             deftMatch2, deftGroup2, deftProject2, deftSort])
+        deftAggregate.extend([deftMatch1, deftGroup1, deftProject1,deftGroup2, deftProject2, deftSort])
         
         try:
             self.getMongoConnection()
@@ -541,4 +550,5 @@ class INTFPYLV2(BaseType):
                 }
 
         return returnData
+
 

@@ -32,7 +32,8 @@ from GetEQOFRHrs import EQOFRHrs
 from GetEQOFRHrsDetails import EQOFRHrsDetails
 from GetFactoryOFRHrsDetail import OFRHrsDetail
 #---------------------------------------------
-from GetINTFPYLV2 import INTFPYLV2
+from GetINTLV3 import INTLV3
+from GetINTLV2 import INTLV2
 from GetINTKPI import INTKPI
 from GetOeeDetails import OeeDetials
 from GetOee import Oee
@@ -1865,8 +1866,8 @@ class getINTKPI(Resource):
         v = INTKPI(jsonData)
         return v.getData()
 
-INTFPYLV2Ns = api.namespace('GetINTFPYLV2', description = 'INTFPYLV2')
-INTFPYLV2ML = api.model('GetINTFPYLV2', {
+INTLV2Ns = api.namespace('GetINTLV2', description = 'INTLV2')
+INTLV2ML = api.model('GetINTLV2', {
     'COMPANY_CODE': fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
     'SITE': fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
     'FACTORY_ID': fields.String( required = True, description = 'FACTORY_ID', default = 'J001', example = 'J001'),
@@ -1875,20 +1876,20 @@ INTFPYLV2ML = api.model('GetINTFPYLV2', {
     'ACCT_DATE': fields.String( required = True, description = 'ACCT_DATE', default = '20210801', example = '20210801'),
     'PROD_NBR' : fields.String( required = True, description = '機種編碼', default = 'GP062CCAC100S', example = 'GP062CCAC100S') 
 })
-@INTFPYLV2Ns.route('', methods = ['POST'])
-@INTFPYLV2Ns.response(200, 'Sucess')
-@INTFPYLV2Ns.response(201, 'Created Sucess')
-@INTFPYLV2Ns.response(204, 'No Content')
-@INTFPYLV2Ns.response(400, 'Bad Request')
-@INTFPYLV2Ns.response(401, 'Unauthorized')
-@INTFPYLV2Ns.response(403, 'Forbidden')
-@INTFPYLV2Ns.response(404, 'Not Found')
-@INTFPYLV2Ns.response(405, 'Method Not Allowed')
-@INTFPYLV2Ns.response(409, 'Conflict')
-@INTFPYLV2Ns.response(500, 'Internal Server Error')
-class getINTKPI(Resource):
-    @INTFPYLV2Ns.doc('INTFPYLV2')
-    @INTFPYLV2Ns.expect(INTFPYLV2ML)
+@INTLV2Ns.route('', methods = ['POST'])
+@INTLV2Ns.response(200, 'Sucess')
+@INTLV2Ns.response(201, 'Created Sucess')
+@INTLV2Ns.response(204, 'No Content')
+@INTLV2Ns.response(400, 'Bad Request')
+@INTLV2Ns.response(401, 'Unauthorized')
+@INTLV2Ns.response(403, 'Forbidden')
+@INTLV2Ns.response(404, 'Not Found')
+@INTLV2Ns.response(405, 'Method Not Allowed')
+@INTLV2Ns.response(409, 'Conflict')
+@INTLV2Ns.response(500, 'Internal Server Error')
+class getINTLV2(Resource):
+    @INTLV2Ns.doc('INTFPYLV2')
+    @INTLV2Ns.expect(INTLV2ML)
     def post(self):
         if not request:
             abort(400)
@@ -1897,10 +1898,50 @@ class getINTKPI(Resource):
 
         jsonData = BaseType.validateType(request.json)
         
-        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData or "KPITYPE" not in jsonData or "ACCT_DATE" not in jsonData:
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData or "KPITYPE" not in jsonData or "ACCT_DATE" not in jsonData or 'PROD_NBR' not in jsonData:
             return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
         
-        v = INTFPYLV2(jsonData)
+        v = INTLV2(jsonData)
+        return v.getData()
+
+INTLV3Ns = api.namespace('GetINTLV3', description = 'INTLV3')
+INTLV3ML = api.model('GetINTLV3', {
+    'COMPANY_CODE': fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+    'SITE': fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+    'FACTORY_ID': fields.String( required = True, description = 'FACTORY_ID', default = 'J001', example = 'J001'),
+    'APPLICATION': fields.String( required = True, description = 'APPLICATION', default = 'ALL', example = 'ALL'),
+    'KPITYPE': fields.String( required = True, description = 'KPITYPE', default = 'FPYLV3LINE', example = 'FPYLV3LINE'),
+    'ACCT_DATE': fields.String( required = True, description = 'ACCT_DATE', default = '20210801', example = '20210801'),
+    'PROD_NBR' : fields.String( required = True, description = '機種編碼', default = 'GP062CCAC100S', example = 'GP062CCAC100S'), 
+    'OPER' : fields.String( required = True, description = '站點', default = 'PCBI', example = 'PCBI'), 
+    'CHECKCODE' : fields.String( required = False, description = 'Defect or Reason Code', default = 'PCPF1', example = 'PCPF1') 
+})
+@INTLV3Ns.route('', methods = ['POST'])
+@INTLV3Ns.response(200, 'Sucess')
+@INTLV3Ns.response(201, 'Created Sucess')
+@INTLV3Ns.response(204, 'No Content')
+@INTLV3Ns.response(400, 'Bad Request')
+@INTLV3Ns.response(401, 'Unauthorized')
+@INTLV3Ns.response(403, 'Forbidden')
+@INTLV3Ns.response(404, 'Not Found')
+@INTLV3Ns.response(405, 'Method Not Allowed')
+@INTLV3Ns.response(409, 'Conflict')
+@INTLV3Ns.response(500, 'Internal Server Error')
+class getINTLV3(Resource):
+    @INTLV3Ns.doc('INTFPYLV2')
+    @INTLV3Ns.expect(INTLV3ML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+           return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+
+        jsonData = BaseType.validateType(request.json)
+        
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData or "KPITYPE" not in jsonData or "ACCT_DATE" not in jsonData or 'PROD_NBR' not in jsonData or 'OPER' not in jsonData:
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        
+        v = INTLV3(jsonData)
         return v.getData()
 
 if __name__ == '__main__':

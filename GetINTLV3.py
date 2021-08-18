@@ -1,0 +1,506 @@
+# -*- coding: utf-8 -*-
+import json
+from re import X
+import sys
+import traceback
+import time
+import datetime
+import copy
+
+from flask_restplus.utils import not_none
+from BaseType import BaseType
+
+class INTLV3(BaseType):
+    def __init__(self, jsonData):
+        super().__init__()
+        self.writeLog(
+            f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
+        self.jsonData = jsonData
+        #M011 => MOD1
+        #J001 => MOD2
+        #J003 => MOD3
+        self.operSetData = {
+            "M011": {
+                "FPY": {
+                    "limit": {
+                        "CE": {"qytlim": 1000, "FPY": 0.94},
+                        "TABLET": {"qytlim": 1000, "FPY": 0.89},
+                        "NB": {"qytlim": 1000, "FPY": 0.93},
+                        "TV": {"qytlim": 1000, "FPY": 0.90},
+                        "AA": {"qytlim": 1000, "FPY": 0.95}
+                    },
+                    "numerator": {  # 分子
+                        "PCBI": {"fromt": 1050, "tot": 1310},
+                        "LAM": {"fromt": 1340, "tot": 1399},
+                        "AAFC": {"fromt": 1400, "tot": 1499},
+                        "CKEN": {"fromt": 1500, "tot": 1699},
+                        "DKEN": {"fromt": 1700, "tot": 1799}
+                    },
+                    "denominator": {  # 分母
+                        "PCBI": [1300, 1301],
+                        "LAM": [1355],
+                        "AAFC": [1420],
+                        "CKEN": [1600],
+                        "DKEN": [1600]
+                    }
+                },
+                "M-SHIP": {
+                    "limit": {
+                        "CE": {"qytlim": 1000, "target": 0.97},
+                        "TABLET": {"qytlim": 1000, "target": 0.955},
+                        "NB": {"qytlim": 1000, "target": 0.96},
+                        "TV": {"qytlim": 1000, "target": 0.90},
+                        "AA": {"qytlim": 1000, "target": 0.95}
+                    },
+                    "numerator": {},
+                    "denominator": {}
+                },
+                "EFA": {
+                    "limit": {
+                        "CE": {"qytlim": 1000, "target": 0.003},
+                        "TABLET": {"qytlim": 1000, "target": 0.003},
+                        "NB": {"qytlim": 1000, "target": 0.003},
+                        "TV": {"qytlim": 1000, "target": 0.003},
+                        "AA": {"qytlim": 1000, "target": 0.003}
+                    },
+                    "numerator": {},
+                    "denominator": {}
+                }
+            },
+            "J001": {
+                "FPY": {
+                    "limit": {
+                        "CE": {"qytlim": 1000, "FPY": 0.94},
+                        "TABLET": {"qytlim": 1000, "FPY": 0.89},
+                        "NB": {"qytlim": 1000, "FPY": 0.93},
+                        "TV": {"qytlim": 1000, "FPY": 0.90},
+                        "AA": {"qytlim": 1000, "FPY": 0.95}
+                    },
+                    "numerator": {  # 分子
+                        "PCBI": {"fromt": 1050, "tot": 1310},
+                        "LAM": {"fromt": 1340, "tot": 1399},
+                        "AAFC": {"fromt": 1400, "tot": 1499},
+                        "CKEN": {"fromt": 1500, "tot": 1699},
+                        "DKEN": {"fromt": 1700, "tot": 1799}
+                    },
+                    "denominator": {  # 分母
+                        "PCBI": [1300, 1301],
+                        "LAM": [1355],
+                        "AAFC": [1420],
+                        "CKEN": [1600],
+                        "DKEN": [1600]
+                    }
+                },
+                "M-SHIP": {
+                    "limit": {
+                        "CE": {"qytlim": 1000, "target": 0.97},
+                        "TABLET": {"qytlim": 1000, "target": 0.955},
+                        "NB": {"qytlim": 1000, "target": 0.96},
+                        "TV": {"qytlim": 1000, "target": 0.90},
+                        "AA": {"qytlim": 1000, "target": 0.95}
+                    },
+                    "numerator": {},
+                    "denominator": {}
+                },
+                "EFA": {
+                    "limit": {
+                        "CE": {"qytlim": 1000, "target": 0.003},
+                        "TABLET": {"qytlim": 1000, "target": 0.003},
+                        "NB": {"qytlim": 1000, "target": 0.003},
+                        "TV": {"qytlim": 1000, "target": 0.003},
+                        "AA": {"qytlim": 1000, "target": 0.003}
+                    },
+                    "numerator": {},
+                    "denominator": {}
+                }
+            },
+            "J003": {
+                "FPY": {
+                    "limit": {
+                        "CE": {"qytlim": 1000, "FPY": 0.94},
+                        "TABLET": {"qytlim": 1000, "FPY": 0.89},
+                        "NB": {"qytlim": 1000, "FPY": 0.93},
+                        "TV": {"qytlim": 1000, "FPY": 0.90},
+                        "AA": {"qytlim": 1000, "FPY": 0.95}
+                    },
+                    "numerator": {  # 分子
+                        "PCBI": {"fromt": 1050, "tot": 1310},
+                        "LAM": {"fromt": 1340, "tot": 1399},
+                        "AAFC": {"fromt": 1400, "tot": 1499},
+                        "CKEN": {"fromt": 1500, "tot": 1699},
+                        "DKEN": {"fromt": 1700, "tot": 1799}
+                    },
+                    "denominator": {  # 分母
+                        "PCBI": [1300, 1301],
+                        "LAM": [1355],
+                        "AAFC": [1420],
+                        "CKEN": [1600],
+                        "DKEN": [1600]
+                    }
+                },
+                "M-SHIP": {
+                    "limit": {
+                        "CE": {"qytlim": 1000, "target": 0.97},
+                        "TABLET": {"qytlim": 1000, "target": 0.955},
+                        "NB": {"qytlim": 1000, "target": 0.96},
+                        "TV": {"qytlim": 1000, "target": 0.90},
+                        "AA": {"qytlim": 1000, "target": 0.95}
+                    },
+                    "numerator": {},
+                    "denominator": {}
+                },
+                "EFA": {
+                    "limit": {
+                        "CE": {"qytlim": 1000, "target": 0.003},
+                        "TABLET": {"qytlim": 1000, "target": 0.003},
+                        "NB": {"qytlim": 1000, "target": 0.003},
+                        "TV": {"qytlim": 1000, "target": 0.003},
+                        "AA": {"qytlim": 1000, "target": 0.003}
+                    },
+                    "numerator": {},
+                    "denominator": {}
+                }
+            }
+        }
+
+    def getData(self):
+        try:
+            self.writeLog(
+                f'{self.__class__.__name__} {sys._getframe().f_code.co_name} Start')
+            self.writeLog(f'Input Json:{self.jsonData}')
+            bottomLine = "_"
+            redisKey = ""
+            tmp = []
+
+            className = f"{self.__class__.__name__}"
+            tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+            tmpSITE = self.jsonData["SITE"]
+            tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+            tmpAPPLICATION = self.jsonData["APPLICATION"]
+            tmpKPITYPE = self.jsonData["KPITYPE"]
+            tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+            tmpPROD_NBR = self.jsonData["PROD_NBR"]
+            tmpOPER = self.jsonData["OPER"]
+            # Defect or Reason Code 
+            tmpCHECKCODE = self.jsonData["CHECKCODE"] if "CHECKCODE" in self.jsonData else None
+
+            #redisKey
+            tmp.append(className)
+            tmp.append(tmpCOMPANY_CODE)
+            tmp.append(tmpSITE)
+            tmp.append(tmpFACTORY_ID)
+            tmp.append(tmpAPPLICATION)
+            tmp.append(tmpKPITYPE)
+            tmp.append(tmpACCT_DATE)
+            tmp.append(tmpPROD_NBR)
+            tmp.append(tmpOPER)
+            if tmpCHECKCODE != None:
+                tmp.append(tmpCHECKCODE)
+            redisKey = bottomLine.join(tmp)
+            expirTimeKey = tmpFACTORY_ID + '_DEFT'
+
+            if tmpFACTORY_ID not in self.operSetData.keys():
+                return {'Result': 'NG', 'Reason': f'{tmpFACTORY_ID} not in FactoryID MAP'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+
+            # Check Redis Data
+            self.getRedisConnection()
+            if self.searchRedisKeys(redisKey):
+                self.writeLog(f"Cache Data From Redis")
+                return json.loads(self.getRedisData(redisKey)), 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type', "Access-Control-Expose-Headers": "Expires,DataSource", "Expires": time.mktime((datetime.datetime.now() + datetime.timedelta(seconds=self.getKeyExpirTime(expirTimeKey))).timetuple()), "DataSource": "Redis"}
+            
+            elif tmpKPITYPE == "FPYLV3LINE":
+                dataRange =  self._dataRange(tmpACCT_DATE)
+
+                n1d_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, "n1d_array", dataRange["n1d_array"])
+                n2d_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, "n2d_array", dataRange["n2d_array"])
+                n3d_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, "n3d_array", dataRange["n3d_array"])
+                n4d_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, "n4d_array", dataRange["n4d_array"])
+                n5d_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, "n5d_array", dataRange["n5d_array"])
+                n6d_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, "n6d_array", dataRange["n6d_array"])
+                n1w_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, "n1w_array", dataRange["n1w_array"])
+                n2w_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, "n2w_array", dataRange["n2w_array"])
+                n3w_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, "n3w_array", dataRange["n2w_array"])
+                n1m_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, "n1m_array", dataRange["n1m_array"])
+                n2m_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, "n2m_array", dataRange["n2m_array"])
+                n1s_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, "n1s_array", dataRange["n1s_array"])
+                
+                returnData = {
+                    "n1d": list(n1d_DATA),
+                    "n2d": list(n2d_DATA),
+                    "n3d": list(n3d_DATA),
+                    "n4d": list(n4d_DATA),
+                    "n5d": list(n5d_DATA),
+                    "n6d": list(n6d_DATA),
+                    "n1w": list(n1w_DATA),
+                    "n2w": list(n2w_DATA),
+                    "n3w": list(n3w_DATA),
+                    "n1m": list(n1m_DATA),
+                    "n2m": list(n2m_DATA),
+                    "n1s": list(n1s_DATA)
+                }
+
+                return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+
+            else:
+                return {'Result': 'Fail', 'Reason': 'Parametes[KPITYPE] not in Rule'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return {'Result': 'NG', 'Reason': f'{funcName} erro'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+
+    def _dataRange(self, ACCT_DATE):
+        d = datetime.datetime
+        #時間 array 組成
+        day_delta = datetime.timedelta(days=1)
+        n1d_sd = d.strptime(ACCT_DATE,'%Y%m%d')
+        n2d_sd = n1d_sd - 1*day_delta
+        n3d_sd = n1d_sd - 2*day_delta
+        n4d_sd = n1d_sd - 3*day_delta
+        n5d_sd = n1d_sd - 4*day_delta
+        n6d_sd = n1d_sd - 5*day_delta
+        
+        #3周
+        weeks_delta = datetime.timedelta(weeks=1)
+        #計算是本周哪一天要扣除
+        #因pytohn 一周開始是周一 故需要多扣一天
+        weekcount = (n1d_sd.weekday() +1) % 7
+        n1w_start = n1d_sd - weeks_delta - datetime.timedelta(days=weekcount)
+        n1w_end = n1w_start + datetime.timedelta(days=6)
+        n2w_start = n1d_sd - 2*weeks_delta - datetime.timedelta(days=weekcount) 
+        n2w_end = n2w_start + datetime.timedelta(days=6)
+        n3w_start = n1d_sd - 3*weeks_delta - datetime.timedelta(days=weekcount) 
+        n3w_end = n3w_start + datetime.timedelta(days=6)
+
+        # 兩月
+        n1d_sd_mf = n1d_sd.replace(day=1)
+        n1m_end = n1d_sd_mf - day_delta
+        n1m_start = n1m_end.replace(day=1)
+        n2m_end = n1m_start - day_delta
+        n2m_start = n2m_end.replace(day=1)
+
+        #一季
+        n1s_end = n2m_start - day_delta
+        n1s_start = n1s_end.replace(month= n1s_end.month-2).replace(day=1)
+        
+        returnData = {
+            "n1d": d.strftime(n1d_sd,'%Y%m%d %U %j'),
+            "n1d_array": self._dataArray(n1d_sd,n1d_sd),
+            "n2d": d.strftime(n2d_sd,'%Y%m%d %U %j'),
+            "n2d_array": self._dataArray(n2d_sd,n2d_sd),
+            "n3d": d.strftime(n3d_sd,'%Y%m%d %U %j'),
+            "n3d_array": self._dataArray(n3d_sd,n3d_sd),
+            "n4d": d.strftime(n4d_sd,'%Y%m%d %U %j'),
+            "n4d_array": self._dataArray(n4d_sd,n4d_sd),
+            "n5d": d.strftime(n5d_sd,'%Y%m%d %U %j'),
+            "n5d_array": self._dataArray(n5d_sd,n5d_sd),
+            "n6d": d.strftime(n6d_sd,'%Y%m%d %U %j'),
+            "n6d_array": self._dataArray(n6d_sd,n6d_sd),
+            "n1w_start": d.strftime(n1w_start,'%Y%m%d %U %j'),
+            "n1w_end": d.strftime(n1w_end,'%Y%m%d %U %j'),
+            "n1w_array": self._dataArray(n1w_start,n1w_end),
+            "n2w_start": d.strftime(n2w_start,'%Y%m%d %U %j'),
+            "n2w_end": d.strftime(n2w_end,'%Y%m%d %U %j'),
+            "n2w_array": self._dataArray(n2w_start,n2w_end),
+            "n3w_start": d.strftime(n3w_start,'%Y%m%d %U %j'),
+            "n3w_end": d.strftime(n3w_end,'%Y%m%d %U %j'),
+            "n3w_array": self._dataArray(n3w_start,n3w_end),
+            "n1m_start": d.strftime(n1m_start,'%Y%m%d %U %j'),
+            "n1m_end": d.strftime(n1m_end,'%Y%m%d %U %j'),
+            "n1m_array": self._dataArray(n1m_start,n1m_end),
+            "n2m_start": d.strftime(n2m_start,'%Y%m%d %U %j'),
+            "n2m_end": d.strftime(n2m_end,'%Y%m%d %U %j'),
+            "n2m_array": self._dataArray(n2m_start,n2m_end),
+            "n1s_start": d.strftime(n1s_start,'%Y%m%d %U %j'),
+            "n1s_end": d.strftime(n1s_end,'%Y%m%d %U %j'),
+            "n1s_array": self._dataArray(n1s_start,n1s_end),
+        }
+        return returnData
+
+    def _dataArray(self, sd , ed):
+        dataArray = []
+        ed = ed + datetime.timedelta(days=1)
+        d = datetime.datetime
+        for i in range(int((ed - sd).days)):
+            x = sd + datetime.timedelta(i)
+            dataArray.append( d.strftime(x, '%Y%m%d'))
+        return dataArray
+
+    def _getFPYLV3DATA(self, OPER, PROD_NBR, DEFECTCODE, DATARANGENAME, ACCT_DATE_ARRAY):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        
+        getFabData = self.operSetData[tmpFACTORY_ID]
+        numeratorData = getFabData["FPY"]["numerator"][OPER]
+        denominatorValue = getFabData["FPY"]["denominator"][OPER]
+
+        FPYLV3_Aggregate = [
+            {
+                "$match": {
+                    "COMPANY_CODE": tmpCOMPANY_CODE,
+                    "SITE": tmpSITE,
+                    "FACTORY_ID": tmpFACTORY_ID,
+                    "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
+                    "PROD_NBR": PROD_NBR,
+                    "LCM_OWNER": {"$in": ["LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                    "$expr": {
+                        "$and": [
+                            {"$gte": [{"$toInt": "$MAIN_WC"}, numeratorData["fromt"]]},
+                            {"$lte": [{"$toInt": "$MAIN_WC"}, numeratorData["tot"]]}
+                        ]
+                    }
+                }
+            },
+            {
+                "$group": {
+                    "_id": {
+                        "APPLICATION" : "$APPLICATION",
+                        "PROD_NBR": "$PROD_NBR",
+                        "DFCT_CODE": "$DFCT_CODE"
+                    },
+                    "deftQty": {
+                        "$sum": {"$toInt": "$QTY"}
+                    }
+                }
+            },
+            {
+                "$addFields": {
+                    "APPLICATION" : "$_id.APPLICATION",
+                    "PROD_NBR": "$_id.PROD_NBR",
+                    "deftQty": "$deftQty",
+                    "passQty": 0
+                }
+            },
+            {
+                "$project": {
+                    "_id": 0
+                }
+            },
+            {
+                "$unionWith": {
+                    "coll": "passHisAndCurrent",
+                            "pipeline": [
+                                {
+                                    "$match": {
+                                        "COMPANY_CODE": tmpCOMPANY_CODE,
+                                        "SITE": tmpSITE,
+                                        "FACTORY_ID": tmpFACTORY_ID,
+                                        "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},                                       
+                                        "PROD_NBR": PROD_NBR,
+                                        "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, denominatorValue]}
+                                    }
+                                },
+                                {
+                                    "$group": {
+                                        "_id": {
+                                            "APPLICATION" : "$APPLICATION",
+                                            "PROD_NBR": "$PROD_NBR"
+                                        },
+                                        "passQty": {
+                                            "$sum": {
+                                                "$toInt": "$QTY"
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "$addFields": {
+                                        "APPLICATION" : "$_id.APPLICATION",
+                                        "PROD_NBR": "$_id.PROD_NBR",
+                                        "passQty": "$passQty",
+                                        "deftQty": 0
+                                    }
+                                },
+                                {
+                                    "$project": {
+                                        "_id": 0
+                                    }
+                                }
+                            ]
+                }
+            },
+            {
+                "$group": {
+                    "_id": {
+                        "APPLICATION" : "$APPLICATION",
+                        "PROD_NBR": "$PROD_NBR"
+                    },
+                    "deftQty": {
+                        "$sum": "$deftQty"
+                    },
+                    "passQty": {
+                        "$sum": "$passQty"
+                    }
+                }
+            },
+            {
+                "$addFields": {
+                    "APPLICATION" : "$_id.APPLICATION",
+                    "PROD_NBR": "$_id.PROD_NBR",
+                    "OPER" : OPER,
+                    "DATARANGE": DATARANGENAME,
+                    "FPY": {
+                        "$cond": [
+                            {
+                                "$eq": [
+                                    "$passQty",
+                                    0
+                                ]
+                            },
+                            0,
+                            {
+                                "$divide": [
+                                    "$deftQty",
+                                    "$passQty"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "$project": {
+                    "_id": 0
+                }
+            },
+            {
+                "$sort": {
+                    "APPLICATION" : 1,
+                    "PROD_NBR": 1
+                }
+            }
+        ]
+
+        if DEFECTCODE != None:
+            FPYLV3_Aggregate[0]["$match"]["DFCT_CODE"] = DEFECTCODE
+       
+        try:
+            self.getMongoConnection()
+            self.setMongoDb("IAMP")
+            self.setMongoCollection("deftHisAndCurrent")
+            returnData = self.aggregate(FPYLV3_Aggregate)
+            self.closeMongoConncetion()
+
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+
