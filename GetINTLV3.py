@@ -208,7 +208,7 @@ class INTLV3(BaseType):
                 self.writeLog(f"Cache Data From Redis")
                 return json.loads(self.getRedisData(redisKey)), 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type', "Access-Control-Expose-Headers": "Expires,DataSource", "Expires": time.mktime((datetime.datetime.now() + datetime.timedelta(seconds=self.getKeyExpirTime(expirTimeKey))).timetuple()), "DataSource": "Redis"}
             
-            elif tmpKPITYPE == "FPYLV3LINE":
+            if tmpKPITYPE == "FPYLV3LINE":
                 dataRange =  self._dataRange(tmpACCT_DATE)
 
                 n1d_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n1d"], dataRange["n1d_array"])
@@ -224,7 +224,7 @@ class INTLV3(BaseType):
                 n2m_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n2m"], dataRange["n2m_array"])
                 n1s_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n1s"], dataRange["n1s_array"])
                 
-                magerData = self._groupFPYLV3(n1d_DATA,n2d_DATA,n3d_DATA,n4d_DATA,n5d_DATA,n6d_DATA,n1w_DATA,n2w_DATA,n3w_DATA,n1m_DATA,n2m_DATA,n1s_DATA)
+                magerData = self._groupINTLV3(n1d_DATA,n2d_DATA,n3d_DATA,n4d_DATA,n5d_DATA,n6d_DATA,n1w_DATA,n2w_DATA,n3w_DATA,n1m_DATA,n2m_DATA,n1s_DATA)
 
                 returnData = {                    
                     "KPITYPE": tmpKPITYPE,
@@ -248,6 +248,49 @@ class INTLV3(BaseType):
                         returnData, sort_keys=True, indent=2), 60)
 
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+
+            if tmpKPITYPE == "EFALV3LINE":
+
+                dataRange =  self._dataRange(tmpACCT_DATE)
+
+                n1d_DATA = self._getEFALV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n1d"], dataRange["n1d_array"])
+                n2d_DATA = self._getEFALV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n2d"], dataRange["n2d_array"])
+                n3d_DATA = self._getEFALV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n3d"], dataRange["n3d_array"])
+                n4d_DATA = self._getEFALV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n4d"], dataRange["n4d_array"])
+                n5d_DATA = self._getEFALV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n5d"], dataRange["n5d_array"])
+                n6d_DATA = self._getEFALV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n6d"], dataRange["n6d_array"])
+                n1w_DATA = self._getEFALV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n1w"], dataRange["n1w_array"])
+                n2w_DATA = self._getEFALV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n2w"], dataRange["n2w_array"])
+                n3w_DATA = self._getEFALV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n3w"], dataRange["n2w_array"])
+                n1m_DATA = self._getEFALV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n1m"], dataRange["n1m_array"])
+                n2m_DATA = self._getEFALV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n2m"], dataRange["n2m_array"])
+                n1s_DATA = self._getEFALV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n1s"], dataRange["n1s_array"])
+                
+                magerData = self._groupINTLV3(n1d_DATA,n2d_DATA,n3d_DATA,n4d_DATA,n5d_DATA,n6d_DATA,n1w_DATA,n2w_DATA,n3w_DATA,n1m_DATA,n2m_DATA,n1s_DATA)
+
+                returnData = {                    
+                    "KPITYPE": tmpKPITYPE,
+                    "COMPANY_CODE": tmpCOMPANY_CODE,
+                    "SITE": tmpSITE,
+                    "FACTORY_ID": tmpFACTORY_ID,
+                    "APPLICATION": tmpAPPLICATION,
+                    "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
+                    "PROD_NBR": tmpPROD_NBR,
+                    "OPER": tmpOPER,
+                    "CHECKCODE": tmpCHECKCODE,
+                    "DATASERIES": magerData
+                }
+
+                self.getRedisConnection()
+                if self.searchRedisKeys(redisKey):     
+                    self.setRedisData(redisKey, json.dumps(
+                        returnData, sort_keys=True, indent=2), self.getKeyExpirTime(expirTimeKey))
+                else:
+                    self.setRedisData(redisKey, json.dumps(
+                        returnData, sort_keys=True, indent=2), 60)
+
+                return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+
 
             else:
                 return {'Result': 'Fail', 'Reason': 'Parametes[KPITYPE] not in Rule'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
@@ -372,6 +415,39 @@ class INTLV3(BaseType):
                         ]
                     }
                 }
+            },
+            {
+                "$lookup": {
+                    "from": "deftCodeView",
+                            "as": "deftCodeList",
+                            "let": {
+                                "dfctCode": "$DFCT_CODE"
+                            },
+                    "pipeline": [
+                                {
+                                    "$match": {
+                                        "$expr": {
+                                            "$and": [
+                                                {
+                                                    "$eq": [
+                                                        "$$dfctCode",
+                                                        "$DEFECT_CODE"
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    }
+                                },
+                                {
+                                    "$project": {
+                                        "DEFECT_CODE": 1
+                                    }
+                                }
+                            ]
+                }
+            },
+            {
+                "$unwind": "$deftCodeList"
             },
             {
                 "$group": {
@@ -517,7 +593,7 @@ class INTLV3(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
-    def _groupFPYLV3(self, n1d,n2d,n3d,n4d,n5d,n6d,n1w,n2w,n3w,n1m,n2m,n1s): 
+    def _groupINTLV3(self, n1d,n2d,n3d,n4d,n5d,n6d,n1w,n2w,n3w,n1m,n2m,n1s): 
             magerData = [] 
             for d in n1s:   
                 d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0    
@@ -558,5 +634,185 @@ class INTLV3(BaseType):
          
 
             return magerData
+
+    def _getEFALV3DATA(self, OPER, PROD_NBR, DEFECTCODE, DATARANGENAME, ACCT_DATE_ARRAY):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        
+        OPERDATA = [
+            {"PROCESS": "BONDING", "OPER": 1300, "DESC": "PCBI(HMT)"},
+            {"PROCESS": "BONDING", "OPER": 1301,
+                "DESC": "PCBT(串線PCBI)"},
+            {"PROCESS": "LAM", "OPER": 1340, "DESC": "BT"},
+            {"PROCESS": "LAM", "OPER": 1370, "DESC": "PT"},
+            {"PROCESS": "ASSY", "OPER": 1419,
+                "DESC": "OTPA(OTP AAFC)"},
+            {"PROCESS": "ASSY", "OPER": 1420, "DESC": "AAFC(同C-)"},
+            {"PROCESS": "TPI", "OPER": 1510, "DESC": "TPI"},
+            {"PROCESS": "OTPC", "OPER": 1590, "DESC": "Flicker check"},
+            {"PROCESS": "C-KEN", "OPER": 1600,
+                "DESC": "(A+B) Panel C-"}
+        ]
+
+        OPERList = []
+        for x in OPERDATA:
+            OPERList.append(f'{x.get("OPER")}')
+
+        FPYLV3_Aggregate = [
+            {
+                "$match": {
+                    "COMPANY_CODE": tmpCOMPANY_CODE,
+                    "SITE": tmpSITE,
+                    "FACTORY_ID": tmpFACTORY_ID,
+                    "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
+                    "LCM_OWNER": {"$in": ["LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                    "MAIN_WC": {"$in": OPERList},
+                    "PROD_NBR": PROD_NBR
+                }
+            },
+            {
+                "$group": {
+                    "_id": {
+                        "APPLICATION" : "$APPLICATION",
+                        "PROD_NBR": "$PROD_NBR",
+                        "DFCT_CODE": "$DFCT_CODE"
+                    },
+                    "deftQty": {
+                        "$sum": {"$toInt": "$QTY"}
+                    }
+                }
+            },
+            {
+                "$addFields": {
+                    "APPLICATION" : "$_id.APPLICATION",
+                    "PROD_NBR": "$_id.PROD_NBR",
+                    "deftQty": "$deftQty",
+                    "passQty": 0
+                }
+            },
+            {
+                "$project": {
+                    "_id": 0
+                }
+            },
+            {
+                "$unionWith": {
+                    "coll": "passHisAndCurrent",
+                            "pipeline": [
+                                {
+                                    "$match": {
+                                        "COMPANY_CODE": tmpCOMPANY_CODE,
+                                        "SITE": tmpSITE,
+                                        "FACTORY_ID": tmpFACTORY_ID,
+                                        "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
+                                        "MAIN_WC": {"$in": OPERList},
+                                        "PROD_NBR": PROD_NBR
+                                    }
+                                },
+                                {
+                                    "$group": {
+                                        "_id": {
+                                            "APPLICATION" : "$APPLICATION",
+                                            "PROD_NBR": "$PROD_NBR"
+                                        },
+                                        "passQty": {
+                                            "$sum": {
+                                                "$toInt": "$QTY"
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "$addFields": {
+                                        "APPLICATION" : "$_id.APPLICATION",
+                                        "PROD_NBR": "$_id.PROD_NBR",
+                                        "passQty": "$passQty",
+                                        "deftQty": 0
+                                    }
+                                },
+                                {
+                                    "$project": {
+                                        "_id": 0
+                                    }
+                                }
+                            ]
+                }
+            },
+            {
+                "$group": {
+                    "_id": {
+                        "APPLICATION" : "$APPLICATION",
+                        "PROD_NBR": "$PROD_NBR"
+                    },
+                    "deftQty": {
+                        "$sum": "$deftQty"
+                    },
+                    "passQty": {
+                        "$sum": "$passQty"
+                    }
+                }
+            },
+            {
+                "$addFields": {
+                    "APPLICATION" : "$_id.APPLICATION",
+                    "PROD_NBR": "$_id.PROD_NBR",
+                    "OPER" : OPER,
+                    "DATARANGE": DATARANGENAME,
+                    "DEFECT_YIELD": {
+                        "$cond": [
+                            {
+                                "$eq": [
+                                    "$passQty",
+                                    0
+                                ]
+                            },
+                            0,
+                            {
+                                "$divide": [
+                                    "$deftQty",
+                                    "$passQty"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "$project": {
+                    "_id": 0
+                }
+            },
+            {
+                "$sort": {
+                    "APPLICATION" : 1,
+                    "PROD_NBR": 1
+                }
+            }
+        ]
+
+        if DEFECTCODE != None:
+            FPYLV3_Aggregate[0]["$match"]["DFCT_CODE"] = DEFECTCODE
+       
+        try:
+            self.getMongoConnection()
+            self.setMongoDb("IAMP")
+            self.setMongoCollection("deftHisAndCurrent")
+            returnData = self.aggregate(FPYLV3_Aggregate)
+            self.closeMongoConncetion()
+
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
 
 
