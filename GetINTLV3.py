@@ -417,39 +417,6 @@ class INTLV3(BaseType):
                 }
             },
             {
-                "$lookup": {
-                    "from": "deftCodeView",
-                            "as": "deftCodeList",
-                            "let": {
-                                "dfctCode": "$DFCT_CODE"
-                            },
-                    "pipeline": [
-                                {
-                                    "$match": {
-                                        "$expr": {
-                                            "$and": [
-                                                {
-                                                    "$eq": [
-                                                        "$$dfctCode",
-                                                        "$DEFECT_CODE"
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    }
-                                },
-                                {
-                                    "$project": {
-                                        "DEFECT_CODE": 1
-                                    }
-                                }
-                            ]
-                }
-            },
-            {
-                "$unwind": "$deftCodeList"
-            },
-            {
                 "$group": {
                     "_id": {
                         "APPLICATION" : "$APPLICATION",
