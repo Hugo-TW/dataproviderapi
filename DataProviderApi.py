@@ -1928,7 +1928,7 @@ INTLV3ML = api.model('GetINTLV3', {
 @INTLV3Ns.response(409, 'Conflict')
 @INTLV3Ns.response(500, 'Internal Server Error')
 class getINTLV3(Resource):
-    @INTLV3Ns.doc('INTFPYLV2')
+    @INTLV3Ns.doc('INTFPYLV3')
     @INTLV3Ns.expect(INTLV3ML)
     def post(self):
         if not request:

@@ -510,43 +510,44 @@ class INTLV3(BaseType):
             return "error"
 
     def _groupFPYLV3(self, n1d,n2d,n3d,n4d,n5d,n6d,n1w,n2w,n3w,n1m,n2m,n1s): 
-            magerData = []            
-            for d in n1d:       
-                d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0
-                magerData.append(d) 
-            for d in n2d:   
-                d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0    
-                magerData.append(d) 
-            for d in n3d:       
-                d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0
-                magerData.append(d) 
-            for d in n4d:  
-                d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0     
-                magerData.append(d) 
-            for d in n5d:   
-                d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0    
-                magerData.append(d) 
-            for d in n6d:   
-                d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0    
-                magerData.append(d) 
-            for d in n1w: 
-                d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0      
-                magerData.append(d) 
-            for d in n2w:   
-                d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0    
-                magerData.append(d) 
-            for d in n3w:   
-                d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0    
-                magerData.append(d) 
-            for d in n1m:   
-                d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0    
-                magerData.append(d) 
-            for d in n2m:
-                d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0       
-                magerData.append(d)  
+            magerData = [] 
             for d in n1s:   
                 d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0    
                 magerData.append(d)
+            for d in n2m:
+                d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0       
+                magerData.append(d)
+            for d in n1m:   
+                d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0    
+                magerData.append(d)              
+            for d in n3w:   
+                d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0    
+                magerData.append(d)             
+            for d in n2w:   
+                d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0    
+                magerData.append(d)             
+            for d in n1w: 
+                d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0      
+                magerData.append(d)             
+            for d in n6d:   
+                d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0    
+                magerData.append(d)            
+            for d in n5d:   
+                d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0    
+                magerData.append(d)             
+            for d in n4d:  
+                d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0     
+                magerData.append(d)             
+            for d in n3d:       
+                d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0
+                magerData.append(d)             
+            for d in n2d:   
+                d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0    
+                magerData.append(d)                       
+            for d in n1d:       
+                d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0
+                magerData.append(d) 
+         
 
             return magerData
 
