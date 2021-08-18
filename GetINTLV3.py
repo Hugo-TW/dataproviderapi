@@ -310,17 +310,7 @@ class INTLV3(BaseType):
                 
                 magerData = self._groupINTLV3(n1d_DATA,n2d_DATA,n3d_DATA,n4d_DATA,n5d_DATA,n6d_DATA,n1w_DATA,n2w_DATA,n3w_DATA,n1m_DATA,n2m_DATA,n1s_DATA)
 
-                returnData = {                    
-                    "KPITYPE": tmpKPITYPE,
-                    "COMPANY_CODE": tmpCOMPANY_CODE,
-                    "SITE": tmpSITE,
-                    "FACTORY_ID": tmpFACTORY_ID,
-                    "APPLICATION": tmpAPPLICATION,
-                    "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
-                    "PROD_NBR": tmpPROD_NBR,
-                    "OPER": tmpOPER,
-                    "DATASERIES": magerData
-                }
+                returnData = self._calFPYLV2LINEOPER(magerData)
 
                 self.getRedisConnection()
                 if self.searchRedisKeys(redisKey):     
@@ -328,7 +318,7 @@ class INTLV3(BaseType):
                         returnData, sort_keys=True, indent=2), self.getKeyExpirTime(expirTimeKey))
                 else:
                     self.setRedisData(redisKey, json.dumps(
-                        returnData, sort_keys=True, indent=2), 60)
+                        returnData, sort_keys=True, indent=2), 60)                 
 
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
@@ -856,10 +846,8 @@ class INTLV3(BaseType):
                     "COMPANY_CODE": "$COMPANY_CODE",
                     "SITE": "$SITE",
                     "FACTORY_ID": "$FACTORY_ID",
-                    "PROD_NBR": "$PROD_NBR",
-                    "ACCT_DATE": "$ACCT_DATE",
-                    "APPLICATION": "$APPLICATION",
-                    "MAIN_WC": {"$toInt": "$MAIN_WC"},                 
+                    "PROD_NBR": "$PROD_NBR",                    
+                    "APPLICATION": "$APPLICATION",              
                     "DFCT_CODE" : "$DFCT_CODE",
                     "ERRC_DESCR" : "$ERRC_DESCR"
                 },
@@ -875,45 +863,12 @@ class INTLV3(BaseType):
                 "SITE": "$_id.SITE",
                 "FACTORY_ID": "$_id.FACTORY_ID",
                 "PROD_NBR": "$_id.PROD_NBR",
-                "ACCT_DATE": "$_id.ACCT_DATE",
                 "APPLICATION": "$_id.APPLICATION",
-                "MAIN_WC": "$_id.MAIN_WC",
                 "DFCT_CODE" : "$_id.DFCT_CODE",                
                 "ERRC_DESCR" : "$_id.ERRC_DESCR",
-                "DEFT_QTY": "$DEFT_QTY"
-            }
-        }
-        deftGroup2 = {
-            "$group": {
-                "_id": {
-                    "COMPANY_CODE": "$COMPANY_CODE",
-                    "SITE": "$SITE",
-                    "FACTORY_ID": "$FACTORY_ID",
-                    "PROD_NBR": "$PROD_NBR",
-                    "ACCT_DATE": "$ACCT_DATE",
-                    "APPLICATION": "$APPLICATION",
-                    "DFCT_CODE" : "$DFCT_CODE",
-                    "ERRC_DESCR" : "$ERRC_DESCR"
-                },
-                "DeftSUMQty": {
-                    "$sum": {"$toInt": "$DEFT_QTY"}
-                }
-            }
-        }
-        deftProject2 = {
-            "$project": {
-                "_id": 0,
-                "COMPANY_CODE": "$_id.COMPANY_CODE",
-                "SITE": "$_id.SITE",
-                "FACTORY_ID": "$_id.FACTORY_ID",
-                "PROD_NBR": "$_id.PROD_NBR",
-                "ACCT_DATE": "$_id.ACCT_DATE",
-                "APPLICATION": "$_id.APPLICATION",
+                "DEFT_QTY": "$DEFT_QTY",
                 "OPER": OPER,     
-                "DATARANGE": DATARANGENAME,           
-                "DFCT_CODE" : "$_id.DFCT_CODE",
-                "ERRC_DESCR" : "$_id.ERRC_DESCR",
-                "DeftSUMQty": "$DeftSUMQty"
+                "DATARANGE": DATARANGENAME
             }
         }
         deftSort = {
@@ -922,13 +877,12 @@ class INTLV3(BaseType):
                 "SITE": 1,
                 "FACTORY_ID": 1,
                 "PROD_NBR": 1,
-                "ACCT_DATE": 1,
                 "APPLICATION": 1,
                 "DFCT_CODE" : 1,
                 "ERRC_DESCR" : 1
             }
         }
-        deftAggregate.extend([deftMatch1, deftGroup1, deftProject1,deftGroup2, deftProject2, deftSort])
+        deftAggregate.extend([deftMatch1, deftGroup1, deftProject1, deftSort])
         
         try:
             self.getMongoConnection()
@@ -953,4 +907,67 @@ class INTLV3(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
+    def _calFPYLV2LINEOPER(self, tempData):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]        
+        tmpAPPLICATION =self.jsonData["APPLICATION"]
+        tmpKPITYPE = self.jsonData["KPITYPE"]
+        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        tmpPROD_NBR = self.jsonData["PROD_NBR"]
+        tmpOPER = self.jsonData["OPER"]
 
+        allDFCTCount = {}
+        for x in tempData:     
+            if x["DFCT_CODE"] in allDFCTCount.keys():
+                allDFCTCount[x["DFCT_CODE"]] += x["DEFT_QTY"]
+            else:
+                allDFCTCount[x["DFCT_CODE"]] = x["DEFT_QTY"]
+        top10 = dict(sorted(allDFCTCount.items(),key=lambda item:item[1],reverse=True) [:10])
+               
+        operMap = {"PCBI":0,"LAM":1,"AAFC":2,"CKEN":3,"DKEN":4}
+
+        DATASERIES = []
+        for x in tempData:  
+            cDFct = x["DFCT_CODE"]  if x["DFCT_CODE"] in top10.keys() else "OTHER"
+            cERRC = x["ERRC_DESCR"] if x["DFCT_CODE"] in top10.keys() else "OTHER" 
+
+            rank = 999
+            if cDFct in top10.keys():
+                rank = 1
+                for i in top10:
+                    if i != x["DFCT_CODE"]:
+                        rank +=1 
+                    else:
+                        break
+            
+            self.writeLog(rank)
+
+            d = list(filter(lambda d: d["DFCT_CODE"] == cDFct and d["OPER"] == x["OPER"], DATASERIES))
+            if d == []:
+                DATASERIES.append({
+                        "OPER": x["OPER"],
+                        "YVALUE": x["DEFT_QTY"],
+                        "RANK": rank,
+                        "DFCT_CODE" : cDFct,
+                        "ERRC_DESCR" : cERRC,
+                        "DATARANGE": x["DATARANGE"]
+                    })
+            else:
+                for cx in DATASERIES:
+                    if cx["OPER"] == x["OPER"] and cx["DFCT_CODE"] == cDFct :
+                       cx["YVALUE"] += x["DEFT_QTY"]
+
+        returnData = {                    
+                    "KPITYPE": tmpKPITYPE,
+                    "COMPANY_CODE": tmpCOMPANY_CODE,
+                    "SITE": tmpSITE,
+                    "FACTORY_ID": tmpFACTORY_ID,
+                    "APPLICATION": tmpAPPLICATION,  
+                    "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
+                    "PROD_NBR": tmpPROD_NBR,                                      
+                    "OPER": tmpOPER,
+                    "DATASERIES": DATASERIES
+                }
+
+        return returnData
