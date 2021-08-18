@@ -291,6 +291,47 @@ class INTLV3(BaseType):
 
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
+            if tmpKPITYPE == "FPYLV2LINE":
+
+                dataRange =  self._dataRange(tmpACCT_DATE)
+
+                n1d_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n1d"], dataRange["n1d_array"])
+                n2d_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n2d"], dataRange["n2d_array"])
+                n3d_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n3d"], dataRange["n3d_array"])
+                n4d_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n4d"], dataRange["n4d_array"])
+                n5d_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n5d"], dataRange["n5d_array"])
+                n6d_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n6d"], dataRange["n6d_array"])
+                n1w_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n1w"], dataRange["n1w_array"])
+                n2w_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n2w"], dataRange["n2w_array"])
+                n3w_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n3w"], dataRange["n2w_array"])
+                n1m_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n1m"], dataRange["n1m_array"])
+                n2m_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n2m"], dataRange["n2m_array"])
+                n1s_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n1s"], dataRange["n1s_array"])
+                
+                magerData = self._groupINTLV3(n1d_DATA,n2d_DATA,n3d_DATA,n4d_DATA,n5d_DATA,n6d_DATA,n1w_DATA,n2w_DATA,n3w_DATA,n1m_DATA,n2m_DATA,n1s_DATA)
+
+                returnData = {                    
+                    "KPITYPE": tmpKPITYPE,
+                    "COMPANY_CODE": tmpCOMPANY_CODE,
+                    "SITE": tmpSITE,
+                    "FACTORY_ID": tmpFACTORY_ID,
+                    "APPLICATION": tmpAPPLICATION,
+                    "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
+                    "PROD_NBR": tmpPROD_NBR,
+                    "OPER": tmpOPER,
+                    "DATASERIES": magerData
+                }
+
+                self.getRedisConnection()
+                if self.searchRedisKeys(redisKey):     
+                    self.setRedisData(redisKey, json.dumps(
+                        returnData, sort_keys=True, indent=2), self.getKeyExpirTime(expirTimeKey))
+                else:
+                    self.setRedisData(redisKey, json.dumps(
+                        returnData, sort_keys=True, indent=2), 60)
+
+                return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+
 
             else:
                 return {'Result': 'Fail', 'Reason': 'Parametes[KPITYPE] not in Rule'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
@@ -767,6 +808,136 @@ class INTLV3(BaseType):
             self.setMongoCollection("deftHisAndCurrent")
             returnData = self.aggregate(FPYLV3_Aggregate)
             self.closeMongoConncetion()
+
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+    def _getFPYLV2LINEData(self, OPER, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+
+        getFabData = self.operSetData[tmpFACTORY_ID]
+        numeratorData = getFabData["FPY"]["numerator"][OPER]
+
+        deftAggregate = []
+
+        #deft
+        deftMatch1 = {
+            "$match": {
+                "COMPANY_CODE": tmpCOMPANY_CODE,
+                "SITE": tmpSITE,
+                "FACTORY_ID": tmpFACTORY_ID,
+                "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
+                "LCM_OWNER": {"$in": ["LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                "PROD_NBR": PROD_NBR,
+                "$expr": {
+                    "$and": [
+                        {"$gte": [{"$toInt": "$MAIN_WC"},numeratorData["fromt"]]},
+                        {"$lte": [{"$toInt": "$MAIN_WC"},numeratorData["tot"]]}
+                    ]
+                }
+            }
+        }
+        deftGroup1 = {
+            "$group": {
+                "_id": {
+                    "COMPANY_CODE": "$COMPANY_CODE",
+                    "SITE": "$SITE",
+                    "FACTORY_ID": "$FACTORY_ID",
+                    "PROD_NBR": "$PROD_NBR",
+                    "ACCT_DATE": "$ACCT_DATE",
+                    "APPLICATION": "$APPLICATION",
+                    "MAIN_WC": {"$toInt": "$MAIN_WC"},                 
+                    "DFCT_CODE" : "$DFCT_CODE",
+                    "ERRC_DESCR" : "$ERRC_DESCR"
+                },
+                "DEFT_QTY": {
+                    "$sum": {"$toInt": "$QTY"}
+                }
+            }
+        }
+        deftProject1 = {
+            "$project": {
+                "_id": 0,
+                "COMPANY_CODE": "$_id.COMPANY_CODE",
+                "SITE": "$_id.SITE",
+                "FACTORY_ID": "$_id.FACTORY_ID",
+                "PROD_NBR": "$_id.PROD_NBR",
+                "ACCT_DATE": "$_id.ACCT_DATE",
+                "APPLICATION": "$_id.APPLICATION",
+                "MAIN_WC": "$_id.MAIN_WC",
+                "DFCT_CODE" : "$_id.DFCT_CODE",                
+                "ERRC_DESCR" : "$_id.ERRC_DESCR",
+                "DEFT_QTY": "$DEFT_QTY"
+            }
+        }
+        deftGroup2 = {
+            "$group": {
+                "_id": {
+                    "COMPANY_CODE": "$COMPANY_CODE",
+                    "SITE": "$SITE",
+                    "FACTORY_ID": "$FACTORY_ID",
+                    "PROD_NBR": "$PROD_NBR",
+                    "ACCT_DATE": "$ACCT_DATE",
+                    "APPLICATION": "$APPLICATION",
+                    "DFCT_CODE" : "$DFCT_CODE",
+                    "ERRC_DESCR" : "$ERRC_DESCR"
+                },
+                "DeftSUMQty": {
+                    "$sum": {"$toInt": "$DEFT_QTY"}
+                }
+            }
+        }
+        deftProject2 = {
+            "$project": {
+                "_id": 0,
+                "COMPANY_CODE": "$_id.COMPANY_CODE",
+                "SITE": "$_id.SITE",
+                "FACTORY_ID": "$_id.FACTORY_ID",
+                "PROD_NBR": "$_id.PROD_NBR",
+                "ACCT_DATE": "$_id.ACCT_DATE",
+                "APPLICATION": "$_id.APPLICATION",
+                "OPER": OPER,     
+                "DATARANGE": DATARANGENAME,           
+                "DFCT_CODE" : "$_id.DFCT_CODE",
+                "ERRC_DESCR" : "$_id.ERRC_DESCR",
+                "DeftSUMQty": "$DeftSUMQty"
+            }
+        }
+        deftSort = {
+            "$sort": {
+                "COMPANY_CODE": 1,
+                "SITE": 1,
+                "FACTORY_ID": 1,
+                "PROD_NBR": 1,
+                "ACCT_DATE": 1,
+                "APPLICATION": 1,
+                "DFCT_CODE" : 1,
+                "ERRC_DESCR" : 1
+            }
+        }
+        deftAggregate.extend([deftMatch1, deftGroup1, deftProject1,deftGroup2, deftProject2, deftSort])
+        
+        try:
+            self.getMongoConnection()
+            self.setMongoDb("IAMP")
+            self.setMongoCollection("deftHisAndCurrent")
+            dData = self.aggregate(deftAggregate)
+            self.closeMongoConncetion()
+
+            returnData = dData
 
             return returnData
 
