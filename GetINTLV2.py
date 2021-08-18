@@ -496,6 +496,8 @@ class INTLV2(BaseType):
                 allDFCTCount[x["DFCT_CODE"]] = x["DeftSUMQty"]
         top10 = dict(sorted(allDFCTCount.items(),key=lambda item:item[1],reverse=True) [:10])
                
+        operMap = {"PCBI":0,"LAM":1,"AAFC":2,"CKEN":3,"DKEN":4}
+
         DATASERIES = []
         for x in tempData:  
             cDFct = x["DFCT_CODE"]  if x["DFCT_CODE"] in top10.keys() else "OTHER"
@@ -516,6 +518,7 @@ class INTLV2(BaseType):
             if d == []:
                 DATASERIES.append({
                         "OPER": x["OPER"],
+                        "XVALUE": operMap.get(x["OPER"], None),
                         "YVALUE": x["DeftSUMQty"],
                         "RANK": rank,
                         "DFCT_CODE" : cDFct,

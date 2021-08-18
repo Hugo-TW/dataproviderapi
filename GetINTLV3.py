@@ -295,18 +295,18 @@ class INTLV3(BaseType):
 
                 dataRange =  self._dataRange(tmpACCT_DATE)
 
-                n1d_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n1d"], dataRange["n1d_array"])
-                n2d_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n2d"], dataRange["n2d_array"])
-                n3d_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n3d"], dataRange["n3d_array"])
-                n4d_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n4d"], dataRange["n4d_array"])
-                n5d_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n5d"], dataRange["n5d_array"])
-                n6d_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n6d"], dataRange["n6d_array"])
-                n1w_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n1w"], dataRange["n1w_array"])
-                n2w_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n2w"], dataRange["n2w_array"])
-                n3w_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n3w"], dataRange["n2w_array"])
-                n1m_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n1m"], dataRange["n1m_array"])
-                n2m_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n2m"], dataRange["n2m_array"])
-                n1s_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n1s"], dataRange["n1s_array"])
+                n1d_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n1d"], dataRange["n1d_array"], 11)
+                n2d_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n2d"], dataRange["n2d_array"], 10)
+                n3d_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n3d"], dataRange["n3d_array"], 9)
+                n4d_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n4d"], dataRange["n4d_array"], 8)
+                n5d_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n5d"], dataRange["n5d_array"], 7)
+                n6d_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n6d"], dataRange["n6d_array"], 6)
+                n1w_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n1w"], dataRange["n1w_array"], 5)
+                n2w_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n2w"], dataRange["n2w_array"], 4)
+                n3w_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n3w"], dataRange["n2w_array"], 3)
+                n1m_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n1m"], dataRange["n1m_array"], 2)
+                n2m_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n2m"], dataRange["n2m_array"], 1)
+                n1s_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n1s"], dataRange["n1s_array"], 0)
                 
                 magerData = self._groupINTLV3(n1d_DATA,n2d_DATA,n3d_DATA,n4d_DATA,n5d_DATA,n6d_DATA,n1w_DATA,n2w_DATA,n3w_DATA,n1m_DATA,n2m_DATA,n1s_DATA)
 
@@ -813,7 +813,7 @@ class INTLV3(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
-    def _getFPYLV2LINEData(self, OPER, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY):
+    def _getFPYLV2LINEData(self, OPER, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
@@ -868,7 +868,8 @@ class INTLV3(BaseType):
                 "ERRC_DESCR" : "$_id.ERRC_DESCR",
                 "DEFT_QTY": "$DEFT_QTY",
                 "OPER": OPER,     
-                "DATARANGE": DATARANGENAME
+                "DATARANGE": DATARANGENAME,
+                "XVALUE": TYPE
             }
         }
         deftSort = {
@@ -947,6 +948,7 @@ class INTLV3(BaseType):
             if d == []:
                 DATASERIES.append({
                         "OPER": x["OPER"],
+                        "XVALUE": x["XVALUE"],
                         "YVALUE": x["DEFT_QTY"],
                         "RANK": rank,
                         "DFCT_CODE" : cDFct,
