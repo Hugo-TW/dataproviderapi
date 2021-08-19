@@ -500,7 +500,7 @@ class INTLV2(BaseType):
                 allDFCTCount[x["DFCT_CODE"]] = x["DeftSUMQty"]
         top10 = dict(sorted(allDFCTCount.items(),key=lambda item:item[1],reverse=True) [:10])
                
-        operMap = {"PCBI":0,"LAM":1,"AAFC":2,"CKEN":3,"DKEN":4}
+        operMap = {"PCBI":1,"LAM":2,"AAFC":3,"CKEN":4,"DKEN":5}
 
         DATASERIES = []
         for x in tempData:  

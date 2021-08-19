@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
+import operator
 from re import X
 import sys
 import traceback
@@ -901,17 +902,25 @@ class INTKPI(BaseType):
             if x["APPLICATION"] in getLimitData.keys():
                 targrtFPY = getLimitData[x["APPLICATION"]]["FPY"]
                 targrtQTY = getLimitData[x["APPLICATION"]]["qytlim"]
+            
+            QUADRANT = 0
 
             if x["FPY"] >= targrtFPY:
                 COLOR = "#06d6a0"
-                SYMBOL = "undefined"                
+                SYMBOL = "undefined"   
+                if targrtQTY > x["AvegPASSQTY"]:
+                    QUADRANT = 1
+                else:       
+                    QUADRANT = 2
             else:
                 if targrtQTY > x["AvegPASSQTY"]:
                     COLOR = "#ffd166"
                     SYMBOL = "undefined"
+                    QUADRANT = 3
                 else:                
                     COLOR = "#EF476F" 
-                    SYMBOL = "twinkle"   
+                    SYMBOL = "twinkle"  
+                    QUADRANT = 4 
                 
             DATASERIES.append({
                 "APPLICATION": x["APPLICATION"],
@@ -919,8 +928,19 @@ class INTKPI(BaseType):
                 "YIELD": x["FPY"],
                 "QTY": x["AvegPASSQTY"],
                 "COLOR": COLOR,
-                "SYMBOL": SYMBOL
+                "SYMBOL": SYMBOL,
+                "QUADRANT": QUADRANT
             })
+        #因為使用 operator.itemgetter 方法 排序順序要反過來執行
+        #不同欄位key 排序方式不同時 需要 3 - 2 - 1  反順序去寫code
+        DATASERIES.sort(key = operator.itemgetter("YIELD"), reverse = False)        
+        DATASERIES.sort(key = operator.itemgetter("QUADRANT"), reverse = True)
+
+        length = len(DATASERIES)
+        rank = 1
+        for x in range(length):
+            DATASERIES[x]["RANK"] = rank
+            rank += 1
 
         returnData = {
             "XLIMIT": xLimit,
