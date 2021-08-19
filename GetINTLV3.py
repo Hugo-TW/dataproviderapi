@@ -204,12 +204,12 @@ class INTLV3(BaseType):
                 return {'Result': 'NG', 'Reason': f'{tmpFACTORY_ID} not in FactoryID MAP'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
             # Check Redis Data
-            """
+
             self.getRedisConnection()
             if self.searchRedisKeys(redisKey):
                 self.writeLog(f"Cache Data From Redis")
                 return json.loads(self.getRedisData(redisKey)), 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type', "Access-Control-Expose-Headers": "Expires,DataSource", "Expires": time.mktime((datetime.datetime.now() + datetime.timedelta(seconds=self.getKeyExpirTime(expirTimeKey))).timetuple()), "DataSource": "Redis"}
-            """
+
             if tmpKPITYPE == "FPYLV3LINE":
                 dataRange =  self._dataRange(tmpACCT_DATE)
 
@@ -313,15 +313,14 @@ class INTLV3(BaseType):
                 magerData = self._grouptFPYLV2LINE(n1d_DATA,n2d_DATA,n3d_DATA,n4d_DATA,n5d_DATA,n6d_DATA,n1w_DATA,n2w_DATA,n3w_DATA,n1m_DATA,n2m_DATA,n1s_DATA)
 
                 returnData = self._calFPYLV2LINEOPER(magerData)
-                """
+
                 self.getRedisConnection()
                 if self.searchRedisKeys(redisKey):     
                     self.setRedisData(redisKey, json.dumps(
                         returnData, sort_keys=True, indent=2), self.getKeyExpirTime(expirTimeKey))
                 else:
                     self.setRedisData(redisKey, json.dumps(
-                        returnData, sort_keys=True, indent=2), 60)    
-                        """             
+                        returnData, sort_keys=True, indent=2), 60)  
 
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
