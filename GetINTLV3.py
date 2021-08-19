@@ -213,18 +213,18 @@ class INTLV3(BaseType):
             if tmpKPITYPE == "FPYLV3LINE":
                 dataRange =  self._dataRange(tmpACCT_DATE)
 
-                n1d_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n1d"], dataRange["n1d_array"], 12)
-                n2d_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n2d"], dataRange["n2d_array"], 11)
-                n3d_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n3d"], dataRange["n3d_array"], 10)
-                n4d_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n4d"], dataRange["n4d_array"], 9)
-                n5d_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n5d"], dataRange["n5d_array"], 8)
-                n6d_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n6d"], dataRange["n6d_array"], 7)
-                n1w_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n1w"], dataRange["n1w_array"], 6)
-                n2w_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n2w"], dataRange["n2w_array"], 5)
-                n3w_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n3w"], dataRange["n2w_array"], 4)
-                n1m_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n1m"], dataRange["n1m_array"], 3)
-                n2m_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n2m"], dataRange["n2m_array"], 2)
-                n1s_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n1s"], dataRange["n1s_array"], 1)
+                n1d_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n1d"], dataRange["n1d_array"], 11)
+                n2d_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n2d"], dataRange["n2d_array"], 10)
+                n3d_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n3d"], dataRange["n3d_array"], 9)
+                n4d_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n4d"], dataRange["n4d_array"], 8)
+                n5d_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n5d"], dataRange["n5d_array"], 7)
+                n6d_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n6d"], dataRange["n6d_array"], 6)
+                n1w_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n1w"], dataRange["n1w_array"], 5)
+                n2w_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n2w"], dataRange["n2w_array"], 4)
+                n3w_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n3w"], dataRange["n2w_array"], 3)
+                n1m_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n1m"], dataRange["n1m_array"], 2)
+                n2m_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n2m"], dataRange["n2m_array"], 1)
+                n1s_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n1s"], dataRange["n1s_array"], 0)
                 
                 magerData = self._groupINTLV3(n1d_DATA,n2d_DATA,n3d_DATA,n4d_DATA,n5d_DATA,n6d_DATA,n1w_DATA,n2w_DATA,n3w_DATA,n1m_DATA,n2m_DATA,n1s_DATA)
 
@@ -251,22 +251,22 @@ class INTLV3(BaseType):
 
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
-            if tmpKPITYPE == "EFALV3LINE":
+            elif tmpKPITYPE == "EFALV3LINE":
 
                 dataRange =  self._dataRange(tmpACCT_DATE)
 
-                n1d_DATA = self._getEFALV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n1d"], dataRange["n1d_array"], 12)
-                n2d_DATA = self._getEFALV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n2d"], dataRange["n2d_array"], 11)
-                n3d_DATA = self._getEFALV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n3d"], dataRange["n3d_array"], 10)
-                n4d_DATA = self._getEFALV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n4d"], dataRange["n4d_array"], 9)
-                n5d_DATA = self._getEFALV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n5d"], dataRange["n5d_array"], 8)
-                n6d_DATA = self._getEFALV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n6d"], dataRange["n6d_array"], 7)
-                n1w_DATA = self._getEFALV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n1w"], dataRange["n1w_array"], 6)
-                n2w_DATA = self._getEFALV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n2w"], dataRange["n2w_array"], 5)
-                n3w_DATA = self._getEFALV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n3w"], dataRange["n2w_array"], 4)
-                n1m_DATA = self._getEFALV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n1m"], dataRange["n1m_array"], 3)
-                n2m_DATA = self._getEFALV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n2m"], dataRange["n2m_array"], 2)
-                n1s_DATA = self._getEFALV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n1s"], dataRange["n1s_array"], 1)
+                n1d_DATA = self._getEFALV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n1d"], dataRange["n1d_array"], 11)
+                n2d_DATA = self._getEFALV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n2d"], dataRange["n2d_array"], 10)
+                n3d_DATA = self._getEFALV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n3d"], dataRange["n3d_array"], 9)
+                n4d_DATA = self._getEFALV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n4d"], dataRange["n4d_array"], 8)
+                n5d_DATA = self._getEFALV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n5d"], dataRange["n5d_array"], 7)
+                n6d_DATA = self._getEFALV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n6d"], dataRange["n6d_array"], 6)
+                n1w_DATA = self._getEFALV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n1w"], dataRange["n1w_array"], 5)
+                n2w_DATA = self._getEFALV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n2w"], dataRange["n2w_array"], 4)
+                n3w_DATA = self._getEFALV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n3w"], dataRange["n2w_array"], 3)
+                n1m_DATA = self._getEFALV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n1m"], dataRange["n1m_array"], 2)
+                n2m_DATA = self._getEFALV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n2m"], dataRange["n2m_array"], 1)
+                n1s_DATA = self._getEFALV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n1s"], dataRange["n1s_array"], 0)
                 
                 magerData = self._groupINTLV3(n1d_DATA,n2d_DATA,n3d_DATA,n4d_DATA,n5d_DATA,n6d_DATA,n1w_DATA,n2w_DATA,n3w_DATA,n1m_DATA,n2m_DATA,n1s_DATA)
 
@@ -293,7 +293,7 @@ class INTLV3(BaseType):
 
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
-            if tmpKPITYPE == "FPYLV2LINE":
+            elif tmpKPITYPE == "FPYLV2LINE":
 
                 dataRange =  self._dataRange(tmpACCT_DATE)
 
@@ -323,7 +323,6 @@ class INTLV3(BaseType):
                         returnData, sort_keys=True, indent=2), 60)  
 
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
-
 
             else:
                 return {'Result': 'Fail', 'Reason': 'Parametes[KPITYPE] not in Rule'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
@@ -942,9 +941,7 @@ class INTLV3(BaseType):
             for d in n2d:     
                 magerData.append(d)                       
             for d in n1d:       
-                magerData.append(d) 
-         
-
+                magerData.append(d)
             return magerData
 
     def _calFPYLV2LINEOPER(self, tempData):

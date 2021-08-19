@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
+import operator
 from re import X
 import sys
 import traceback
@@ -500,7 +501,7 @@ class INTLV2(BaseType):
                 allDFCTCount[x["DFCT_CODE"]] = x["DeftSUMQty"]
         top10 = dict(sorted(allDFCTCount.items(),key=lambda item:item[1],reverse=True) [:10])
                
-        operMap = {"PCBI":1,"LAM":2,"AAFC":3,"CKEN":4,"DKEN":5}
+        operMap = {"PCBI":0,"LAM":1,"AAFC":2,"CKEN":3,"DKEN":4}
 
         DATASERIES = []
         for x in tempData:  
@@ -532,7 +533,11 @@ class INTLV2(BaseType):
                 for cx in DATASERIES:
                     if cx["OPER"] == x["OPER"] and cx["DFCT_CODE"] == cDFct :
                        cx["YVALUE"] += x["DeftSUMQty"]
-
+                       
+        #因為使用 operator.itemgetter 方法 排序順序要反過來執行
+        #不同欄位key 排序方式不同時 需要 3 - 2 - 1  反順序去寫code
+        DATASERIES.sort(key = operator.itemgetter("RANK"), reverse = False)      
+        
         returnData = {                    
                     "KPITYPE": tmpKPITYPE,
                     "COMPANY_CODE": tmpCOMPANY_CODE,
