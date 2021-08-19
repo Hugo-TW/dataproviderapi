@@ -6,6 +6,7 @@ import traceback
 import time
 import datetime
 import copy
+import operator
 
 from flask_restplus.utils import not_none
 from BaseType import BaseType
@@ -203,11 +204,12 @@ class INTLV3(BaseType):
                 return {'Result': 'NG', 'Reason': f'{tmpFACTORY_ID} not in FactoryID MAP'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
             # Check Redis Data
+            """
             self.getRedisConnection()
             if self.searchRedisKeys(redisKey):
                 self.writeLog(f"Cache Data From Redis")
                 return json.loads(self.getRedisData(redisKey)), 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type', "Access-Control-Expose-Headers": "Expires,DataSource", "Expires": time.mktime((datetime.datetime.now() + datetime.timedelta(seconds=self.getKeyExpirTime(expirTimeKey))).timetuple()), "DataSource": "Redis"}
-            
+            """
             if tmpKPITYPE == "FPYLV3LINE":
                 dataRange =  self._dataRange(tmpACCT_DATE)
 
@@ -308,17 +310,18 @@ class INTLV3(BaseType):
                 n2m_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n2m"], dataRange["n2m_array"], 1)
                 n1s_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n1s"], dataRange["n1s_array"], 0)
                 
-                magerData = self._groupINTLV3(n1d_DATA,n2d_DATA,n3d_DATA,n4d_DATA,n5d_DATA,n6d_DATA,n1w_DATA,n2w_DATA,n3w_DATA,n1m_DATA,n2m_DATA,n1s_DATA)
+                magerData = self._grouptFPYLV2LINE(n1d_DATA,n2d_DATA,n3d_DATA,n4d_DATA,n5d_DATA,n6d_DATA,n1w_DATA,n2w_DATA,n3w_DATA,n1m_DATA,n2m_DATA,n1s_DATA)
 
                 returnData = self._calFPYLV2LINEOPER(magerData)
-
+                """
                 self.getRedisConnection()
                 if self.searchRedisKeys(redisKey):     
                     self.setRedisData(redisKey, json.dumps(
                         returnData, sort_keys=True, indent=2), self.getKeyExpirTime(expirTimeKey))
                 else:
                     self.setRedisData(redisKey, json.dumps(
-                        returnData, sort_keys=True, indent=2), 60)                 
+                        returnData, sort_keys=True, indent=2), 60)    
+                        """             
 
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
@@ -849,7 +852,8 @@ class INTLV3(BaseType):
                     "PROD_NBR": "$PROD_NBR",                    
                     "APPLICATION": "$APPLICATION",              
                     "DFCT_CODE" : "$DFCT_CODE",
-                    "ERRC_DESCR" : "$ERRC_DESCR"
+                    "ERRC_DESCR" : "$ERRC_DESCR",
+                    
                 },
                 "DEFT_QTY": {
                     "$sum": {"$toInt": "$QTY"}
@@ -866,12 +870,16 @@ class INTLV3(BaseType):
                 "APPLICATION": "$_id.APPLICATION",
                 "DFCT_CODE" : "$_id.DFCT_CODE",                
                 "ERRC_DESCR" : "$_id.ERRC_DESCR",
-                "DEFT_QTY": "$DEFT_QTY",
-                "OPER": OPER,     
-                "DATARANGE": DATARANGENAME,
-                "XVALUE": TYPE
+                "DEFT_QTY": "$DEFT_QTY"
             }
         }
+        deftAdd = {
+                "$addFields": {
+                    "OPER": OPER,     
+                    "DATARANGE": DATARANGENAME,
+                    "XVALUE": TYPE
+                }
+            }
         deftSort = {
             "$sort": {
                 "COMPANY_CODE": 1,
@@ -883,7 +891,7 @@ class INTLV3(BaseType):
                 "ERRC_DESCR" : 1
             }
         }
-        deftAggregate.extend([deftMatch1, deftGroup1, deftProject1, deftSort])
+        deftAggregate.extend([deftMatch1, deftGroup1, deftProject1, deftAdd, deftSort])
         
         try:
             self.getMongoConnection()
@@ -908,6 +916,36 @@ class INTLV3(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
+    def _grouptFPYLV2LINE(self, n1d,n2d,n3d,n4d,n5d,n6d,n1w,n2w,n3w,n1m,n2m,n1s): 
+            magerData = [] 
+            for d in n1s:     
+                magerData.append(d)
+            for d in n2m:     
+                magerData.append(d)
+            for d in n1m:     
+                magerData.append(d)              
+            for d in n3w:       
+                magerData.append(d)             
+            for d in n2w:      
+                magerData.append(d)             
+            for d in n1w:      
+                magerData.append(d)             
+            for d in n6d:      
+                magerData.append(d)            
+            for d in n5d:      
+                magerData.append(d)             
+            for d in n4d:      
+                magerData.append(d)             
+            for d in n3d:       
+                magerData.append(d)             
+            for d in n2d:     
+                magerData.append(d)                       
+            for d in n1d:       
+                magerData.append(d) 
+         
+
+            return magerData
+
     def _calFPYLV2LINEOPER(self, tempData):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
@@ -919,15 +957,13 @@ class INTLV3(BaseType):
         tmpOPER = self.jsonData["OPER"]
 
         allDFCTCount = {}
-        for x in tempData:     
+        for x in tempData:    
             if x["DFCT_CODE"] in allDFCTCount.keys():
                 allDFCTCount[x["DFCT_CODE"]] += x["DEFT_QTY"]
             else:
                 allDFCTCount[x["DFCT_CODE"]] = x["DEFT_QTY"]
         top10 = dict(sorted(allDFCTCount.items(),key=lambda item:item[1],reverse=True) [:10])
                
-        operMap = {"PCBI":0,"LAM":1,"AAFC":2,"CKEN":3,"DKEN":4}
-
         DATASERIES = []
         for x in tempData:  
             cDFct = x["DFCT_CODE"]  if x["DFCT_CODE"] in top10.keys() else "OTHER"
@@ -942,11 +978,10 @@ class INTLV3(BaseType):
                     else:
                         break
             
-            self.writeLog(rank)
 
-            d = list(filter(lambda d: d["DFCT_CODE"] == cDFct and d["OPER"] == x["OPER"], DATASERIES))
+            d = list(filter(lambda d: d["DFCT_CODE"] == cDFct and d["XVALUE"] == x["XVALUE"] , DATASERIES))
             if d == []:
-                DATASERIES.append({
+                test = {
                         "OPER": x["OPER"],
                         "XVALUE": x["XVALUE"],
                         "YVALUE": x["DEFT_QTY"],
@@ -954,11 +989,15 @@ class INTLV3(BaseType):
                         "DFCT_CODE" : cDFct,
                         "ERRC_DESCR" : cERRC,
                         "DATARANGE": x["DATARANGE"]
-                    })
+                    }
+                DATASERIES.append(test)
+            
             else:
                 for cx in DATASERIES:
                     if cx["OPER"] == x["OPER"] and cx["DFCT_CODE"] == cDFct :
                        cx["YVALUE"] += x["DEFT_QTY"]
+
+        DATASERIES.sort(key = operator.itemgetter("XVALUE", "RANK"), reverse = False)
 
         returnData = {                    
                     "KPITYPE": tmpKPITYPE,

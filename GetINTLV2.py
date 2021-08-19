@@ -346,12 +346,16 @@ class INTLV2(BaseType):
                 "PROD_NBR": "$_id.PROD_NBR",
                 "ACCT_DATE": "$_id.ACCT_DATE",
                 "APPLICATION": "$_id.APPLICATION",
-                "OPER": OPER,                
                 "DFCT_CODE" : "$_id.DFCT_CODE",
                 "ERRC_DESCR" : "$_id.ERRC_DESCR",
                 "DeftSUMQty": "$DeftSUMQty"
             }
         }
+        deftAdd = {
+                "$addFields": {
+                    "OPER": OPER
+                }
+            }
         deftSort = {
             "$sort": {
                 "COMPANY_CODE": 1,
@@ -364,7 +368,7 @@ class INTLV2(BaseType):
                 "ERRC_DESCR" : 1
             }
         }
-        deftAggregate.extend([deftMatch1, deftGroup1, deftProject1,deftGroup2, deftProject2, deftSort])
+        deftAggregate.extend([deftMatch1, deftGroup1, deftProject1,deftGroup2, deftProject2, deftAdd, deftSort])
         
         try:
             self.getMongoConnection()
