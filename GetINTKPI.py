@@ -466,7 +466,6 @@ class INTKPI(BaseType):
                 returnData = self._calEFAData(groupEFAData)
 
                 # 存到 redis 暫存
-                """
                 self.getRedisConnection()
                 if self.searchRedisKeys(redisKey):
                     self.setRedisData(redisKey, json.dumps(
@@ -474,7 +473,6 @@ class INTKPI(BaseType):
                 else:
                     self.setRedisData(redisKey, json.dumps(
                         returnData, sort_keys=True, indent=2), 60)
-                """
 
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
            
@@ -742,8 +740,11 @@ class INTKPI(BaseType):
             if oData["DeftSUMQty"] == 0:
                 oData["DEFECT_RATE"] = 0
             else:
-                oData["DEFECT_RATE"] = round(
-                    oData["DeftSUMQty"] / oData["PassSUMQty"], 4)
+                if(oData["PassSUMQty"] != 0):
+                    oData["DEFECT_RATE"] = round(
+                        oData["DeftSUMQty"] / oData["PassSUMQty"], 4)
+                else:
+                    oData["DEFECT_RATE"] = 1
             oData["FPY_RATE"] = round(1 - oData["DEFECT_RATE"], 4)
             if oData["DeftSUMQty"] < oData["PassSUMQty"] and oData["FPY_RATE"] > 0:
                 data.append(copy.deepcopy(oData))

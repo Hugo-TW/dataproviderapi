@@ -324,6 +324,53 @@ class INTLV3(BaseType):
 
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
+            elif tmpKPITYPE == "EFALV2LINE":
+
+                OPERDATA = [
+                    {"PROCESS": "BONDING", "OPER": 1300, "DESC": "PCBI(HMT)"},
+                    {"PROCESS": "BONDING", "OPER": 1301,
+                        "DESC": "PCBT(串線PCBI)"},
+                    {"PROCESS": "LAM", "OPER": 1340, "DESC": "BT"},
+                    {"PROCESS": "LAM", "OPER": 1370, "DESC": "PT"},
+                    {"PROCESS": "ASSY", "OPER": 1419,
+                        "DESC": "OTPA(OTP AAFC)"},
+                    {"PROCESS": "ASSY", "OPER": 1420, "DESC": "AAFC(同C-)"},
+                    {"PROCESS": "TPI", "OPER": 1510, "DESC": "TPI"},
+                    {"PROCESS": "OTPC", "OPER": 1590, "DESC": "Flicker check"},
+                    {"PROCESS": "C-KEN", "OPER": 1600,
+                        "DESC": "(A+B) Panel C-"}
+                ]
+                dataRange =  self._dataRange(tmpACCT_DATE)
+                
+                magerData = []
+                for x in OPERDATA:
+                    loopOPER = x ["PROCESS"]
+                    n1d_DATA = self._getEFALV3DATA(loopOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n1d"], dataRange["n1d_array"], 11)
+                    n2d_DATA = self._getEFALV3DATA(loopOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n2d"], dataRange["n2d_array"], 10)
+                    n3d_DATA = self._getEFALV3DATA(loopOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n3d"], dataRange["n3d_array"], 9)
+                    n4d_DATA = self._getEFALV3DATA(loopOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n4d"], dataRange["n4d_array"], 8)
+                    n5d_DATA = self._getEFALV3DATA(loopOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n5d"], dataRange["n5d_array"], 7)
+                    n6d_DATA = self._getEFALV3DATA(loopOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n6d"], dataRange["n6d_array"], 6)
+                    n1w_DATA = self._getEFALV3DATA(loopOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n1w"], dataRange["n1w_array"], 5)
+                    n2w_DATA = self._getEFALV3DATA(loopOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n2w"], dataRange["n2w_array"], 4)
+                    n3w_DATA = self._getEFALV3DATA(loopOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n3w"], dataRange["n2w_array"], 3)
+                    n1m_DATA = self._getEFALV3DATA(loopOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n1m"], dataRange["n1m_array"], 2)
+                    n2m_DATA = self._getEFALV3DATA(loopOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n2m"], dataRange["n2m_array"], 1)
+                    n1s_DATA = self._getEFALV3DATA(loopOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n1s"], dataRange["n1s_array"], 0)
+                    tempData = self._groupINTLV3(n1d_DATA,n2d_DATA,n3d_DATA,n4d_DATA,n5d_DATA,n6d_DATA,n1w_DATA,n2w_DATA,n3w_DATA,n1m_DATA,n2m_DATA,n1s_DATA)
+                    magerData.append(tempData)
+
+                self.getRedisConnection()
+                if self.searchRedisKeys(redisKey):     
+                    self.setRedisData(redisKey, json.dumps(
+                        returnData, sort_keys=True, indent=2), self.getKeyExpirTime(expirTimeKey))
+                else:
+                    self.setRedisData(redisKey, json.dumps(
+                        returnData, sort_keys=True, indent=2), 60)
+
+                return magerData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+
+
             else:
                 return {'Result': 'Fail', 'Reason': 'Parametes[KPITYPE] not in Rule'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 

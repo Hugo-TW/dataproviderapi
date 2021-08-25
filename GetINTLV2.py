@@ -516,8 +516,6 @@ class INTLV2(BaseType):
                         rank +=1 
                     else:
                         break
-            
-            self.writeLog(rank)
 
             d = list(filter(lambda d: d["DFCT_CODE"] == cDFct and d["OPER"] == x["OPER"], DATASERIES))
             if d == []:
