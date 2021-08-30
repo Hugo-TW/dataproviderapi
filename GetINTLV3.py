@@ -652,7 +652,6 @@ class INTLV3(BaseType):
                 d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0       
                 magerData.append(d)
             for d in n1m:   
-                self.writeLog(d)
                 d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0    
                 magerData.append(d)              
             for d in n3w:   
