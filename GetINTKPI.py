@@ -514,7 +514,8 @@ class INTKPI(BaseType):
                 "FACTORY_ID": tmpFACTORY_ID,
                 "ACCT_DATE": tmpACCT_DATE,
                 "LCM_OWNER": {"$in": ["LCM0", "LCME", "PROD", "QTAP", "RES0"]},
-                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, denominatorValue]}
+                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, denominatorValue]},
+                "RW_COUNT" : "0"
             }
         }
         passGroup1 = {
@@ -601,7 +602,8 @@ class INTKPI(BaseType):
                         {"$gte": [{"$toInt": "$MAIN_WC"},numeratorData["fromt"]]},
                         {"$lte": [{"$toInt": "$MAIN_WC"},numeratorData["tot"]]}
                     ]
-                }
+                },
+                "RW_COUNT" : "0"
             }
         }
         deftGroup1 = {

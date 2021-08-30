@@ -285,7 +285,8 @@ class INTLV2(BaseType):
                         {"$gte": [{"$toInt": "$MAIN_WC"},numeratorData["fromt"]]},
                         {"$lte": [{"$toInt": "$MAIN_WC"},numeratorData["tot"]]}
                     ]
-                }
+                },
+                "RW_COUNT" : "0"
             }
         }
         deftGroup1 = {
@@ -534,7 +535,7 @@ class INTLV2(BaseType):
                        
         #因為使用 operator.itemgetter 方法 排序順序要反過來執行
         #不同欄位key 排序方式不同時 需要 3 - 2 - 1  反順序去寫code
-        DATASERIES.sort(key = operator.itemgetter("RANK"), reverse = False)      
+        DATASERIES.sort(key = operator.itemgetter("RANK"), reverse = True)      
         
         returnData = {                    
                     "KPITYPE": tmpKPITYPE,

@@ -473,6 +473,7 @@ class INTLV3(BaseType):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
         
         getFabData = self.operSetData[tmpFACTORY_ID]
         numeratorData = getFabData["FPY"]["numerator"][OPER]
@@ -492,7 +493,8 @@ class INTLV3(BaseType):
                             {"$gte": [{"$toInt": "$MAIN_WC"}, numeratorData["fromt"]]},
                             {"$lte": [{"$toInt": "$MAIN_WC"}, numeratorData["tot"]]}
                         ]
-                    }
+                    },
+                    "RW_COUNT" : "0"
                 }
             },
             {
@@ -531,7 +533,8 @@ class INTLV3(BaseType):
                                         "FACTORY_ID": tmpFACTORY_ID,
                                         "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},                                       
                                         "PROD_NBR": PROD_NBR,
-                                        "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, denominatorValue]}
+                                        "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, denominatorValue]},
+                                        "RW_COUNT" : "0"
                                     }
                                 },
                                 {
@@ -625,7 +628,7 @@ class INTLV3(BaseType):
             self.setMongoCollection("deftHisAndCurrent")
             returnData = self.aggregate(FPYLV3_Aggregate)
             self.closeMongoConncetion()
-
+            
             return returnData
 
         except Exception as e:
@@ -649,6 +652,7 @@ class INTLV3(BaseType):
                 d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0       
                 magerData.append(d)
             for d in n1m:   
+                self.writeLog(d)
                 d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0    
                 magerData.append(d)              
             for d in n3w:   
