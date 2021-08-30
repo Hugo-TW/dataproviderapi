@@ -473,7 +473,6 @@ class INTLV3(BaseType):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
-        tmpAPPLICATION = self.jsonData["APPLICATION"]
         
         getFabData = self.operSetData[tmpFACTORY_ID]
         numeratorData = getFabData["FPY"]["numerator"][OPER]
@@ -494,7 +493,7 @@ class INTLV3(BaseType):
                             {"$lte": [{"$toInt": "$MAIN_WC"}, numeratorData["tot"]]}
                         ]
                     },
-                    "RW_COUNT" : "0"
+                    "RW_COUNT": {"!$lte": "1"}
                 }
             },
             {
@@ -890,7 +889,8 @@ class INTLV3(BaseType):
                         {"$gte": [{"$toInt": "$MAIN_WC"},numeratorData["fromt"]]},
                         {"$lte": [{"$toInt": "$MAIN_WC"},numeratorData["tot"]]}
                     ]
-                }
+                },
+                "RW_COUNT": {"!$lte": "1"}
             }
         }
         deftGroup1 = {

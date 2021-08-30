@@ -286,7 +286,7 @@ class INTLV2(BaseType):
                         {"$lte": [{"$toInt": "$MAIN_WC"},numeratorData["tot"]]}
                     ]
                 },
-                "RW_COUNT" : "0"
+                "RW_COUNT": {"!$lte": "1"}
             }
         }
         deftGroup1 = {
