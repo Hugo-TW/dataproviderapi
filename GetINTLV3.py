@@ -492,8 +492,7 @@ class INTLV3(BaseType):
                             {"$gte": [{"$toInt": "$MAIN_WC"}, numeratorData["fromt"]]},
                             {"$lte": [{"$toInt": "$MAIN_WC"}, numeratorData["tot"]]}
                         ]
-                    },
-                    "RW_COUNT": {"!$lte": "1"}
+                    }
                 }
             },
             {
@@ -889,8 +888,7 @@ class INTLV3(BaseType):
                         {"$gte": [{"$toInt": "$MAIN_WC"},numeratorData["fromt"]]},
                         {"$lte": [{"$toInt": "$MAIN_WC"},numeratorData["tot"]]}
                     ]
-                },
-                "RW_COUNT": {"!$lte": "1"}
+                }
             }
         }
         deftGroup1 = {
