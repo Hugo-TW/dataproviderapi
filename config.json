@@ -10,7 +10,7 @@
       "identity": "INX-TN-J003",
       "dbAccount": "DCSMOD3_AP",
       "dbPassword": "pdcsmod3_ap2018",
-      "SERVICE_NAME": "10.55.8.66:1521/DCSMOD3"
+      "SERVICE_NAME": "tnvmod3dcsdb.cminl.oa:1521/mod3dcs"
     },
     {
       "identity": "INX-TN-J004",
