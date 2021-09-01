@@ -10,7 +10,8 @@ from Logger import Logger
 log = Logger('./log/cx_Oracle.log',level='debug')
 #https://blog.csdn.net/qq_36743482/article/details/82593945 
 class DaoHelper():
-    def __init__(self,dbAccount, dbPassword,SERVICE_NAME):
+    def __init__(self,dbAccount, dbPassword,SERVICE_NAME):        
+        #cx_Oracle.init_oracle_client(lib_dir=r"C:\oracle\instantclient_19_12") # for local test
         #log.logger.info('DaoHelper __init__')
         self.dbAccount=dbAccount
         self.dbPassword=dbPassword
