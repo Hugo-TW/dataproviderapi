@@ -49,6 +49,7 @@ from GetStockerInfoSha import StockerInfoSha
 from BaseType import BaseType
 from GetAppConfSysMain import AppConfSysMain
 from GetAgvRouteInfo import AgvRouteInfo
+from GetAgvInfo import AgvInfo
 from MongoFunction import mongoDbFunction
 from MongoFunctionDynamic import mongoDbFunctionDynamic
 from RegisterStream import RegisterStreamFuncion
@@ -997,6 +998,40 @@ class getAgvRouteInfo(Resource):
         log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
         agvRouteInfo = AgvRouteInfo(identity)
         return agvRouteInfo.getData()
+
+agvInfoNS = api.namespace('GetAgvInfo', description = 'AgvInfo')
+agvInfoML = api.model('GetAgvInfo', {
+"COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+"SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'J001', example = 'J001'),
+})
+@agvInfoNS.route('', methods = ['POST'])
+@agvInfoNS.response(200, 'Sucess')
+@agvInfoNS.response(201, 'Created Sucess')
+@agvInfoNS.response(204, 'No Content')
+@agvInfoNS.response(400, 'Bad Request')
+@agvInfoNS.response(401, 'Unauthorized')
+@agvInfoNS.response(403, 'Forbidden')
+@agvInfoNS.response(404, 'Not Found')
+@agvInfoNS.response(405, 'Method Not Allowed')
+@agvInfoNS.response(409, 'Conflict')
+@agvInfoNS.response(500, 'Internal Server Error')
+class getAgvInfo(Resource):
+    @agvInfoNS.doc('AppConfSysMain')
+    @agvInfoNS.expect(agvInfoML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        jsonData = BaseType.validateType(request.json)
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData:  
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        identity = jsonData["COMPANY_CODE"] + "-" + jsonData["SITE"] + "-" + jsonData["FACTORY_ID"]
+        log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
+        agvInfo = AgvInfo(identity)
+        return agvInfo.getData()
+                
 detailsData = api.model('mongoDataDetailsData',{
     "TEST":fields.String( required = True, description = 'TEST', default = '123', example = '123'),
 })
