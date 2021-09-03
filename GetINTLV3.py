@@ -7,6 +7,7 @@ import time
 import datetime
 import copy
 import operator
+import configparser
 
 from flask_restplus.utils import not_none
 from BaseType import BaseType
@@ -237,7 +238,8 @@ class INTLV3(BaseType):
                     "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
                     "PROD_NBR": tmpPROD_NBR,
                     "OPER": tmpOPER,
-                    "CHECKCODE": tmpCHECKCODE,
+                    "DFCT_CODE": tmpCHECKCODE,
+                    "ERRC_DESCR": self._deftCodeInf(tmpFACTORY_ID, tmpCHECKCODE) if tmpCHECKCODE != None else '',
                     "DATASERIES": magerData
                 }
 
@@ -499,8 +501,7 @@ class INTLV3(BaseType):
                 "$group": {
                     "_id": {
                         "APPLICATION" : "$APPLICATION",
-                        "PROD_NBR": "$PROD_NBR",
-                        "DFCT_CODE": "$DFCT_CODE"
+                        "PROD_NBR": "$PROD_NBR"
                     },
                     "deftQty": {
                         "$sum": {"$toInt": "$QTY"}
@@ -619,7 +620,7 @@ class INTLV3(BaseType):
 
         if DEFECTCODE != None:
             FPYLV3_Aggregate[0]["$match"]["DFCT_CODE"] = DEFECTCODE
-       
+        self.writeLog(FPYLV3_Aggregate)
         try:
             self.getMongoConnection()
             self.setMongoDb("IAMP")
@@ -682,6 +683,23 @@ class INTLV3(BaseType):
          
 
             return magerData
+
+    def _deftCodeInf(self, fabId, code):
+        config = configparser.ConfigParser()
+        config.read('setting.ini')
+        #------DB2----------
+        database = config.get("DB",fabId)
+        ip = config.get("IP",fabId)
+        port = config.get("PORT",fabId)
+        account = config.get("ACCOUNT",fabId)
+        password = config.get("PASSWORD",fabId)
+        schema = config.get("SCHEMA",fabId)
+        self.writeLog(f"FACTORY_ID:{fabId},Db2:{database},IP:{ip}:{port},ACCOUNT:{account};PASSWORD:{password};SCHEMA:{schema}")
+        db = self.getDb2Connection(database ,ip, port, account, password)
+        sql = f"select * from {schema}.V_BSDEFCODE where ERRC_NBR = '{code}'  with ur"
+        BSDEFCODE = self.db2Select(sql)                   
+        self.db2CloseConnection()
+        return BSDEFCODE[0]["ERRC_DESCR"]
 
     def _getEFALV3DATA(self, OPER, PROD_NBR, DEFECTCODE, DATARANGENAME, ACCT_DATE_ARRAY, TYPE):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
