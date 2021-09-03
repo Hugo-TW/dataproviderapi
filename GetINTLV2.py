@@ -213,7 +213,7 @@ class INTLV2(BaseType):
                 DKENData = self._getFPYLV2PIEData("DKEN", tmpPROD_NBR)
                 DKENResult = self._groupFPYLV2PIEOPER(DKENData)
                 
-                returnData = self._calPRODFPYBaseData(PCBIResult,LAMResult,AAFCResult,CKENResult,DKENResult)
+                returnData = self._calFPYLV2PIEData(PCBIResult,LAMResult,AAFCResult,CKENResult,DKENResult)
                 
                 self.getRedisConnection()
                 if self.searchRedisKeys(redisKey):     
@@ -419,7 +419,7 @@ class INTLV2(BaseType):
         else: 
             return None
 
-    def _calPRODFPYBaseData(self, PCBI, LAM, AAFC, CKEN, DKEN):
+    def _calFPYLV2PIEData(self, PCBI, LAM, AAFC, CKEN, DKEN):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]        
@@ -453,7 +453,8 @@ class INTLV2(BaseType):
                     "COLOR": colorMap[x["OPER"]]["HEX"] if x["OPER"] in colorMap.keys() else None,
                     "SELECT": None,
                     "SLICED": None,
-                    "DeftSUMQty": x["DeftSUMQty"]
+                    "DeftSUMQty": x["DeftSUMQty"],
+                    "PROD_NBR": tmpPROD_NBR
                 })
 
         returnData = {                    
@@ -525,7 +526,8 @@ class INTLV2(BaseType):
                         "YVALUE": x["DeftSUMQty"],
                         "RANK": rank,
                         "DFCT_CODE" : cDFct,
-                        "ERRC_DESCR" : cERRC
+                        "ERRC_DESCR" : cERRC,                        
+                        "PROD_NBR": tmpPROD_NBR
                     })
             else:
                 for cx in DATASERIES:
