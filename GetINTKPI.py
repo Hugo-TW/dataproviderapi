@@ -515,7 +515,7 @@ class INTKPI(BaseType):
                 "ACCT_DATE": tmpACCT_DATE,
                 "LCM_OWNER": {"$in": ["LCM0", "LCME", "PROD", "QTAP", "RES0"]},
                 "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, denominatorValue]},
-                "TRANS_TYPE": { "$nin": [ "QRWK" ]}
+                "RW_COUNT": "0"
             }
         }
         passGroup1 = {
