@@ -533,7 +533,7 @@ class INTLV3(BaseType):
                                         "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},                                       
                                         "PROD_NBR": PROD_NBR,
                                         "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, denominatorValue]},
-                                        "RW_COUNT": "0"             
+                                        "RW_COUNT": "0"
                                     }
                                 },
                                 {
