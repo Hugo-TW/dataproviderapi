@@ -647,7 +647,7 @@ class INTLV2(BaseType):
             else:
                 allDFCTCount[x["DFCT_CODE"]] = x["DEFECT_RATE"]
         top10 = dict(sorted(allDFCTCount.items(),key=lambda item:item[1],reverse=True) [:10])
-               
+
         operMap = {"PCBI":0,"LAM":1,"AAFC":2,"CKEN":3,"DKEN":4}
 
         DATASERIES = []
@@ -655,7 +655,7 @@ class INTLV2(BaseType):
             cDFct = x["DFCT_CODE"]  if x["DFCT_CODE"] in top10.keys() else "OTHER"
             cERRC = x["ERRC_DESCR"] if x["DFCT_CODE"] in top10.keys() else "OTHER" 
 
-            rank = 999
+            rank = 0
             if cDFct in top10.keys():
                 rank = 1
                 for i in top10:
@@ -681,7 +681,7 @@ class INTLV2(BaseType):
             else:
                 for cx in DATASERIES:
                     if cx["OPER"] == x["OPER"] and cx["DFCT_CODE"] == cDFct :
-                       cx["YVALUE"] += x["DeftSUMQty"]
+                       cx["YVALUE"] += x["DEFECT_RATE"]
                        
         #因為使用 operator.itemgetter 方法 排序順序要反過來執行
         #不同欄位key 排序方式不同時 需要 3 - 2 - 1  反順序去寫code
