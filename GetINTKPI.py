@@ -708,7 +708,7 @@ class INTKPI(BaseType):
             self.writeError(
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
-#TT
+
     def _groupPassDeftByPRODandOPER(self, dData, pData):
         deftData = []
         for d in dData:

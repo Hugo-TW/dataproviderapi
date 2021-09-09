@@ -203,15 +203,15 @@ class INTLV2(BaseType):
             
             if tmpKPITYPE == "FPYLV2PIE":
                 PCBIData = self._getFPYLV2PIEData("PCBI", tmpPROD_NBR)
-                PCBIResult = self._groupFPYLV2PIEOPER(PCBIData)
+                PCBIResult = self._groupFPYLV2PIEOPER(PCBIData["dData"])
                 LAMData = self._getFPYLV2PIEData("LAM", tmpPROD_NBR)
-                LAMResult = self._groupFPYLV2PIEOPER(LAMData)
+                LAMResult = self._groupFPYLV2PIEOPER(LAMData["dData"])
                 AAFCData = self._getFPYLV2PIEData("AAFC", tmpPROD_NBR)
-                AAFCResult = self._groupFPYLV2PIEOPER(AAFCData)
+                AAFCResult = self._groupFPYLV2PIEOPER(AAFCData["dData"])
                 CKENData = self._getFPYLV2PIEData("CKEN", tmpPROD_NBR)
-                CKENResult = self._groupFPYLV2PIEOPER(CKENData)
+                CKENResult = self._groupFPYLV2PIEOPER(CKENData["dData"])
                 DKENData = self._getFPYLV2PIEData("DKEN", tmpPROD_NBR)
-                DKENResult = self._groupFPYLV2PIEOPER(DKENData)
+                DKENResult = self._groupFPYLV2PIEOPER(DKENData["dData"])
                 
                 returnData = self._calFPYLV2PIEData(PCBIResult,LAMResult,AAFCResult,CKENResult,DKENResult)
                 
@@ -225,15 +225,39 @@ class INTLV2(BaseType):
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
             elif tmpKPITYPE == "FPYLV2HISTO":
-                PCBIData = self._getFPYLV2PIEData("PCBI", tmpPROD_NBR)
-                LAMData = self._getFPYLV2PIEData("LAM", tmpPROD_NBR) 
-                AAFCData = self._getFPYLV2PIEData("AAFC", tmpPROD_NBR)
-                CKENData = self._getFPYLV2PIEData("CKEN", tmpPROD_NBR)
-                DKENData = self._getFPYLV2PIEData("DKEN", tmpPROD_NBR)
+                _PCBIData = self._getFPYLV2PIEData("PCBI", tmpPROD_NBR)                
+                PCBIResult = self._groupPassDeftByPRODandOPER(
+                    _PCBIData["dData"], _PCBIData["pData"])
+                PCBIData = self._calFPYLV2HISTObyOPER(PCBIResult)
+                _LAMData = self._getFPYLV2PIEData("LAM", tmpPROD_NBR) 
+                LAMResult = self._groupPassDeftByPRODandOPER(
+                    _LAMData["dData"], _LAMData["pData"])
+                LAMData = self._calFPYLV2HISTObyOPER(LAMResult)
+                _AAFCData = self._getFPYLV2PIEData("AAFC", tmpPROD_NBR)
+                AAFCResult = self._groupPassDeftByPRODandOPER(
+                    _AAFCData["dData"], _AAFCData["pData"])
+                AAFCData = self._calFPYLV2HISTObyOPER(AAFCResult)
+                _CKENData = self._getFPYLV2PIEData("CKEN", tmpPROD_NBR)
+                CKENResult = self._groupPassDeftByPRODandOPER(
+                    _CKENData["dData"], _CKENData["pData"])
+                CKENData = self._calFPYLV2HISTObyOPER(CKENResult)
+                _DKENData = self._getFPYLV2PIEData("DKEN", tmpPROD_NBR)
+                DKENResult = self._groupPassDeftByPRODandOPER(
+                    _DKENData["dData"], _DKENData["pData"])
+                DKENData = self._calFPYLV2HISTObyOPER(DKENResult)
 
                 tempData = self._groupFPYLV2HISTOOPER(PCBIData, LAMData, AAFCData, CKENData, DKENData)
 
-                returnData = self._calFPYLV2HISTOOPER(tempData)
+                returnData = {                    
+                    "KPITYPE": tmpKPITYPE,
+                    "COMPANY_CODE": tmpCOMPANY_CODE,
+                    "SITE": tmpSITE,
+                    "FACTORY_ID": tmpFACTORY_ID,
+                    "APPLICATION": tmpAPPLICATION,
+                    "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
+                    "PROD_NBR": tmpPROD_NBR,
+                    "DATASERIES": tempData
+                }
                 
                 self.getRedisConnection()
                 if self.searchRedisKeys(redisKey):     
@@ -268,8 +292,98 @@ class INTLV2(BaseType):
 
         getFabData = self.operSetData[tmpFACTORY_ID]
         numeratorData = getFabData["FPY"]["numerator"][OPER]
+        denominatorValue = getFabData["FPY"]["denominator"][OPER]
 
+        passAggregate = []
         deftAggregate = []
+
+        #pass
+        passMatch1 = {
+            "$match": {
+                "COMPANY_CODE": tmpCOMPANY_CODE,
+                "SITE": tmpSITE,
+                "FACTORY_ID": tmpFACTORY_ID,
+                "ACCT_DATE": tmpACCT_DATE,
+                "PROD_NBR": PROD_NBR,
+                "LCM_OWNER": {"$in": ["LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, denominatorValue]},
+                "RW_COUNT": "0" 
+            }
+        }
+        passGroup1 = {
+            "$group": {
+                "_id": {
+                    "COMPANY_CODE": "$COMPANY_CODE",
+                    "SITE": "$SITE",
+                    "FACTORY_ID": "$FACTORY_ID",
+                    "PROD_NBR": "$PROD_NBR",
+                    "ACCT_DATE": "$ACCT_DATE",
+                    "PROCESS": "$PROCESS",
+                    "APPLICATION": "$APPLICATION",
+                    "MAIN_WC": {"$toInt": "$MAIN_WC"}
+                },
+                "PASS_QTY": {
+                    "$sum": {"$toInt": "$QTY"}
+                }
+            }
+        }
+        passProject1 = {
+            "$project": {
+                "_id": 0,
+                "COMPANY_CODE": "$_id.COMPANY_CODE",
+                "SITE": "$_id.SITE",
+                "FACTORY_ID": "$_id.FACTORY_ID",
+                "PROD_NBR": "$_id.PROD_NBR",
+                "ACCT_DATE": "$_id.ACCT_DATE",
+                "PROCESS": "$_id.PROCESS",
+                "APPLICATION": "$_id.APPLICATION",
+                "MAIN_WC": "$_id.MAIN_WC",
+                "PASS_QTY": "$PASS_QTY"
+            }
+        }
+        passGroup2 = {
+            "$group": {
+                "_id": {
+                    "COMPANY_CODE": "$COMPANY_CODE",
+                    "SITE": "$SITE",
+                    "FACTORY_ID": "$FACTORY_ID",
+                    "PROD_NBR": "$PROD_NBR",
+                    "ACCT_DATE": "$ACCT_DATE",
+                    "APPLICATION": "$APPLICATION"
+                },
+                "PassSUMQty": {
+                    "$sum": {"$toInt": "$PASS_QTY"}
+                }
+            }
+        }
+        passProject2 = {
+            "$project": {
+                "_id": 0,
+                "COMPANY_CODE": "$_id.COMPANY_CODE",
+                "SITE": "$_id.SITE",
+                "FACTORY_ID": "$_id.FACTORY_ID",
+                "PROD_NBR": "$_id.PROD_NBR",
+                "ACCT_DATE": "$_id.ACCT_DATE",
+                "APPLICATION": "$_id.APPLICATION",
+                "PassSUMQty": "$PassSUMQty"
+            }
+        }
+        passAdd = {
+                "$addFields": {
+                    "OPER": OPER
+                }
+            }
+        passSort = {
+            "$sort": {
+                "COMPANY_CODE": 1,
+                "SITE": 1,
+                "FACTORY_ID": 1,
+                "PROD_NBR": 1,
+                "ACCT_DATE": 1,
+                "MAIN_WC": 1,
+                "APPLICATION": 1
+            }
+        }
 
         #deft
         deftMatch1 = {
@@ -369,16 +483,23 @@ class INTLV2(BaseType):
                 "ERRC_DESCR" : 1
             }
         }
+        
+        passAggregate.extend([passMatch1, passGroup1, passProject1, passGroup2, passProject2, passAdd, passSort])        
         deftAggregate.extend([deftMatch1, deftGroup1, deftProject1,deftGroup2, deftProject2, deftAdd, deftSort])
         
         try:
             self.getMongoConnection()
             self.setMongoDb("IAMP")
+            self.setMongoCollection("passHisAndCurrent")
+            pData = self.aggregate(passAggregate)
             self.setMongoCollection("deftHisAndCurrent")
             dData = self.aggregate(deftAggregate)
             self.closeMongoConncetion()
 
-            returnData = dData
+            returnData = {
+                "pData": pData,
+                "dData": dData
+            }
 
             return returnData
 
@@ -470,36 +591,61 @@ class INTLV2(BaseType):
 
         return returnData
 
-    def _groupFPYLV2HISTOOPER(self, PCBI, LAM, AAFC, CKEN, DKEN): 
-        deftData = []            
-        for d in PCBI:       
-            deftData.append(d) 
-        for d in LAM:       
-            deftData.append(d) 
-        for d in AAFC:       
-            deftData.append(d) 
-        for d in CKEN:       
-            deftData.append(d) 
-        for d in DKEN:       
-            deftData.append(d) 
+    def _groupPassDeftByPRODandOPER(self, dData, pData):
+        deftData = []
+        for d in dData:
+            deftData.append(d)
+        passData = []
+        for p in pData:
+            passData.append(p)
+        data = []
+        oData = {}
+        if deftData != [] and passData != []:
+            for d in deftData:
+                p = list(filter(lambda d: d["PROD_NBR"]
+                        == p["PROD_NBR"], passData))[0]
+                self.writeLog(p)
+                oData["COMPANY_CODE"] = copy.deepcopy(p["COMPANY_CODE"])
+                oData["SITE"] = copy.deepcopy(p["SITE"])
+                oData["FACTORY_ID"] = copy.deepcopy(p["FACTORY_ID"])
+                oData["PROD_NBR"] = copy.deepcopy(p["PROD_NBR"])
+                oData["ACCT_DATE"] = datetime.datetime.strptime(
+                    p["ACCT_DATE"], '%Y%m%d').strftime('%Y-%m-%d')
+                if "APPLICATION" in p.keys():
+                    oData["APPLICATION"] = copy.deepcopy(p["APPLICATION"])
+                else:
+                    oData["APPLICATION"] = None
+                oData["PROD_NBR"] = copy.deepcopy(p["PROD_NBR"])
+                oData["OPER"] = copy.deepcopy(p["OPER"])
+                oData["DFCT_CODE"] = copy.deepcopy(d["DFCT_CODE"])
+                oData["ERRC_DESCR"] = copy.deepcopy(d["ERRC_DESCR"])
+                oData["PassSUMQty"] = copy.deepcopy(p["PassSUMQty"])
+                if d == []:
+                    oData["DeftSUMQty"] = 0
+                else:
+                    oData["DeftSUMQty"] = copy.deepcopy(d["DeftSUMQty"])
+                if oData["DeftSUMQty"] == 0:
+                    oData["DEFECT_RATE"] = 0
+                else:
+                    if(oData["PassSUMQty"] != 0):
+                        oData["DEFECT_RATE"] = round(
+                            oData["DeftSUMQty"] / oData["PassSUMQty"], 4)
+                    else:
+                        oData["DEFECT_RATE"] = 1
+                oData["FPY_RATE"] = round(1 - oData["DEFECT_RATE"], 4)
+                if oData["DeftSUMQty"] < oData["PassSUMQty"] and oData["FPY_RATE"] > 0:
+                    data.append(copy.deepcopy(oData))
+                oData = {}
+        return data
 
-        return deftData
-
-    def _calFPYLV2HISTOOPER(self, tempData):
-        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
-        tmpSITE = self.jsonData["SITE"]
-        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]        
-        tmpAPPLICATION =self.jsonData["APPLICATION"]
-        tmpKPITYPE = self.jsonData["KPITYPE"]
-        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+    def _calFPYLV2HISTObyOPER(self, tempData):
         tmpPROD_NBR = self.jsonData["PROD_NBR"]
-
         allDFCTCount = {}
         for x in tempData:     
             if x["DFCT_CODE"] in allDFCTCount.keys():
-                allDFCTCount[x["DFCT_CODE"]] += x["DeftSUMQty"]
+                allDFCTCount[x["DFCT_CODE"]] += x["DEFECT_RATE"]
             else:
-                allDFCTCount[x["DFCT_CODE"]] = x["DeftSUMQty"]
+                allDFCTCount[x["DFCT_CODE"]] = x["DEFECT_RATE"]
         top10 = dict(sorted(allDFCTCount.items(),key=lambda item:item[1],reverse=True) [:10])
                
         operMap = {"PCBI":0,"LAM":1,"AAFC":2,"CKEN":3,"DKEN":4}
@@ -523,11 +669,14 @@ class INTLV2(BaseType):
                 DATASERIES.append({
                         "OPER": x["OPER"],
                         "XVALUE": operMap.get(x["OPER"], None),
-                        "YVALUE": x["DeftSUMQty"],
+                        "YVALUE": x["DEFECT_RATE"],
                         "RANK": rank,
                         "DFCT_CODE" : cDFct,
                         "ERRC_DESCR" : cERRC,                        
-                        "PROD_NBR": tmpPROD_NBR
+                        "PROD_NBR": tmpPROD_NBR,
+                        "DeftSUM": x["DeftSUMQty"],
+                        "PassSUM": x["PassSUMQty"],
+                        "DEFECT_RATE": x["DEFECT_RATE"]
                     })
             else:
                 for cx in DATASERIES:
@@ -538,17 +687,24 @@ class INTLV2(BaseType):
         #不同欄位key 排序方式不同時 需要 3 - 2 - 1  反順序去寫code
         DATASERIES.sort(key = operator.itemgetter("RANK"), reverse = True)      
         
-        returnData = {                    
-                    "KPITYPE": tmpKPITYPE,
-                    "COMPANY_CODE": tmpCOMPANY_CODE,
-                    "SITE": tmpSITE,
-                    "FACTORY_ID": tmpFACTORY_ID,
-                    "APPLICATION": tmpAPPLICATION,
-                    "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
-                    "PROD_NBR": tmpPROD_NBR,
-                    "DATASERIES": DATASERIES
-                }
+        returnData = DATASERIES
 
         return returnData
+
+    def _groupFPYLV2HISTOOPER(self, PCBI, LAM, AAFC, CKEN, DKEN): 
+        deftData = []            
+        for d in PCBI:       
+            deftData.append(d) 
+        for d in LAM:       
+            deftData.append(d) 
+        for d in AAFC:       
+            deftData.append(d) 
+        for d in CKEN:       
+            deftData.append(d) 
+        for d in DKEN:       
+            deftData.append(d) 
+
+        return deftData
+    
 
 
