@@ -628,8 +628,7 @@ class INTLV2(BaseType):
                     oData["DEFECT_RATE"] = 0
                 else:
                     if(oData["PassSUMQty"] != 0):
-                        oData["DEFECT_RATE"] = round(
-                            oData["DeftSUMQty"] / oData["PassSUMQty"], 4)
+                        oData["DEFECT_RATE"] = oData["DeftSUMQty"] / oData["PassSUMQty"]
                     else:
                         oData["DEFECT_RATE"] = 1
                 oData["FPY_RATE"] = round(1 - oData["DEFECT_RATE"], 4)
@@ -669,7 +668,7 @@ class INTLV2(BaseType):
                 DATASERIES.append({
                         "OPER": x["OPER"],
                         "XVALUE": operMap.get(x["OPER"], None),
-                        "YVALUE": x["DEFECT_RATE"],
+                        "YVALUE": x["DEFECT_RATE"]*100,
                         "RANK": rank,
                         "DFCT_CODE" : cDFct,
                         "ERRC_DESCR" : cERRC,                        
@@ -681,7 +680,8 @@ class INTLV2(BaseType):
             else:
                 for cx in DATASERIES:
                     if cx["OPER"] == x["OPER"] and cx["DFCT_CODE"] == cDFct :
-                       cx["YVALUE"] += x["DEFECT_RATE"]
+                       cx["YVALUE"] += x["DEFECT_RATE"]*100
+                       cx["DEFECT_RATE"] += x["DEFECT_RATE"]
                        
         #因為使用 operator.itemgetter 方法 排序順序要反過來執行
         #不同欄位key 排序方式不同時 需要 3 - 2 - 1  反順序去寫code
