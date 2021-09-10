@@ -9,6 +9,7 @@ import copy
 import operator
 import configparser
 
+from decimal import Decimal, ROUND_HALF_UP
 from flask_restplus.utils import not_none
 from BaseType import BaseType
 
@@ -312,21 +313,31 @@ class INTLV3(BaseType):
                 n2m_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n2m"], dataRange["n2m_array"], 2)
                 n1s_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n1s"], dataRange["n1s_array"], 1)
                 
-                magerData = self._grouptFPYLV2LINE(
-                    self._groupPassDeftByPRODandOPER(n1d_DATA["dData"], n1d_DATA["pData"]),
-                    self._groupPassDeftByPRODandOPER(n2d_DATA["dData"], n2d_DATA["pData"]),
-                    self._groupPassDeftByPRODandOPER(n3d_DATA["dData"], n3d_DATA["pData"]),
-                    self._groupPassDeftByPRODandOPER(n4d_DATA["dData"], n4d_DATA["pData"]),
-                    self._groupPassDeftByPRODandOPER(n5d_DATA["dData"], n5d_DATA["pData"]),
-                    self._groupPassDeftByPRODandOPER(n6d_DATA["dData"], n6d_DATA["pData"]),
-                    self._groupPassDeftByPRODandOPER(n1w_DATA["dData"], n1w_DATA["pData"]),
-                    self._groupPassDeftByPRODandOPER(n2w_DATA["dData"], n2w_DATA["pData"]),
-                    self._groupPassDeftByPRODandOPER(n3w_DATA["dData"], n3w_DATA["pData"]),
-                    self._groupPassDeftByPRODandOPER(n1m_DATA["dData"], n1m_DATA["pData"]),
-                    self._groupPassDeftByPRODandOPER(n2m_DATA["dData"], n2m_DATA["pData"]),
-                    self._groupPassDeftByPRODandOPER(n1s_DATA["dData"], n1s_DATA["pData"]))
+                DATASERIES = self._grouptFPYLV2LINE(
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n1d_DATA["dData"], n1d_DATA["pData"])),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n2d_DATA["dData"], n2d_DATA["pData"])),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n3d_DATA["dData"], n3d_DATA["pData"])),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n4d_DATA["dData"], n4d_DATA["pData"])),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n5d_DATA["dData"], n5d_DATA["pData"])),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n6d_DATA["dData"], n6d_DATA["pData"])),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n1w_DATA["dData"], n1w_DATA["pData"])),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n2w_DATA["dData"], n2w_DATA["pData"])),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n3w_DATA["dData"], n3w_DATA["pData"])),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n1m_DATA["dData"], n1m_DATA["pData"])),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n2m_DATA["dData"], n2m_DATA["pData"])),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n1s_DATA["dData"], n1s_DATA["pData"])))
 
-                returnData = self._calFPYLV2LINEOPER(magerData)
+                returnData = {                    
+                    "KPITYPE": tmpKPITYPE,
+                    "COMPANY_CODE": tmpCOMPANY_CODE,
+                    "SITE": tmpSITE,
+                    "FACTORY_ID": tmpFACTORY_ID,
+                    "APPLICATION": tmpAPPLICATION,  
+                    "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
+                    "PROD_NBR": tmpPROD_NBR,                                      
+                    "OPER": tmpOPER,
+                    "DATASERIES": DATASERIES
+                }
 
                 self.getRedisConnection()
                 if self.searchRedisKeys(redisKey):     
@@ -1082,7 +1093,9 @@ class INTLV3(BaseType):
                     oData["DEFECT_RATE"] = 0
                 else:
                     if(oData["PassSUMQty"] != 0):
-                        oData["DEFECT_RATE"] = oData["DeftSUMQty"] / oData["PassSUMQty"]
+                        ds = Decimal(oData["DeftSUMQty"])
+                        ps = Decimal(oData["PassSUMQty"])
+                        oData["DEFECT_RATE"] =  self._DecimaltoFloat((ds / ps).quantize(Decimal('.00000000'), ROUND_HALF_UP))
                     else:
                         oData["DEFECT_RATE"] = 1
                 oData["FPY_RATE"] = round(1 - oData["DEFECT_RATE"], 4)
@@ -1093,41 +1106,34 @@ class INTLV3(BaseType):
 
     def _grouptFPYLV2LINE(self, n1d,n2d,n3d,n4d,n5d,n6d,n1w,n2w,n3w,n1m,n2m,n1s): 
             magerData = [] 
-            for d in n1s:     
+            for d in n1s:   
                 magerData.append(d)
             for d in n2m:     
                 magerData.append(d)
-            for d in n1m:     
+            for d in n1m:    
                 magerData.append(d)              
-            for d in n3w:       
+            for d in n3w:     
                 magerData.append(d)             
-            for d in n2w:      
+            for d in n2w:     
                 magerData.append(d)             
-            for d in n1w:      
+            for d in n1w:   
                 magerData.append(d)             
             for d in n6d:      
                 magerData.append(d)            
-            for d in n5d:      
+            for d in n5d:    
                 magerData.append(d)             
-            for d in n4d:      
+            for d in n4d:     
                 magerData.append(d)             
-            for d in n3d:       
+            for d in n3d:     
                 magerData.append(d)             
             for d in n2d:     
                 magerData.append(d)                       
-            for d in n1d:       
+            for d in n1d:     
                 magerData.append(d)
             return magerData
 
     def _calFPYLV2LINEOPER(self, tempData):
-        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
-        tmpSITE = self.jsonData["SITE"]
-        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]        
-        tmpAPPLICATION =self.jsonData["APPLICATION"]
-        tmpKPITYPE = self.jsonData["KPITYPE"]
-        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
         tmpPROD_NBR = self.jsonData["PROD_NBR"]
-        tmpOPER = self.jsonData["OPER"]
 
         allDFCTCount = {}
         for x in tempData:    
@@ -1179,16 +1185,11 @@ class INTLV3(BaseType):
 
         DATASERIES.sort(key = operator.itemgetter("XVALUE", "RANK"), reverse = False)
 
-        returnData = {                    
-                    "KPITYPE": tmpKPITYPE,
-                    "COMPANY_CODE": tmpCOMPANY_CODE,
-                    "SITE": tmpSITE,
-                    "FACTORY_ID": tmpFACTORY_ID,
-                    "APPLICATION": tmpAPPLICATION,  
-                    "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
-                    "PROD_NBR": tmpPROD_NBR,                                      
-                    "OPER": tmpOPER,
-                    "DATASERIES": DATASERIES
-                }
+        returnData = DATASERIES
 
         return returnData
+
+    
+    def _DecimaltoFloat(self, obj):
+        if isinstance(obj, Decimal):
+            return float(obj)

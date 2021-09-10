@@ -8,6 +8,7 @@ import time
 import datetime
 import copy
 from BaseType import BaseType
+from decimal import Decimal, ROUND_HALF_UP
 
 class INTLV2(BaseType):
     def __init__(self, jsonData):
@@ -627,7 +628,9 @@ class INTLV2(BaseType):
                     oData["DEFECT_RATE"] = 0
                 else:
                     if(oData["PassSUMQty"] != 0):
-                        oData["DEFECT_RATE"] = oData["DeftSUMQty"] / oData["PassSUMQty"]
+                        ds = Decimal(oData["DeftSUMQty"])
+                        ps = Decimal(oData["PassSUMQty"])
+                        oData["DEFECT_RATE"] =  self._DecimaltoFloat((ds / ps).quantize(Decimal('.00000000'), ROUND_HALF_UP))
                     else:
                         oData["DEFECT_RATE"] = 1
                 oData["FPY_RATE"] = round(1 - oData["DEFECT_RATE"], 4)
