@@ -698,7 +698,7 @@ class INTLV3(BaseType):
                     "_id": {
                         "APPLICATION" : "$APPLICATION",
                         "PROD_NBR": "$PROD_NBR",
-                        "DFCT_CODE": "$DFCT_CODE"
+                        "DFCT_REASON": "$DFCT_REASON"
                     },
                     "reaosonQty": {
                         "$sum": {"$toInt": "$QTY"}
