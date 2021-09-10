@@ -708,5 +708,7 @@ class INTLV2(BaseType):
 
         return deftData
     
-
+    def _DecimaltoFloat(self, obj):
+        if isinstance(obj, Decimal):
+            return float(obj)
 
