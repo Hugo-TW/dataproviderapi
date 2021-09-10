@@ -654,7 +654,7 @@ class INTLV2(BaseType):
             cDFct = x["DFCT_CODE"]  if x["DFCT_CODE"] in top10.keys() else "OTHER"
             cERRC = x["ERRC_DESCR"] if x["DFCT_CODE"] in top10.keys() else "OTHER" 
 
-            rank = 0
+            rank = 11
             if cDFct in top10.keys():
                 rank = 1
                 for i in top10:
@@ -675,13 +675,13 @@ class INTLV2(BaseType):
                         "PROD_NBR": tmpPROD_NBR,
                         "DeftSUM": x["DeftSUMQty"],
                         "PassSUM": x["PassSUMQty"],
-                        "DEFECT_RATE": x["DEFECT_RATE"]
+                        "DEFECT_RATE": x["DEFECT_RATE"]*100
                     })
             else:
                 for cx in DATASERIES:
                     if cx["OPER"] == x["OPER"] and cx["DFCT_CODE"] == cDFct :
                        cx["YVALUE"] += x["DEFECT_RATE"]*100
-                       cx["DEFECT_RATE"] += x["DEFECT_RATE"]
+                       cx["DEFECT_RATE"] += x["DEFECT_RATE"]*100
                        
         #因為使用 operator.itemgetter 方法 排序順序要反過來執行
         #不同欄位key 排序方式不同時 需要 3 - 2 - 1  反順序去寫code
