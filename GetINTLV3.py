@@ -312,7 +312,19 @@ class INTLV3(BaseType):
                 n2m_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n2m"], dataRange["n2m_array"], 2)
                 n1s_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n1s"], dataRange["n1s_array"], 1)
                 
-                magerData = self._grouptFPYLV2LINE(n1d_DATA,n2d_DATA,n3d_DATA,n4d_DATA,n5d_DATA,n6d_DATA,n1w_DATA,n2w_DATA,n3w_DATA,n1m_DATA,n2m_DATA,n1s_DATA)
+                magerData = self._grouptFPYLV2LINE(
+                    self._groupPassDeftByPRODandOPER(n1d_DATA["dData"], n1d_DATA["pData"]),
+                    self._groupPassDeftByPRODandOPER(n2d_DATA["dData"], n2d_DATA["pData"]),
+                    self._groupPassDeftByPRODandOPER(n3d_DATA["dData"], n3d_DATA["pData"]),
+                    self._groupPassDeftByPRODandOPER(n4d_DATA["dData"], n4d_DATA["pData"]),
+                    self._groupPassDeftByPRODandOPER(n5d_DATA["dData"], n5d_DATA["pData"]),
+                    self._groupPassDeftByPRODandOPER(n6d_DATA["dData"], n6d_DATA["pData"]),
+                    self._groupPassDeftByPRODandOPER(n1w_DATA["dData"], n1w_DATA["pData"]),
+                    self._groupPassDeftByPRODandOPER(n2w_DATA["dData"], n2w_DATA["pData"]),
+                    self._groupPassDeftByPRODandOPER(n3w_DATA["dData"], n3w_DATA["pData"]),
+                    self._groupPassDeftByPRODandOPER(n1m_DATA["dData"], n1m_DATA["pData"]),
+                    self._groupPassDeftByPRODandOPER(n2m_DATA["dData"], n2m_DATA["pData"]),
+                    self._groupPassDeftByPRODandOPER(n1s_DATA["dData"], n1s_DATA["pData"]))
 
                 returnData = self._calFPYLV2LINEOPER(magerData)
 
@@ -844,9 +856,99 @@ class INTLV3(BaseType):
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
 
         getFabData = self.operSetData[tmpFACTORY_ID]
-        numeratorData = getFabData["FPY"]["numerator"][OPER]
+        numeratorData = getFabData["FPY"]["numerator"][OPER]        
+        denominatorValue = getFabData["FPY"]["denominator"][OPER]
 
+        passAggregate = []
         deftAggregate = []
+
+        #pass
+        passMatch1 = {
+            "$match": {
+                "COMPANY_CODE": tmpCOMPANY_CODE,
+                "SITE": tmpSITE,
+                "FACTORY_ID": tmpFACTORY_ID,
+                "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
+                "PROD_NBR": PROD_NBR,
+                "LCM_OWNER": {"$in": ["LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, denominatorValue]},
+                "RW_COUNT": "0" 
+            }
+        }
+        passGroup1 = {
+            "$group": {
+                "_id": {
+                    "COMPANY_CODE": "$COMPANY_CODE",
+                    "SITE": "$SITE",
+                    "FACTORY_ID": "$FACTORY_ID",
+                    "PROD_NBR": "$PROD_NBR",
+                    "ACCT_DATE": "$ACCT_DATE",
+                    "PROCESS": "$PROCESS",
+                    "APPLICATION": "$APPLICATION",
+                    "MAIN_WC": {"$toInt": "$MAIN_WC"}
+                },
+                "PASS_QTY": {
+                    "$sum": {"$toInt": "$QTY"}
+                }
+            }
+        }
+        passProject1 = {
+            "$project": {
+                "_id": 0,
+                "COMPANY_CODE": "$_id.COMPANY_CODE",
+                "SITE": "$_id.SITE",
+                "FACTORY_ID": "$_id.FACTORY_ID",
+                "PROD_NBR": "$_id.PROD_NBR",
+                "ACCT_DATE": "$_id.ACCT_DATE",
+                "PROCESS": "$_id.PROCESS",
+                "APPLICATION": "$_id.APPLICATION",
+                "MAIN_WC": "$_id.MAIN_WC",
+                "PASS_QTY": "$PASS_QTY"
+            }
+        }
+        passGroup2 = {
+            "$group": {
+                "_id": {
+                    "COMPANY_CODE": "$COMPANY_CODE",
+                    "SITE": "$SITE",
+                    "FACTORY_ID": "$FACTORY_ID",
+                    "PROD_NBR": "$PROD_NBR",
+                    "ACCT_DATE": "$ACCT_DATE",
+                    "APPLICATION": "$APPLICATION"
+                },
+                "PassSUMQty": {
+                    "$sum": {"$toInt": "$PASS_QTY"}
+                }
+            }
+        }
+        passProject2 = {
+            "$project": {
+                "_id": 0,
+                "COMPANY_CODE": "$_id.COMPANY_CODE",
+                "SITE": "$_id.SITE",
+                "FACTORY_ID": "$_id.FACTORY_ID",
+                "PROD_NBR": "$_id.PROD_NBR",
+                "ACCT_DATE": "$_id.ACCT_DATE",
+                "APPLICATION": "$_id.APPLICATION",
+                "PassSUMQty": "$PassSUMQty"
+            }
+        }
+        passAdd = {
+                "$addFields": {
+                    "OPER": OPER
+                }
+            }
+        passSort = {
+            "$sort": {
+                "COMPANY_CODE": 1,
+                "SITE": 1,
+                "FACTORY_ID": 1,
+                "PROD_NBR": 1,
+                "ACCT_DATE": 1,
+                "MAIN_WC": 1,
+                "APPLICATION": 1
+            }
+        }
 
         #deft
         deftMatch1 = {
@@ -913,17 +1015,23 @@ class INTLV3(BaseType):
                 "ERRC_DESCR" : 1
             }
         }
+
         deftAggregate.extend([deftMatch1, deftGroup1, deftProject1, deftAdd, deftSort])
-        
+        passAggregate.extend([passMatch1, passGroup1, passProject1, passGroup2, passProject2, passAdd, passSort])        
+       
+
         try:
             self.getMongoConnection()
             self.setMongoDb("IAMP")
+            self.setMongoCollection("passHisAndCurrent")
+            pData = self.aggregate(passAggregate)
             self.setMongoCollection("deftHisAndCurrent")
             dData = self.aggregate(deftAggregate)
             self.closeMongoConncetion()
-
-            returnData = dData
-
+            returnData = {
+                "pData": pData,
+                "dData": dData
+            }
             return returnData
 
         except Exception as e:
@@ -937,6 +1045,51 @@ class INTLV3(BaseType):
             self.writeError(
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
+
+    def _groupPassDeftByPRODandOPER(self, dData, pData):
+        deftData = []
+        for d in dData:
+            deftData.append(d)
+        passData = []
+        for p in pData:
+            passData.append(p)
+        data = []
+        oData = {}
+        if deftData != [] and passData != []:
+            for d in deftData:
+                p = list(filter(lambda d: d["PROD_NBR"]
+                        == p["PROD_NBR"], passData))[0]
+                oData["XVALUE"] = copy.deepcopy(d["XVALUE"])                
+                oData["DATARANGE"] = copy.deepcopy(d["DATARANGE"])
+                oData["COMPANY_CODE"] = copy.deepcopy(p["COMPANY_CODE"])
+                oData["SITE"] = copy.deepcopy(p["SITE"])
+                oData["FACTORY_ID"] = copy.deepcopy(p["FACTORY_ID"])
+                oData["PROD_NBR"] = copy.deepcopy(p["PROD_NBR"])
+                if "APPLICATION" in p.keys():
+                    oData["APPLICATION"] = copy.deepcopy(p["APPLICATION"])
+                else:
+                    oData["APPLICATION"] = None
+                oData["PROD_NBR"] = copy.deepcopy(p["PROD_NBR"])
+                oData["OPER"] = copy.deepcopy(p["OPER"])
+                oData["DFCT_CODE"] = copy.deepcopy(d["DFCT_CODE"])
+                oData["ERRC_DESCR"] = copy.deepcopy(d["ERRC_DESCR"])
+                oData["PassSUMQty"] = copy.deepcopy(p["PassSUMQty"])
+                if d == []:
+                    oData["DeftSUMQty"] = 0
+                else:
+                    oData["DeftSUMQty"] = copy.deepcopy(d["DEFT_QTY"])
+                if oData["DeftSUMQty"] == 0:
+                    oData["DEFECT_RATE"] = 0
+                else:
+                    if(oData["PassSUMQty"] != 0):
+                        oData["DEFECT_RATE"] = oData["DeftSUMQty"] / oData["PassSUMQty"]
+                    else:
+                        oData["DEFECT_RATE"] = 1
+                oData["FPY_RATE"] = round(1 - oData["DEFECT_RATE"], 4)
+                if oData["DeftSUMQty"] < oData["PassSUMQty"] and oData["FPY_RATE"] > 0:
+                    data.append(copy.deepcopy(oData))
+                oData = {}
+        return data
 
     def _grouptFPYLV2LINE(self, n1d,n2d,n3d,n4d,n5d,n6d,n1w,n2w,n3w,n1m,n2m,n1s): 
             magerData = [] 
@@ -979,9 +1132,9 @@ class INTLV3(BaseType):
         allDFCTCount = {}
         for x in tempData:    
             if x["DFCT_CODE"] in allDFCTCount.keys():
-                allDFCTCount[x["DFCT_CODE"]] += x["DEFT_QTY"]
+                allDFCTCount[x["DFCT_CODE"]] += x["DEFECT_RATE"]
             else:
-                allDFCTCount[x["DFCT_CODE"]] = x["DEFT_QTY"]
+                allDFCTCount[x["DFCT_CODE"]] = x["DEFECT_RATE"]
         top10 = dict(sorted(allDFCTCount.items(),key=lambda item:item[1],reverse=True) [:10])
                
         DATASERIES = []
@@ -989,7 +1142,7 @@ class INTLV3(BaseType):
             cDFct = x["DFCT_CODE"]  if x["DFCT_CODE"] in top10.keys() else "OTHER"
             cERRC = x["ERRC_DESCR"] if x["DFCT_CODE"] in top10.keys() else "OTHER" 
 
-            rank = 999
+            rank = 11
             if cDFct in top10.keys():
                 rank = 1
                 for i in top10:
@@ -1004,18 +1157,25 @@ class INTLV3(BaseType):
                 test = {
                         "OPER": x["OPER"],
                         "XVALUE": x["XVALUE"],
-                        "YVALUE": x["DEFT_QTY"],
+                        "YVALUE": x["DEFECT_RATE"]*100,
                         "RANK": rank,
                         "DFCT_CODE" : cDFct,
                         "ERRC_DESCR" : cERRC,
-                        "DATARANGE": x["DATARANGE"]
+                        "DATARANGE": x["DATARANGE"],
+                        "DFCT_CODE" : cDFct,
+                        "ERRC_DESCR" : cERRC,                        
+                        "PROD_NBR": tmpPROD_NBR,
+                        "DeftSUM": x["DeftSUMQty"],
+                        "PassSUM": x["PassSUMQty"],
+                        "DEFECT_RATE": x["DEFECT_RATE"]*100
                     }
                 DATASERIES.append(test)
             
             else:
                 for cx in DATASERIES:
                     if cx["OPER"] == x["OPER"] and cx["DFCT_CODE"] == cDFct :
-                       cx["YVALUE"] += x["DEFT_QTY"]
+                       cx["YVALUE"] += x["DEFECT_RATE"]*100
+                       cx["DEFECT_RATE"] += x["DEFECT_RATE"]*100
 
         DATASERIES.sort(key = operator.itemgetter("XVALUE", "RANK"), reverse = False)
 

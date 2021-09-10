@@ -604,7 +604,6 @@ class INTLV2(BaseType):
             for d in deftData:
                 p = list(filter(lambda d: d["PROD_NBR"]
                         == p["PROD_NBR"], passData))[0]
-                self.writeLog(p)
                 oData["COMPANY_CODE"] = copy.deepcopy(p["COMPANY_CODE"])
                 oData["SITE"] = copy.deepcopy(p["SITE"])
                 oData["FACTORY_ID"] = copy.deepcopy(p["FACTORY_ID"])
