@@ -700,7 +700,7 @@ class INTLV3(BaseType):
                         "PROD_NBR": "$PROD_NBR",
                         "DFCT_REASON": "$DFCT_REASON"
                     },
-                    "reaosonQty": {
+                    "reasonQty": {
                         "$sum": {"$toInt": "$QTY"}
                     }
                 }
@@ -709,7 +709,7 @@ class INTLV3(BaseType):
                 "$addFields": {
                     "APPLICATION" : "$_id.APPLICATION",
                     "PROD_NBR": "$_id.PROD_NBR",
-                    "reaosonQty": "$reaosonQty",
+                    "reasonQty": "$reasonQty",
                     "passQty": 0
                 }
             },
@@ -750,7 +750,7 @@ class INTLV3(BaseType):
                                         "APPLICATION" : "$_id.APPLICATION",
                                         "PROD_NBR": "$_id.PROD_NBR",
                                         "passQty": "$passQty",
-                                        "reaosonQty": 0
+                                        "reasonQty": 0
                                     }
                                 },
                                 {
@@ -767,8 +767,8 @@ class INTLV3(BaseType):
                         "APPLICATION" : "$APPLICATION",
                         "PROD_NBR": "$PROD_NBR"
                     },
-                    "reaosonQty": {
-                        "$sum": "$reaosonQty"
+                    "reasonQty": {
+                        "$sum": "$reasonQty"
                     },
                     "passQty": {
                         "$sum": "$passQty"
@@ -793,7 +793,7 @@ class INTLV3(BaseType):
                             0,
                             {
                                 "$divide": [
-                                    "$reaosonQty",
+                                    "$reasonQty",
                                     "$passQty"
                                 ]
                             }
