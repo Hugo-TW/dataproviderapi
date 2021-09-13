@@ -1029,7 +1029,6 @@ class INTLV3(BaseType):
 
         deftAggregate.extend([deftMatch1, deftGroup1, deftProject1, deftAdd, deftSort])
         passAggregate.extend([passMatch1, passGroup1, passProject1, passGroup2, passProject2, passAdd, passSort])        
-       
 
         try:
             self.getMongoConnection()
@@ -1089,21 +1088,75 @@ class INTLV3(BaseType):
                     oData["DeftSUMQty"] = 0
                 else:
                     oData["DeftSUMQty"] = copy.deepcopy(d["DEFT_QTY"])
-                if oData["DeftSUMQty"] == 0:
-                    oData["DEFECT_RATE"] = 0
-                else:
-                    if(oData["PassSUMQty"] != 0):
-                        ds = Decimal(oData["DeftSUMQty"])
-                        ps = Decimal(oData["PassSUMQty"])
-                        oData["DEFECT_RATE"] =  self._DecimaltoFloat((ds / ps).quantize(Decimal('.00000000'), ROUND_HALF_UP))
-                    else:
-                        oData["DEFECT_RATE"] = 1
-                oData["FPY_RATE"] = round(1 - oData["DEFECT_RATE"], 4)
-                if oData["DeftSUMQty"] < oData["PassSUMQty"] and oData["FPY_RATE"] > 0:
+                if oData["DeftSUMQty"] < oData["PassSUMQty"]:
                     data.append(copy.deepcopy(oData))
                 oData = {}
         return data
 
+    def _calFPYLV2LINEOPER(self, tempData):
+        tmpPROD_NBR = self.jsonData["PROD_NBR"]
+
+        allDFCTCount = {}
+        for x in tempData:    
+            if x["DFCT_CODE"] in allDFCTCount.keys():
+                allDFCTCount[x["DFCT_CODE"]] += x["DeftSUMQty"]
+            else:
+                allDFCTCount[x["DFCT_CODE"]] = x["DeftSUMQty"]
+        top10 = dict(sorted(allDFCTCount.items(),key=lambda item:item[1],reverse=True) [:10])
+               
+        DATASERIES = []
+        for x in tempData:  
+            cDFct = x["DFCT_CODE"]  if x["DFCT_CODE"] in top10.keys() else "OTHER"
+            cERRC = x["ERRC_DESCR"] if x["DFCT_CODE"] in top10.keys() else "OTHER" 
+
+            rank = 11
+            if cDFct in top10.keys():
+                rank = 1
+                for i in top10:
+                    if i != x["DFCT_CODE"]:
+                        rank +=1 
+                    else:
+                        break
+            
+
+            d = list(filter(lambda d: d["DFCT_CODE"] == cDFct and d["XVALUE"] == x["XVALUE"] , DATASERIES))
+            if d == []:
+                ds = Decimal(x["DeftSUMQty"])
+                ps = Decimal(x["PassSUMQty"])
+                dr =  self._DecimaltoFloat((ds / ps).quantize(Decimal('.00000000'), ROUND_HALF_UP))
+                test = {
+                        "OPER": x["OPER"],
+                        "XVALUE": x["XVALUE"],
+                        "YVALUE": dr*100,
+                        "RANK": rank,
+                        "DFCT_CODE" : cDFct,
+                        "ERRC_DESCR" : cERRC,
+                        "DATARANGE": x["DATARANGE"],
+                        "DFCT_CODE" : cDFct,
+                        "ERRC_DESCR" : cERRC,                        
+                        "PROD_NBR": tmpPROD_NBR,
+                        "DeftSUM": x["DeftSUMQty"],
+                        "PassSUM": x["PassSUMQty"],
+                        "DEFECT_RATE": dr*100
+                    }
+                DATASERIES.append(test)
+            
+            else:
+                for cx in DATASERIES:
+                    if cx["OPER"] == x["OPER"] and cx["DFCT_CODE"] == cDFct :                        
+                        cx["DeftSUM"] += x["DeftSUMQty"]
+                        ds = Decimal(cx["DeftSUM"])
+                        ps = Decimal(cx["PassSUM"])
+                        dr =  self._DecimaltoFloat((ds / ps).quantize(Decimal('.00000000'), ROUND_HALF_UP))
+                        cx["DEFECT_RATE"] = dr*100
+                        cx["YVALUE"] =  dr*100
+
+        DATASERIES.sort(key = operator.itemgetter("RANK", "RANK"), reverse = False)
+
+        returnData = DATASERIES
+
+        return returnData
+  
     def _grouptFPYLV2LINE(self, n1d,n2d,n3d,n4d,n5d,n6d,n1w,n2w,n3w,n1m,n2m,n1s): 
             magerData = [] 
             for d in n1s:   
@@ -1131,64 +1184,6 @@ class INTLV3(BaseType):
             for d in n1d:     
                 magerData.append(d)
             return magerData
-
-    def _calFPYLV2LINEOPER(self, tempData):
-        tmpPROD_NBR = self.jsonData["PROD_NBR"]
-
-        allDFCTCount = {}
-        for x in tempData:    
-            if x["DFCT_CODE"] in allDFCTCount.keys():
-                allDFCTCount[x["DFCT_CODE"]] += x["DEFECT_RATE"]
-            else:
-                allDFCTCount[x["DFCT_CODE"]] = x["DEFECT_RATE"]
-        top10 = dict(sorted(allDFCTCount.items(),key=lambda item:item[1],reverse=True) [:10])
-               
-        DATASERIES = []
-        for x in tempData:  
-            cDFct = x["DFCT_CODE"]  if x["DFCT_CODE"] in top10.keys() else "OTHER"
-            cERRC = x["ERRC_DESCR"] if x["DFCT_CODE"] in top10.keys() else "OTHER" 
-
-            rank = 11
-            if cDFct in top10.keys():
-                rank = 1
-                for i in top10:
-                    if i != x["DFCT_CODE"]:
-                        rank +=1 
-                    else:
-                        break
-            
-
-            d = list(filter(lambda d: d["DFCT_CODE"] == cDFct and d["XVALUE"] == x["XVALUE"] , DATASERIES))
-            if d == []:
-                test = {
-                        "OPER": x["OPER"],
-                        "XVALUE": x["XVALUE"],
-                        "YVALUE": x["DEFECT_RATE"]*100,
-                        "RANK": rank,
-                        "DFCT_CODE" : cDFct,
-                        "ERRC_DESCR" : cERRC,
-                        "DATARANGE": x["DATARANGE"],
-                        "DFCT_CODE" : cDFct,
-                        "ERRC_DESCR" : cERRC,                        
-                        "PROD_NBR": tmpPROD_NBR,
-                        "DeftSUM": x["DeftSUMQty"],
-                        "PassSUM": x["PassSUMQty"],
-                        "DEFECT_RATE": x["DEFECT_RATE"]*100
-                    }
-                DATASERIES.append(test)
-            
-            else:
-                for cx in DATASERIES:
-                    if cx["OPER"] == x["OPER"] and cx["DFCT_CODE"] == cDFct :
-                       cx["YVALUE"] += x["DEFECT_RATE"]*100
-                       cx["DEFECT_RATE"] += x["DEFECT_RATE"]*100
-
-        DATASERIES.sort(key = operator.itemgetter("XVALUE", "RANK"), reverse = False)
-
-        returnData = DATASERIES
-
-        return returnData
-
     
     def _DecimaltoFloat(self, obj):
         if isinstance(obj, Decimal):
