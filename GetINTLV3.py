@@ -893,7 +893,6 @@ class INTLV3(BaseType):
                     "SITE": "$SITE",
                     "FACTORY_ID": "$FACTORY_ID",
                     "PROD_NBR": "$PROD_NBR",
-                    "ACCT_DATE": "$ACCT_DATE",
                     "PROCESS": "$PROCESS",
                     "APPLICATION": "$APPLICATION",
                     "MAIN_WC": {"$toInt": "$MAIN_WC"}
@@ -910,7 +909,6 @@ class INTLV3(BaseType):
                 "SITE": "$_id.SITE",
                 "FACTORY_ID": "$_id.FACTORY_ID",
                 "PROD_NBR": "$_id.PROD_NBR",
-                "ACCT_DATE": "$_id.ACCT_DATE",
                 "PROCESS": "$_id.PROCESS",
                 "APPLICATION": "$_id.APPLICATION",
                 "MAIN_WC": "$_id.MAIN_WC",
@@ -924,7 +922,6 @@ class INTLV3(BaseType):
                     "SITE": "$SITE",
                     "FACTORY_ID": "$FACTORY_ID",
                     "PROD_NBR": "$PROD_NBR",
-                    "ACCT_DATE": "$ACCT_DATE",
                     "APPLICATION": "$APPLICATION"
                 },
                 "PassSUMQty": {
@@ -939,7 +936,6 @@ class INTLV3(BaseType):
                 "SITE": "$_id.SITE",
                 "FACTORY_ID": "$_id.FACTORY_ID",
                 "PROD_NBR": "$_id.PROD_NBR",
-                "ACCT_DATE": "$_id.ACCT_DATE",
                 "APPLICATION": "$_id.APPLICATION",
                 "PassSUMQty": "$PassSUMQty"
             }
@@ -955,7 +951,6 @@ class INTLV3(BaseType):
                 "SITE": 1,
                 "FACTORY_ID": 1,
                 "PROD_NBR": 1,
-                "ACCT_DATE": 1,
                 "MAIN_WC": 1,
                 "APPLICATION": 1
             }
