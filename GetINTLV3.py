@@ -314,18 +314,18 @@ class INTLV3(BaseType):
                 n1s_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n1s"], dataRange["n1s_array"], 1)
                 
                 DATASERIES = self._grouptFPYLV2LINE(
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n1d_DATA["dData"], n1d_DATA["pData"])),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n2d_DATA["dData"], n2d_DATA["pData"])),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n3d_DATA["dData"], n3d_DATA["pData"])),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n4d_DATA["dData"], n4d_DATA["pData"])),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n5d_DATA["dData"], n5d_DATA["pData"])),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n6d_DATA["dData"], n6d_DATA["pData"])),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n1w_DATA["dData"], n1w_DATA["pData"])),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n2w_DATA["dData"], n2w_DATA["pData"])),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n3w_DATA["dData"], n3w_DATA["pData"])),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n1m_DATA["dData"], n1m_DATA["pData"])),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n2m_DATA["dData"], n2m_DATA["pData"])),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n1s_DATA["dData"], n1s_DATA["pData"])))
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n1d_DATA["dData"], n1d_DATA["pData"]), tmpOPER, dataRange["n1d"], 12),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n2d_DATA["dData"], n2d_DATA["pData"]), tmpOPER, dataRange["n1d"], 11),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n3d_DATA["dData"], n3d_DATA["pData"]), tmpOPER, dataRange["n1d"], 10),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n4d_DATA["dData"], n4d_DATA["pData"]), tmpOPER, dataRange["n1d"], 9),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n5d_DATA["dData"], n5d_DATA["pData"]), tmpOPER, dataRange["n1d"], 8),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n6d_DATA["dData"], n6d_DATA["pData"]), tmpOPER, dataRange["n1d"], 7),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n1w_DATA["dData"], n1w_DATA["pData"]), tmpOPER, dataRange["n1d"], 6),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n2w_DATA["dData"], n2w_DATA["pData"]), tmpOPER, dataRange["n1d"], 5),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n3w_DATA["dData"], n3w_DATA["pData"]), tmpOPER, dataRange["n1d"], 4),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n1m_DATA["dData"], n1m_DATA["pData"]), tmpOPER, dataRange["n1d"], 3),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n2m_DATA["dData"], n2m_DATA["pData"]), tmpOPER, dataRange["n1d"], 2),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n1s_DATA["dData"], n1s_DATA["pData"]), tmpOPER, dataRange["n1d"], 0))
 
                 returnData = {                    
                     "KPITYPE": tmpKPITYPE,
@@ -1088,7 +1088,7 @@ class INTLV3(BaseType):
                 oData = {}
         return data
 
-    def _calFPYLV2LINEOPER(self, tempData):
+    def _calFPYLV2LINEOPER(self, tempData, OPER, DATARANGE, DATARANGEID):
         tmpPROD_NBR = self.jsonData["PROD_NBR"]
 
         allDFCTCount = {}
@@ -1100,53 +1100,71 @@ class INTLV3(BaseType):
         top10 = dict(sorted(allDFCTCount.items(),key=lambda item:item[1],reverse=True) [:10])
                
         DATASERIES = []
-        for x in tempData:  
-            cDFct = x["DFCT_CODE"]  if x["DFCT_CODE"] in top10.keys() else "OTHER"
-            cERRC = x["ERRC_DESCR"] if x["DFCT_CODE"] in top10.keys() else "OTHER" 
+        if tempData == []:
+            test = {
+                    "OPER": OPER,
+                    "XVALUE": DATARANGEID,
+                    "YVALUE": 0,
+                    "RANK": 0,
+                    "DFCT_CODE" : "",
+                    "ERRC_DESCR" : "",
+                    "DATARANGE": DATARANGE,
+                    "DFCT_CODE" : "",
+                    "ERRC_DESCR" : "",                        
+                    "PROD_NBR": tmpPROD_NBR,
+                    "DeftSUM": 0,
+                    "PassSUM": 0,
+                    "DEFECT_RATE": 0
+                }
+            DATASERIES.append(test)
+        else:
+            for x in tempData:  
+                cDFct = x["DFCT_CODE"]  if x["DFCT_CODE"] in top10.keys() else "OTHER"
+                cERRC = x["ERRC_DESCR"] if x["DFCT_CODE"] in top10.keys() else "OTHER" 
 
-            rank = 11
-            if cDFct in top10.keys():
-                rank = 1
-                for i in top10:
-                    if i != x["DFCT_CODE"]:
-                        rank +=1 
-                    else:
-                        break
-            
+                rank = 11
+                if cDFct in top10.keys():
+                    rank = 1
+                    for i in top10:
+                        if i != x["DFCT_CODE"]:
+                            rank +=1 
+                        else:
+                            break
+                
 
-            d = list(filter(lambda d: d["DFCT_CODE"] == cDFct and d["XVALUE"] == x["XVALUE"] , DATASERIES))
-            if d == []:
-                ds = Decimal(x["DeftSUMQty"])
-                ps = Decimal(x["PassSUMQty"])
-                dr =  self._DecimaltoFloat((ds / ps).quantize(Decimal('.00000000'), ROUND_HALF_UP))
-                test = {
-                        "OPER": x["OPER"],
-                        "XVALUE": x["XVALUE"],
-                        "YVALUE": dr*100,
-                        "RANK": rank,
-                        "DFCT_CODE" : cDFct,
-                        "ERRC_DESCR" : cERRC,
-                        "DATARANGE": x["DATARANGE"],
-                        "DFCT_CODE" : cDFct,
-                        "ERRC_DESCR" : cERRC,                        
-                        "PROD_NBR": tmpPROD_NBR,
-                        "DeftSUM": x["DeftSUMQty"],
-                        "PassSUM": x["PassSUMQty"],
-                        "DEFECT_RATE": dr*100
-                    }
-                DATASERIES.append(test)
-            
-            else:
-                for cx in DATASERIES:
-                    if cx["OPER"] == x["OPER"] and cx["DFCT_CODE"] == cDFct :                        
-                        cx["DeftSUM"] += x["DeftSUMQty"]
-                        ds = Decimal(cx["DeftSUM"])
-                        ps = Decimal(cx["PassSUM"])
-                        dr =  self._DecimaltoFloat((ds / ps).quantize(Decimal('.00000000'), ROUND_HALF_UP))
-                        cx["DEFECT_RATE"] = dr*100
-                        cx["YVALUE"] =  dr*100
+                d = list(filter(lambda d: d["DFCT_CODE"] == cDFct and d["XVALUE"] == x["XVALUE"] , DATASERIES))
+                if d == []:
+                    ds = Decimal(x["DeftSUMQty"])
+                    ps = Decimal(x["PassSUMQty"])
+                    dr =  self._DecimaltoFloat((ds / ps).quantize(Decimal('.00000000'), ROUND_HALF_UP))
+                    test = {
+                            "OPER": x["OPER"],
+                            "XVALUE": x["XVALUE"],
+                            "YVALUE": dr*100,
+                            "RANK": rank,
+                            "DFCT_CODE" : cDFct,
+                            "ERRC_DESCR" : cERRC,
+                            "DATARANGE": x["DATARANGE"],
+                            "DFCT_CODE" : cDFct,
+                            "ERRC_DESCR" : cERRC,                        
+                            "PROD_NBR": tmpPROD_NBR,
+                            "DeftSUM": x["DeftSUMQty"],
+                            "PassSUM": x["PassSUMQty"],
+                            "DEFECT_RATE": dr*100
+                        }
+                    DATASERIES.append(test)
+                
+                else:
+                    for cx in DATASERIES:
+                        if cx["OPER"] == x["OPER"] and cx["DFCT_CODE"] == cDFct :                        
+                            cx["DeftSUM"] += x["DeftSUMQty"]
+                            ds = Decimal(cx["DeftSUM"])
+                            ps = Decimal(cx["PassSUM"])
+                            dr =  self._DecimaltoFloat((ds / ps).quantize(Decimal('.00000000'), ROUND_HALF_UP))
+                            cx["DEFECT_RATE"] = dr*100
+                            cx["YVALUE"] =  dr*100
 
-        DATASERIES.sort(key = operator.itemgetter("RANK", "RANK"), reverse = True)
+            DATASERIES.sort(key = operator.itemgetter("RANK", "RANK"), reverse = True)
 
         returnData = DATASERIES
 
