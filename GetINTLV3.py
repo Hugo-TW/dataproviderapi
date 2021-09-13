@@ -300,32 +300,32 @@ class INTLV3(BaseType):
 
                 dataRange =  self._dataRange(tmpACCT_DATE)
 
-                n1d_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n1d"], dataRange["n1d_array"], 12)
-                n2d_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n2d"], dataRange["n2d_array"], 11)
-                n3d_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n3d"], dataRange["n3d_array"], 10)
-                n4d_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n4d"], dataRange["n4d_array"], 9)
-                n5d_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n5d"], dataRange["n5d_array"], 8)
-                n6d_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n6d"], dataRange["n6d_array"], 7)
-                n1w_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n1w"], dataRange["n1w_array"], 6)
-                n2w_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n2w"], dataRange["n2w_array"], 5)
-                n3w_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n3w"], dataRange["n2w_array"], 4)
-                n1m_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n1m"], dataRange["n1m_array"], 3)
-                n2m_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n2m"], dataRange["n2m_array"], 2)
-                n1s_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n1s"], dataRange["n1s_array"], 1)
+                n1d_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n1d"], dataRange["n1d_array"], 11)
+                n2d_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n2d"], dataRange["n2d_array"], 10)
+                n3d_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n3d"], dataRange["n3d_array"], 9)
+                n4d_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n4d"], dataRange["n4d_array"], 8
+                n5d_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n5d"], dataRange["n5d_array"], 7)
+                n6d_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n6d"], dataRange["n6d_array"], 6)
+                n1w_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n1w"], dataRange["n1w_array"], 5)
+                n2w_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n2w"], dataRange["n2w_array"], 4)
+                n3w_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n3w"], dataRange["n2w_array"], 3)
+                n1m_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n1m"], dataRange["n1m_array"], 2)
+                n2m_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n2m"], dataRange["n2m_array"], 1)
+                n1s_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n1s"], dataRange["n1s_array"], 0)
                 
                 DATASERIES = self._grouptFPYLV2LINE(
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n1d_DATA["dData"], n1d_DATA["pData"]), tmpOPER, dataRange["n1d"], 12),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n2d_DATA["dData"], n2d_DATA["pData"]), tmpOPER, dataRange["n1d"], 11),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n3d_DATA["dData"], n3d_DATA["pData"]), tmpOPER, dataRange["n1d"], 10),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n4d_DATA["dData"], n4d_DATA["pData"]), tmpOPER, dataRange["n1d"], 9),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n5d_DATA["dData"], n5d_DATA["pData"]), tmpOPER, dataRange["n1d"], 8),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n6d_DATA["dData"], n6d_DATA["pData"]), tmpOPER, dataRange["n1d"], 7),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n1w_DATA["dData"], n1w_DATA["pData"]), tmpOPER, dataRange["n1d"], 6),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n2w_DATA["dData"], n2w_DATA["pData"]), tmpOPER, dataRange["n1d"], 5),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n3w_DATA["dData"], n3w_DATA["pData"]), tmpOPER, dataRange["n1d"], 4),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n1m_DATA["dData"], n1m_DATA["pData"]), tmpOPER, dataRange["n1d"], 3),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n2m_DATA["dData"], n2m_DATA["pData"]), tmpOPER, dataRange["n1d"], 2),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n1s_DATA["dData"], n1s_DATA["pData"]), tmpOPER, dataRange["n1d"], 0))
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n1d_DATA["dData"], n1d_DATA["pData"]), tmpOPER, dataRange["n1d"], 11),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n2d_DATA["dData"], n2d_DATA["pData"]), tmpOPER, dataRange["n2d"], 10),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n3d_DATA["dData"], n3d_DATA["pData"]), tmpOPER, dataRange["n3d"], 9),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n4d_DATA["dData"], n4d_DATA["pData"]), tmpOPER, dataRange["n4d"], 8),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n5d_DATA["dData"], n5d_DATA["pData"]), tmpOPER, dataRange["n5d"], 7),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n6d_DATA["dData"], n6d_DATA["pData"]), tmpOPER, dataRange["n6d"], 6),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n1w_DATA["dData"], n1w_DATA["pData"]), tmpOPER, dataRange["n1w"], 5),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n2w_DATA["dData"], n2w_DATA["pData"]), tmpOPER, dataRange["n2w"], 4),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n3w_DATA["dData"], n3w_DATA["pData"]), tmpOPER, dataRange["n3w"], 3),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n1m_DATA["dData"], n1m_DATA["pData"]), tmpOPER, dataRange["n1m"], 2),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n2m_DATA["dData"], n2m_DATA["pData"]), tmpOPER, dataRange["n2m"], 1),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n1s_DATA["dData"], n1s_DATA["pData"]), tmpOPER, dataRange["n1s"], 0))
 
                 returnData = {                    
                     "KPITYPE": tmpKPITYPE,
