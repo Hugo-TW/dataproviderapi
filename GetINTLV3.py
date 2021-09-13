@@ -1151,7 +1151,7 @@ class INTLV3(BaseType):
                         cx["DEFECT_RATE"] = dr*100
                         cx["YVALUE"] =  dr*100
 
-        DATASERIES.sort(key = operator.itemgetter("RANK", "RANK"), reverse = False)
+        DATASERIES.sort(key = operator.itemgetter("RANK", "RANK"), reverse = True)
 
         returnData = DATASERIES
 
