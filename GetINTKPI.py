@@ -201,7 +201,9 @@ class INTKPI(BaseType):
                 return json.loads(self.getRedisData(redisKey)), 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type', "Access-Control-Expose-Headers": "Expires,DataSource", "Expires": time.mktime((datetime.datetime.now() + datetime.timedelta(seconds=self.getKeyExpirTime(expirTimeKey))).timetuple()), "DataSource": "Redis"}
             
             #一階 FPY KPI API
-            if tmpKPITYPE == "FPY":
+            if tmpKPITYPE == "FPY":                
+                expirTimeKey = tmpFACTORY_ID + '_PASS'
+
                 PCBIData = self._getFPYData("PCBI")
                 PCBIResult = self._groupPassDeftByPRODandOPER(
                     PCBIData["dData"], PCBIData["pData"])
@@ -274,6 +276,7 @@ class INTKPI(BaseType):
 
             # 一階 MSHIP KPI API    
             elif tmpKPITYPE == "MSHIP":
+                expirTimeKey = tmpFACTORY_ID + '_SCRP'
                 MSHIPData = self._getMSHIPData()
                 groupMSHIPDAT = self._groupMSHIPData(MSHIPData)
                 returnData = self._calMSHIPData(groupMSHIPDAT)
@@ -287,8 +290,32 @@ class INTKPI(BaseType):
                         returnData, sort_keys=True, indent=2), 60)
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
+            #二階 MSHIP 泡泡圖 API
+            elif tmpKPITYPE == "PRODMSHIP":
+                expirTimeKey = tmpFACTORY_ID + '_SCRP'
+                # Check Redis Data
+                self.getRedisConnection()
+                if self.searchRedisKeys(redisKey):
+                    self.writeLog(f"Cache Data From Redis")
+                    return json.loads(self.getRedisData(redisKey)), 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type', "Access-Control-Expose-Headers": "Expires,DataSource", "Expires": time.mktime((datetime.datetime.now() + datetime.timedelta(seconds=self.getKeyExpirTime(expirTimeKey))).timetuple()), "DataSource": "Redis"}
+
+                MSHIPData = self._getMSHIPData()
+                groupMSHIPDAT = self._groupMSHIPData(MSHIPData)
+                returnData = self._calPRODMSHIPData(groupMSHIPDAT)
+
+                # 存到 redis 暫存
+                self.getRedisConnection()
+                if self.searchRedisKeys(redisKey):
+                    self.setRedisData(redisKey, json.dumps(
+                        returnData, sort_keys=True, indent=2), self.getKeyExpirTime(expirTimeKey))
+                else:
+                    self.setRedisData(redisKey, json.dumps(
+                        returnData, sort_keys=True, indent=2), 60)
+                return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+            
             # 一階 EFA KPI API
             elif tmpKPITYPE == "EFA":
+                expirTimeKey = tmpFACTORY_ID + '_PASS'
                 OPERDATA = [
                     {"PROCESS": "BONDING", "OPER": 1300, "DESC": "PCBI(HMT)"},
                     {"PROCESS": "BONDING", "OPER": 1301,
@@ -935,6 +962,7 @@ class INTKPI(BaseType):
             })
         #因為使用 operator.itemgetter 方法 排序順序要反過來執行
         #不同欄位key 排序方式不同時 需要 3 - 2 - 1  反順序去寫code
+        DATASERIES.sort(key = operator.itemgetter("QTY"), reverse = True) 
         DATASERIES.sort(key = operator.itemgetter("YIELD"), reverse = False)        
         DATASERIES.sort(key = operator.itemgetter("QUADRANT"), reverse = True)
 
@@ -1241,7 +1269,8 @@ class INTKPI(BaseType):
                         round(oData["DOWNGRADE_SUMQTY"] /
                               oData["TOTAL_SUMQTY"], 4)
                 oData["MSHIP"] = round(oData["GRADW_YIELD"] / oData["TOTAL_YIELD"], 4) if oData["TOTAL_YIELD"] != 0 else 0
-                mshipData.append(copy.deepcopy(oData))
+                if oData["MSHIP"] > 0:
+                    mshipData.append(copy.deepcopy(oData))
                 oData = {}
         return mshipData
 
@@ -1273,6 +1302,86 @@ class INTKPI(BaseType):
             "GREEN_VALUE": GREEN_VALUE,
             "YELLOW_VALUE": YELLOW_VALUE,
             "RED_VALUE": RED_VALUE
+        }
+
+        return returnData
+
+    def _calPRODMSHIPData(self, PRODMSHIPBaseData):
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
+        getLimitData = self.operSetData[tmpFACTORY_ID]["M-SHIP"]["limit"]
+
+        COLOR = "#118AB2"
+        SYMBOL = "undefined"
+
+        DATASERIES = []
+        if tmpAPPLICATION == "ALL":
+            d = PRODMSHIPBaseData
+            xLimit = None
+            yLimit = None
+        else:
+            d = list(filter(lambda d: d["APPLICATION"]
+                     == tmpAPPLICATION, PRODMSHIPBaseData))
+            yLimit = getLimitData[tmpAPPLICATION]["target"]
+            xLimit = getLimitData[tmpAPPLICATION]["qytlim"]
+        
+        # red ef476f
+        #yellow ffd166
+        #green 06d6a0
+        #blue 118AB2
+        #midGreen 073b4c
+
+        for x in d:
+            targrt = 0.90
+            targrtQTY = 1000
+            if x["APPLICATION"] in getLimitData.keys():
+                targrt = getLimitData[x["APPLICATION"]]["target"]
+                targrtQTY = getLimitData[x["APPLICATION"]]["qytlim"]
+            
+            QUADRANT = 0
+
+            if x["MSHIP"] >= targrt:
+                COLOR = "#06d6a0"
+                SYMBOL = "undefined"   
+                if targrtQTY > x["SHIP_SUMQTY"]:
+                    QUADRANT = 1
+                else:       
+                    QUADRANT = 2
+            else:
+                if targrtQTY > x["SHIP_SUMQTY"]:
+                    COLOR = "#ffd166"
+                    SYMBOL = "undefined"
+                    QUADRANT = 3
+                else:                
+                    COLOR = "#EF476F" 
+                    SYMBOL = "twinkle"  
+                    QUADRANT = 4 
+                
+            DATASERIES.append({
+                "APPLICATION": x["APPLICATION"],
+                "PROD_NBR": x["PROD_NBR"],
+                "YIELD": x["MSHIP"],
+                "QTY": x["SHIP_SUMQTY"],
+                "COLOR": COLOR,
+                "SYMBOL": SYMBOL,
+                "QUADRANT": QUADRANT
+            })
+        #因為使用 operator.itemgetter 方法 排序順序要反過來執行
+        #不同欄位key 排序方式不同時 需要 3 - 2 - 1  反順序去寫code
+        DATASERIES.sort(key = operator.itemgetter("QTY"), reverse = True) 
+        DATASERIES.sort(key = operator.itemgetter("YIELD"), reverse = False)        
+        DATASERIES.sort(key = operator.itemgetter("QUADRANT"), reverse = True)
+
+        length = len(DATASERIES)
+        rank = 1
+        for x in range(length):
+            DATASERIES[x]["RANK"] = rank
+            rank += 1
+
+        returnData = {
+            "XLIMIT": xLimit,
+            "YLIMIT": yLimit,
+            "DATASERIES": DATASERIES
         }
 
         return returnData

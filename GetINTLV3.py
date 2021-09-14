@@ -183,9 +183,10 @@ class INTLV3(BaseType):
             tmpKPITYPE = self.jsonData["KPITYPE"]
             tmpACCT_DATE = self.jsonData["ACCT_DATE"]
             tmpPROD_NBR = self.jsonData["PROD_NBR"]
-            tmpOPER = self.jsonData["OPER"]
+            tmpOPER = self.jsonData["OPER"] # or RESPTYPE
             # Defect or Reason Code 
             tmpCHECKCODE = self.jsonData["CHECKCODE"] if "CHECKCODE" in self.jsonData else None
+            expirTimeKey = tmpFACTORY_ID + '_PASS'
 
             #redisKey
             tmp.append(className)
@@ -200,7 +201,6 @@ class INTLV3(BaseType):
             if tmpCHECKCODE != None:
                 tmp.append(tmpCHECKCODE)
             redisKey = bottomLine.join(tmp)
-            expirTimeKey = tmpFACTORY_ID + '_DEFT'
 
             if tmpFACTORY_ID not in self.operSetData.keys():
                 return {'Result': 'NG', 'Reason': f'{tmpFACTORY_ID} not in FactoryID MAP'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
@@ -212,7 +212,8 @@ class INTLV3(BaseType):
                 self.writeLog(f"Cache Data From Redis")
                 return json.loads(self.getRedisData(redisKey)), 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type', "Access-Control-Expose-Headers": "Expires,DataSource", "Expires": time.mktime((datetime.datetime.now() + datetime.timedelta(seconds=self.getKeyExpirTime(expirTimeKey))).timetuple()), "DataSource": "Redis"}
 
-            if tmpKPITYPE == "FPYLV3LINE":
+            if tmpKPITYPE == "FPYLV3LINE":                
+                expirTimeKey = tmpFACTORY_ID + '_PASS'
                 dataRange =  self._dataRange(tmpACCT_DATE)
 
                 n1d_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n1d"], dataRange["n1d_array"], 11)
@@ -254,7 +255,8 @@ class INTLV3(BaseType):
 
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
-            elif tmpKPITYPE == "EFALV3LINE":
+            elif tmpKPITYPE == "EFALV3LINE":                
+                expirTimeKey = tmpFACTORY_ID + '_REASON'
 
                 dataRange =  self._dataRange(tmpACCT_DATE)
 
@@ -296,7 +298,8 @@ class INTLV3(BaseType):
 
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
-            elif tmpKPITYPE == "FPYLV2LINE":
+            elif tmpKPITYPE == "FPYLV2LINE":                
+                expirTimeKey = tmpFACTORY_ID + '_PASS'
 
                 dataRange =  self._dataRange(tmpACCT_DATE)
 
@@ -350,6 +353,7 @@ class INTLV3(BaseType):
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
             elif tmpKPITYPE == "FPYLV2LINEALL":
+                expirTimeKey = tmpFACTORY_ID + '_PASS'
 
                 dataRange =  self._dataRange(tmpACCT_DATE)
 
@@ -402,6 +406,72 @@ class INTLV3(BaseType):
 
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
+            elif tmpKPITYPE == "MSHIPLV2LINE":                
+                expirTimeKey = tmpFACTORY_ID + '_SCRP'
+
+                """
+                (1)  前廠責：USL、TX LCD、FABX
+                (2)  廠責：MFG、INT、EQP、ER 
+                (3)  來料責：SQE
+                """
+                mshipDATA = {
+                    "formerfab":{"in":"usl|lcd|eqp|fab","name": "前廠責", "id":"formerfab"},
+                    "fab":{"in":"mfg|int|eqp|er","name": "廠責", "id":"fab"},
+                    "incoming":{"in":"sqe","name": "SQE來料責", "id":"incoming"},
+                }
+                getFabData = mshipDATA[tmpOPER]   
+
+                dataRange =  self._dataRange(tmpACCT_DATE)
+
+                n1d_DATA = self._getMSHIPLV2LINE(getFabData, tmpPROD_NBR, dataRange["n1d"], dataRange["n1d_array"], 11)
+                n2d_DATA = self._getMSHIPLV2LINE(getFabData, tmpPROD_NBR, dataRange["n2d"], dataRange["n2d_array"], 10)
+                n3d_DATA = self._getMSHIPLV2LINE(getFabData, tmpPROD_NBR, dataRange["n3d"], dataRange["n3d_array"], 9)
+                n4d_DATA = self._getMSHIPLV2LINE(getFabData, tmpPROD_NBR, dataRange["n4d"], dataRange["n4d_array"], 8)
+                n5d_DATA = self._getMSHIPLV2LINE(getFabData, tmpPROD_NBR, dataRange["n5d"], dataRange["n5d_array"], 7)
+                n6d_DATA = self._getMSHIPLV2LINE(getFabData, tmpPROD_NBR, dataRange["n6d"], dataRange["n6d_array"], 6)
+                n1w_DATA = self._getMSHIPLV2LINE(getFabData, tmpPROD_NBR, dataRange["n1w"], dataRange["n1w_array"], 5)
+                n2w_DATA = self._getMSHIPLV2LINE(getFabData, tmpPROD_NBR, dataRange["n2w"], dataRange["n2w_array"], 4)
+                n3w_DATA = self._getMSHIPLV2LINE(getFabData, tmpPROD_NBR, dataRange["n3w"], dataRange["n2w_array"], 3)
+                n1m_DATA = self._getMSHIPLV2LINE(getFabData, tmpPROD_NBR, dataRange["n1m"], dataRange["n1m_array"], 2)
+                n2m_DATA = self._getMSHIPLV2LINE(getFabData, tmpPROD_NBR, dataRange["n2m"], dataRange["n2m_array"], 1)
+                n1s_DATA = self._getMSHIPLV2LINE(getFabData, tmpPROD_NBR, dataRange["n1s"], dataRange["n1s_array"], 0)
+                
+                DATASERIES = self._grouptMSHIPLV2LINE(
+                    self._calMSHIPLV2(self._groupMSHIPLV2LINE(n1d_DATA["scData"], n1d_DATA["shData"]), dataRange["n1d"], 11),
+                    self._calMSHIPLV2(self._groupMSHIPLV2LINE(n2d_DATA["scData"], n2d_DATA["shData"]), dataRange["n2d"], 10),
+                    self._calMSHIPLV2(self._groupMSHIPLV2LINE(n3d_DATA["scData"], n3d_DATA["shData"]), dataRange["n3d"], 9),
+                    self._calMSHIPLV2(self._groupMSHIPLV2LINE(n4d_DATA["scData"], n4d_DATA["shData"]), dataRange["n4d"], 8),
+                    self._calMSHIPLV2(self._groupMSHIPLV2LINE(n5d_DATA["scData"], n5d_DATA["shData"]), dataRange["n5d"], 7),
+                    self._calMSHIPLV2(self._groupMSHIPLV2LINE(n6d_DATA["scData"], n6d_DATA["shData"]), dataRange["n6d"], 6),
+                    self._calMSHIPLV2(self._groupMSHIPLV2LINE(n1w_DATA["scData"], n1w_DATA["shData"]), dataRange["n1w"], 5),
+                    self._calMSHIPLV2(self._groupMSHIPLV2LINE(n2w_DATA["scData"], n2w_DATA["shData"]), dataRange["n2w"], 4),
+                    self._calMSHIPLV2(self._groupMSHIPLV2LINE(n3w_DATA["scData"], n3w_DATA["shData"]), dataRange["n3w"], 3),
+                    self._calMSHIPLV2(self._groupMSHIPLV2LINE(n1m_DATA["scData"], n1m_DATA["shData"]), dataRange["n1m"], 2),
+                    self._calMSHIPLV2(self._groupMSHIPLV2LINE(n2m_DATA["scData"], n2m_DATA["shData"]), dataRange["n2m"], 1),
+                    self._calMSHIPLV2(self._groupMSHIPLV2LINE(n1s_DATA["scData"], n1s_DATA["shData"]), dataRange["n1s"], 0))
+
+                returnData = {                    
+                    "KPITYPE": tmpKPITYPE,
+                    "COMPANY_CODE": tmpCOMPANY_CODE,
+                    "SITE": tmpSITE,
+                    "FACTORY_ID": tmpFACTORY_ID,
+                    "APPLICATION": tmpAPPLICATION,  
+                    "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
+                    "PROD_NBR": tmpPROD_NBR,                                      
+                    "RESP_OWNER": getFabData["name"],
+                    "RESP_OWNER_E":  getFabData["id"],
+                    "DATASERIES": DATASERIES
+                }
+
+                self.getRedisConnection()
+                if self.searchRedisKeys(redisKey):     
+                    self.setRedisData(redisKey, json.dumps(
+                        returnData, sort_keys=True, indent=2), self.getKeyExpirTime(expirTimeKey))
+                else:
+                    self.setRedisData(redisKey, json.dumps(
+                        returnData, sort_keys=True, indent=2), 60)  
+
+                return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
             else:
                 return {'Result': 'Fail', 'Reason': 'Parametes[KPITYPE] not in Rule'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
@@ -1467,6 +1537,313 @@ class INTLV3(BaseType):
             self.writeError(
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
+
+    def _getMSHIPLV2LINE(self,getFabData, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpKPITYPE = self.jsonData["KPITYPE"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
+
+
+        scrapAggregate = []
+
+        # scrap
+        scrapMatch = {
+            "$match": {
+                "COMPANY_CODE": tmpCOMPANY_CODE,
+                "SITE": tmpSITE,
+                "FACTORY_ID": tmpFACTORY_ID,
+                "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
+                "LCM_OWNER": {"$in": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                'RESP_OWNER': {'$regex': getFabData["in"], '$options': 'i' },
+                "PROD_NBR": PROD_NBR
+            }
+        }        
+        scrapGroup = {
+            "$group": {
+                "_id": {
+                    "COMPANY_CODE": "$COMPANY_CODE",
+                    "SITE": "$SITE",
+                    "FACTORY_ID": "$FACTORY_ID",
+                    "APPLICATION": "$APPLICATION",
+                    "PROD_NBR": "$PROD_NBR",
+                    "SCRAP_DESCR": "$SCRAP_DESCR",
+                    "SCRAP_CODE" : "$SCRAP_CODE"
+                },
+                "TOBESCRAP_QTY": {
+                    "$sum": {"$toInt": "$TOBESCRAP_QTY"}
+                }
+            }
+        }
+        scrapProject = {
+            "$project": {
+                "_id": 0,
+                "COMPANY_CODE": "$_id.COMPANY_CODE",
+                "SITE": "$_id.SITE",
+                "FACTORY_ID": "$_id.FACTORY_ID",
+                "APPLICATION": "$_id.APPLICATION",
+                "PROD_NBR": "$_id.PROD_NBR",
+                "SCRAP_DESCR": "$_id.SCRAP_DESCR",
+                "SCRAP_CODE" : "$_id.SCRAP_CODE",
+                "TOBESCRAP_SUMQTY": "$TOBESCRAP_QTY"
+            }
+        }
+        scrapAdd = {
+            "$addFields": {
+                "RESP_OWNER": getFabData["name"],
+                "RESP_OWNER_E":  getFabData["id"],
+                "DATARANGE": DATARANGENAME,
+                "XVALUE": TYPE
+            }
+        }
+        scrapSort = {
+            "$sort": {
+                "COMPANY_CODE": 1,
+                "SITE": 1,
+                "FACTORY_ID": 1,
+                "APPLICATION": 1,
+                "PROD_NBR": 1
+            }
+        }
+
+        shipAggregate = []
+        # ship
+        shipAggregate = []
+        shipMatch = {
+            "$match": {
+                "COMPANY_CODE": tmpCOMPANY_CODE,
+                "SITE": tmpSITE,
+                "FACTORY_ID": tmpFACTORY_ID,
+                "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
+                "TRANS_TYPE": "SHIP",
+                "LCM_OWNER": {"$in": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                "PROD_NBR": PROD_NBR
+            }
+        }
+        shipGroup = {
+            "$group": {
+                "_id": {
+                    "COMPANY_CODE": "$COMPANY_CODE",
+                    "SITE": "$SITE",
+                    "FACTORY_ID": "$FACTORY_ID",
+                    "APPLICATION": "$APPLICATION",
+                    "PROD_NBR": "$PROD_NBR"
+                },
+                "SHIPSUM": {
+                    "$sum": {"$toInt": "$QTY"}
+                }
+            }
+        }
+        shipProject = {
+            "$project": {
+                "_id": 0,
+                "COMPANY_CODE": "$_id.COMPANY_CODE",
+                "SITE": "$_id.SITE",
+                "FACTORY_ID": "$_id.FACTORY_ID",
+                "APPLICATION": "$_id.APPLICATION",
+                "PROD_NBR": "$_id.PROD_NBR",
+                "SHIP_SUMQTY": "$SHIPSUM"
+            }
+        }
+        shipAdd = {
+            "$addFields": {
+                "DATARANGE": DATARANGENAME,
+                "XVALUE": TYPE
+            }
+        }
+        shipSort = {
+            "$sort": {
+                "COMPANY_CODE": 1,
+                "SITE": 1,
+                "FACTORY_ID": 1,
+                "APPLICATION": 1,
+                "PROD_NBR": 1
+            }
+        }
+
+        if tmpAPPLICATION != "ALL":
+            scrapMatch["$match"]["APPLICATION"] = tmpAPPLICATION
+            shipMatch["$match"]["APPLICATION"] = tmpAPPLICATION
+
+        scrapAggregate.extend(
+            [scrapMatch, scrapGroup, scrapProject, scrapAdd, scrapSort])
+        shipAggregate.extend([shipMatch, shipGroup, shipProject, shipAdd, shipSort])
+
+        try:
+            self.getMongoConnection()
+            self.setMongoDb("IAMP")
+            self.setMongoCollection("scrapHisAndCurrent")
+            scrapData = self.aggregate(scrapAggregate)
+            self.setMongoCollection("passHisAndCurrent")
+            shipData = self.aggregate(shipAggregate)
+            self.closeMongoConncetion()
+
+            returnData = {
+                "scData": scrapData,
+                "shData": shipData
+            }
+
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+    def _groupMSHIPLV2LINE(self, scData, shData):
+        scapData = []
+        for sc in scData:
+            scapData.append(sc)
+        shipData = []
+        for sh in shData:
+            shipData.append(sh)
+        data = []
+        oData = {}
+        if scapData != [] and shipData != []:
+            for d in scapData:   
+                _shipData = list(
+                    filter(lambda d: d["PROD_NBR"] == d["PROD_NBR"], shipData))   
+                oData["RESP_OWNER"] = copy.deepcopy(d["XVALUE"])  
+                oData["RESP_OWNER_E"] = copy.deepcopy(d["XVALUE"])  
+                oData["SCRAP_DESCR"] = copy.deepcopy(d["SCRAP_DESCR"])  
+                oData["SCRAP_CODE"] = copy.deepcopy(d["SCRAP_CODE"])  
+                oData["XVALUE"] = copy.deepcopy(d["XVALUE"])                
+                oData["DATARANGE"] = copy.deepcopy(d["DATARANGE"])
+                oData["COMPANY_CODE"] = copy.deepcopy(
+                    _shipData[0]["COMPANY_CODE"])
+                oData["SITE"] = copy.deepcopy(_shipData[0]["SITE"])
+                oData["FACTORY_ID"] = copy.deepcopy(_shipData[0]["FACTORY_ID"])
+                if "APPLICATION" in _shipData[0].keys():
+                    oData["APPLICATION"] = copy.deepcopy(
+                        _shipData[0]["APPLICATION"])
+                else:
+                    oData["APPLICATION"] = None
+                oData["PROD_NBR"] = copy.deepcopy(_shipData[0]["PROD_NBR"])
+                oData["TOBESCRAP_SUMQTY"] = copy.deepcopy(d["TOBESCRAP_SUMQTY"])                    
+                oData["SHIP_SUMQTY"] = copy.deepcopy(_shipData[0]["SHIP_SUMQTY"])
+                if oData["TOBESCRAP_SUMQTY"] == 0:
+                    oData["SCRAP_YIELD"] = 1
+                else:
+                    ds = Decimal(oData["TOBESCRAP_SUMQTY"])
+                    ps = Decimal(oData["SHIP_SUMQTY"])
+                    dr =  self._DecimaltoFloat((ds / ps).quantize(Decimal('.00000000'), ROUND_HALF_UP))
+                    oData["SCRAP_YIELD"] = dr
+                if oData["SHIP_SUMQTY"] > oData["TOBESCRAP_SUMQTY"] > 0:
+                    data.append(copy.deepcopy(oData))
+                oData = {}
+        return data
+
+    def _calMSHIPLV2(self, tempData, DATARANGE, DATARANGEID):
+        tmpPROD_NBR = self.jsonData["PROD_NBR"]
+
+        allDFCTCount = {}
+        for x in tempData:    
+            if x["SCRAP_CODE"] in allDFCTCount.keys():
+                allDFCTCount[x["SCRAP_CODE"]] += x["TOBESCRAP_SUMQTY"]
+            else:
+                allDFCTCount[x["SCRAP_CODE"]] = x["TOBESCRAP_SUMQTY"]
+        top10 = dict(sorted(allDFCTCount.items(),key=lambda item:item[1],reverse=True) [:10])
+               
+        DATASERIES = []
+        if tempData == []:
+            test = {
+                    "XVALUE": DATARANGEID,
+                    "YVALUE": 0,
+                    "RANK": 0,
+                    "DATARANGE": DATARANGE,                    
+                    "SCRAP_CODE" : "OTHER",
+                    "SCRAP_DESCR" : "OTHER",                  
+                    "PROD_NBR": tmpPROD_NBR,
+                    "TOBESCRAP_SUMQTY": 0,
+                    "SHIP_SUMQTY": 0,
+                    "SCRAP_YIELD": 0
+                }
+            DATASERIES.append(test)
+        else:
+            for x in tempData:  
+                cDFct = x["SCRAP_CODE"] if x["SCRAP_CODE"] in top10.keys() else "OTHER"
+                cERRC = x["SCRAP_DESCR"] if x["SCRAP_CODE"] in top10.keys() else "OTHER" 
+
+                rank = 11
+                if cDFct in top10.keys():
+                    rank = 1
+                    for i in top10:
+                        if i != x["SCRAP_CODE"]:
+                            rank +=1 
+                        else:
+                            break
+                
+
+                d = list(filter(lambda d: d["SCRAP_CODE"] == cDFct and d["XVALUE"] == x["XVALUE"] , DATASERIES))
+                if d == []:
+                    ds = Decimal(x["TOBESCRAP_SUMQTY"])
+                    ps = Decimal(x["SHIP_SUMQTY"])
+                    dr =  self._DecimaltoFloat((ds / ps).quantize(Decimal('.00000000'), ROUND_HALF_UP))
+                    test = {
+                            "XVALUE": x["XVALUE"],
+                            "YVALUE": dr*100,
+                            "RANK": rank,
+                            "DATARANGE": x["DATARANGE"],
+                            "SCRAP_CODE" : cDFct,
+                            "SCRAP_DESCR" : cERRC,                        
+                            "PROD_NBR": tmpPROD_NBR,
+                            "SCRAP_SUMQTY": x["TOBESCRAP_SUMQTY"],
+                            "SHIP_SUMQTY": x["SHIP_SUMQTY"],
+                            "SCRAP_YIELD": dr*100
+                        }
+                    DATASERIES.append(test)
+                
+                else:
+                    for cx in DATASERIES:
+                        if  cx["SCRAP_CODE"] == cDFct :                        
+                            cx["SCRAP_SUMQTY"] += x["TOBESCRAP_SUMQTY"]
+                            ds = Decimal(cx["SCRAP_SUMQTY"])
+                            ps = Decimal(cx["SHIP_SUMQTY"])
+                            dr =  self._DecimaltoFloat((ds / ps).quantize(Decimal('.00000000'), ROUND_HALF_UP))
+                            cx["SCRAP_YIELD"] = dr*100
+                            cx["YVALUE"] =  dr*100
+
+            DATASERIES.sort(key = operator.itemgetter("RANK", "RANK"), reverse = True)
+
+        returnData = DATASERIES
+
+        return returnData
+
+    def _grouptMSHIPLV2LINE(self, n1d,n2d,n3d,n4d,n5d,n6d,n1w,n2w,n3w,n1m,n2m,n1s): 
+            magerData = [] 
+            for d in n1s:   
+                magerData.append(d)
+            for d in n2m:     
+                magerData.append(d)
+            for d in n1m:    
+                magerData.append(d)              
+            for d in n3w:     
+                magerData.append(d)             
+            for d in n2w:     
+                magerData.append(d)             
+            for d in n1w:   
+                magerData.append(d)             
+            for d in n6d:      
+                magerData.append(d)            
+            for d in n5d:    
+                magerData.append(d)             
+            for d in n4d:     
+                magerData.append(d)             
+            for d in n3d:     
+                magerData.append(d)             
+            for d in n2d:     
+                magerData.append(d)                       
+            for d in n1d:     
+                magerData.append(d)
+            return magerData
 
     def _DecimaltoFloat(self, obj):
         if isinstance(obj, Decimal):

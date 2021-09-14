@@ -180,6 +180,7 @@ class INTLV2(BaseType):
             tmpKPITYPE = self.jsonData["KPITYPE"]
             tmpACCT_DATE = self.jsonData["ACCT_DATE"]
             tmpPROD_NBR = self.jsonData["PROD_NBR"]
+            expirTimeKey = tmpFACTORY_ID + '_PASS'
 
             #redisKey
             tmp.append(className)
@@ -191,7 +192,6 @@ class INTLV2(BaseType):
             tmp.append(tmpACCT_DATE)
             tmp.append(tmpPROD_NBR)
             redisKey = bottomLine.join(tmp)
-            expirTimeKey = tmpFACTORY_ID + '_DEFT'
 
             if tmpFACTORY_ID not in self.operSetData.keys():
                 return {'Result': 'NG', 'Reason': f'{tmpFACTORY_ID} not in FactoryID MAP'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
@@ -203,6 +203,8 @@ class INTLV2(BaseType):
                 return json.loads(self.getRedisData(redisKey)), 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type', "Access-Control-Expose-Headers": "Expires,DataSource", "Expires": time.mktime((datetime.datetime.now() + datetime.timedelta(seconds=self.getKeyExpirTime(expirTimeKey))).timetuple()), "DataSource": "Redis"}
             
             if tmpKPITYPE == "FPYLV2PIE":
+                expirTimeKey = tmpFACTORY_ID + '_PASS'
+
                 PCBIData = self._getFPYLV2PIEData("PCBI", tmpPROD_NBR)
                 PCBIResult = self._groupFPYLV2PIEOPER(PCBIData["dData"])
                 LAMData = self._getFPYLV2PIEData("LAM", tmpPROD_NBR)
@@ -226,6 +228,8 @@ class INTLV2(BaseType):
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
             elif tmpKPITYPE == "FPYLV2HISTO":
+                expirTimeKey = tmpFACTORY_ID + '_PASS'
+
                 _PCBIData = self._getFPYLV2PIEData("PCBI", tmpPROD_NBR)                
                 PCBIResult = self._groupPassDeftByPRODandOPER(
                     _PCBIData["dData"], _PCBIData["pData"])
@@ -268,6 +272,28 @@ class INTLV2(BaseType):
                     self.setRedisData(redisKey, json.dumps(
                         returnData, sort_keys=True, indent=2), 60)
 
+                return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+            
+            #二階 MSHIP PIE API
+            elif tmpKPITYPE == "MSHIPLV2PIE":
+                expirTimeKey = tmpFACTORY_ID + '_SCRP'
+
+                formerfabData = self._getMSHIPSCRAPData("formerfab",tmpPROD_NBR)
+                formerfabResult = self._groupMSHIPLV2PIE(formerfabData["scrapData"])
+                fabData = self._getMSHIPSCRAPData("fab",tmpPROD_NBR)
+                fabResult = self._groupMSHIPLV2PIE(fabData["scrapData"])
+                incomingData = self._getMSHIPSCRAPData("incoming",tmpPROD_NBR)
+                fincomingResult = self._groupMSHIPLV2PIE(incomingData["scrapData"])
+
+                returnData = self._calMSHIPLV2PIE(formerfabResult,fabResult,fincomingResult)
+                
+                self.getRedisConnection()
+                if self.searchRedisKeys(redisKey):     
+                    self.setRedisData(redisKey, json.dumps(
+                        returnData, sort_keys=True, indent=2), self.getKeyExpirTime(expirTimeKey))
+                else:
+                    self.setRedisData(redisKey, json.dumps(
+                        returnData, sort_keys=True, indent=2), 60)
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
             else:
@@ -533,7 +559,6 @@ class INTLV2(BaseType):
                 "PROD_NBR": p["PROD_NBR"],
                 "ACCT_DATE": datetime.datetime.strptime(p["ACCT_DATE"], '%Y%m%d').strftime('%Y-%m-%d'),
                 "APPLICATION": p["APPLICATION"] if "APPLICATION" in p.keys() else None,
-                "PROD_NBR": p["PROD_NBR"],
                 "OPER": p["OPER"],
                 "DeftSUMQty" : deftSUM
             }
@@ -708,6 +733,190 @@ class INTLV2(BaseType):
 
         return deftData
     
+    def _getMSHIPSCRAPData(self,type,PROD_NBR):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpKPITYPE = self.jsonData["KPITYPE"]
+        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
+
+        """
+        (1)  前廠責：USL、TX LCD、FABX
+        (2)  廠責：MFG、INT、EQP、ER 
+        (3)  來料責：SQE
+        """
+        mshipDATA = {
+            "formerfab":{"in":"usl|lcd|eqp|fab","name": "前廠責"},
+            "fab":{"in":"mfg|int|eqp|er","name": "廠責"},
+            "incoming":{"in":"sqe","name": "SQE來料責"},
+        }
+        getFabData = mshipDATA[type]   
+
+        scrapAggregate = []
+
+        # scrap
+        scrapMatch = {
+            "$match": {
+                "COMPANY_CODE": tmpCOMPANY_CODE,
+                "SITE": tmpSITE,
+                "FACTORY_ID": tmpFACTORY_ID,
+                "ACCT_DATE": tmpACCT_DATE,
+                "LCM_OWNER": {"$in": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                'RESP_OWNER': {'$regex': getFabData["in"], '$options': 'i' },
+                "PROD_NBR": PROD_NBR
+            }
+        }        
+        scrapGroup = {
+            "$group": {
+                "_id": {
+                    "COMPANY_CODE": "$COMPANY_CODE",
+                    "SITE": "$SITE",
+                    "FACTORY_ID": "$FACTORY_ID",
+                    "ACCT_DATE": "$ACCT_DATE",
+                    "APPLICATION": "$APPLICATION",
+                    "PROD_NBR": "$PROD_NBR"
+                },
+                "TOBESCRAP_QTY": {
+                    "$sum": {"$toInt": "$TOBESCRAP_QTY"}
+                }
+            }
+        }
+        scrapProject = {
+            "$project": {
+                "_id": 0,
+                "COMPANY_CODE": "$_id.COMPANY_CODE",
+                "SITE": "$_id.SITE",
+                "FACTORY_ID": "$_id.FACTORY_ID",
+                "ACCT_DATE": "$_id.ACCT_DATE",
+                "APPLICATION": "$_id.APPLICATION",
+                "PROD_NBR": "$_id.PROD_NBR",
+                "TOBESCRAP_SUMQTY": "$TOBESCRAP_QTY"
+            }
+        }
+        scrapAdd = {
+            "$addFields": {
+                "RESP_OWNER": getFabData["name"],
+                "RESP_OWNER_E": type
+            }
+        }
+        scrapSort = {
+            "$sort": {
+                "COMPANY_CODE": 1,
+                "SITE": 1,
+                "FACTORY_ID": 1,
+                "ACCT_DATE": 1,
+                "APPLICATION": 1,
+                "PROD_NBR": 1
+            }
+        }
+
+        if tmpAPPLICATION != "ALL":
+            scrapMatch["$match"]["APPLICATION"] = tmpAPPLICATION
+
+        scrapAggregate.extend(
+            [scrapMatch, scrapGroup, scrapProject, scrapAdd, scrapSort])
+
+        try:
+            self.getMongoConnection()
+            self.setMongoDb("IAMP")
+            self.setMongoCollection("scrapHisAndCurrent")
+            scrapData = self.aggregate(scrapAggregate)
+            self.closeMongoConncetion()
+
+            returnData = {
+                "scrapData": scrapData,
+            }
+
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+    def _groupMSHIPLV2PIE(self, dData): 
+        deftData = []            
+        for d in dData:       
+            deftData.append(d) 
+
+        if deftData != []:  
+            TOBESCRAP_SUMQTY = 0
+            for p in deftData:            
+                TOBESCRAP_SUMQTY += p["TOBESCRAP_SUMQTY"]
+            p = deftData[0]
+            data = {
+                "COMPANY_CODE": p["COMPANY_CODE"],
+                "SITE": p["SITE"],
+                "FACTORY_ID": p["FACTORY_ID"],
+                "PROD_NBR": p["PROD_NBR"],
+                "ACCT_DATE": datetime.datetime.strptime(p["ACCT_DATE"], '%Y%m%d').strftime('%Y-%m-%d'),
+                "APPLICATION": p["APPLICATION"] if "APPLICATION" in p.keys() else None,                
+                "TOBESCRAP_SUMQTY" : TOBESCRAP_SUMQTY,
+                "RESP_OWNER_E" : p["RESP_OWNER_E"],
+                "RESP_OWNER": p["RESP_OWNER"]
+            }
+            return data
+        else: 
+            return None
+
+    def _calMSHIPLV2PIE(self, formerfab, fab, incoming):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]        
+        tmpAPPLICATION =self.jsonData["APPLICATION"]
+        tmpKPITYPE = self.jsonData["KPITYPE"]
+        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        tmpPROD_NBR = self.jsonData["PROD_NBR"]
+
+        TotalSCRAPSUMQty = 0
+        tempData = []
+        tempData.extend([formerfab,fab,incoming])
+        for x in tempData:
+            if x != None:
+                tmpAPPLICATION = x["APPLICATION"]
+                TotalSCRAPSUMQty += x["TOBESCRAP_SUMQTY"]
+        
+        colorMap = {
+            "formerfab": {"colorName": "red", "HEX":"#ef476f"},
+            "fab": {"colorName": "yellow", "HEX":"#ffd166"},
+            "incoming": {"colorName": "green", "HEX":"#06d6a0"}
+        }
+
+        DATASERIES = []
+        for x in tempData:
+            if x != None:
+                DATASERIES.append({
+                    "RESP_OWNER": x["RESP_OWNER"],
+                    "RESP_OWNER_E": x["RESP_OWNER_E"],
+                    "VALUE": round(x["TOBESCRAP_SUMQTY"] / TotalSCRAPSUMQty , 2) if TotalSCRAPSUMQty !=0 else 0,
+                    "COLOR": colorMap[x["RESP_OWNER_E"]]["HEX"] if x["RESP_OWNER_E"] in colorMap.keys() else None,
+                    "SELECT": None,
+                    "SLICED": None,
+                    "TOBESCRAP_SUMQTY": x["TOBESCRAP_SUMQTY"],
+                    "PROD_NBR": tmpPROD_NBR
+                })
+
+        returnData = {                    
+                    "KPITYPE": tmpKPITYPE,
+                    "COMPANY_CODE": tmpCOMPANY_CODE,
+                    "SITE": tmpSITE,
+                    "FACTORY_ID": tmpFACTORY_ID,
+                    "APPLICATION": tmpAPPLICATION,
+                    "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
+                    "PROD_NBR": tmpPROD_NBR,
+                    "DATASERIES": DATASERIES
+                }
+
+        return returnData
+
     def _DecimaltoFloat(self, obj):
         if isinstance(obj, Decimal):
             return float(obj)
