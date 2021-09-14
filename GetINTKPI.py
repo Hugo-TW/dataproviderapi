@@ -54,11 +54,7 @@ class INTKPI(BaseType):
                         "TABLET": {"qytlim": 1000, "target": 0.955},
                         "NB": {"qytlim": 1000, "target": 0.96},
                         "TV": {"qytlim": 1000, "target": 0.90},
-                        "AA": {"qytlim": 1000, "target": 0.95},
-                        "IAVM": {"qytlim": 1000, "target": 0.95},
-                        "AUTO": {"qytlim": 1000, "target": 0.95},
-                        "mLED": {"qytlim": 1000, "target": 0.95},
-                        "TFT Sensor": {"qytlim": 1000, "target": 0.95}
+                        "AA": {"qytlim": 1000, "target": 0.95}
                     },
                     "numerator": {},
                     "denominator": {}
@@ -69,11 +65,7 @@ class INTKPI(BaseType):
                         "TABLET": {"qytlim": 1000, "target": 0.003},
                         "NB": {"qytlim": 1000, "target": 0.003},
                         "TV": {"qytlim": 1000, "target": 0.003},
-                        "AA": {"qytlim": 1000, "target": 0.003},
-                        "IAVM": {"qytlim": 1000, "target": 0.003},
-                        "AUTO": {"qytlim": 1000, "target": 0.003},
-                        "mLED": {"qytlim": 1000, "target": 0.003},
-                        "TFT Sensor": {"qytlim": 1000, "target": 0.003}
+                        "AA": {"qytlim": 1000, "target": 0.003}
                     },
                     "numerator": {},
                     "denominator": {}
@@ -86,11 +78,7 @@ class INTKPI(BaseType):
                         "TABLET": {"qytlim": 1000, "FPY": 0.89},
                         "NB": {"qytlim": 1000, "FPY": 0.93},
                         "TV": {"qytlim": 1000, "FPY": 0.90},
-                        "AA": {"qytlim": 1000, "FPY": 0.95},
-                        "IAVM": {"qytlim": 1000, "target": 0.95},
-                        "AUTO": {"qytlim": 1000, "target": 0.95},
-                        "mLED": {"qytlim": 1000, "target": 0.95},
-                        "TFT Sensor": {"qytlim": 1000, "target": 0.95}
+                        "AA": {"qytlim": 1000, "FPY": 0.95}
                     },
                     "numerator": {  # 分子
                         "PCBI": {"fromt": 1050, "tot": 1310},
@@ -113,11 +101,7 @@ class INTKPI(BaseType):
                         "TABLET": {"qytlim": 1000, "target": 0.955},
                         "NB": {"qytlim": 1000, "target": 0.96},
                         "TV": {"qytlim": 1000, "target": 0.90},
-                        "AA": {"qytlim": 1000, "target": 0.95},
-                        "IAVM": {"qytlim": 1000, "target": 0.95},
-                        "AUTO": {"qytlim": 1000, "target": 0.95},
-                        "mLED": {"qytlim": 1000, "target": 0.95},
-                        "TFT Sensor": {"qytlim": 1000, "target": 0.95}
+                        "AA": {"qytlim": 1000, "target": 0.95}
                     },
                     "numerator": {},
                     "denominator": {}
@@ -128,11 +112,7 @@ class INTKPI(BaseType):
                         "TABLET": {"qytlim": 1000, "target": 0.003},
                         "NB": {"qytlim": 1000, "target": 0.003},
                         "TV": {"qytlim": 1000, "target": 0.003},
-                        "AA": {"qytlim": 1000, "target": 0.003},
-                        "IAVM": {"qytlim": 1000, "target": 0.003},
-                        "AUTO": {"qytlim": 1000, "target": 0.003},
-                        "mLED": {"qytlim": 1000, "target": 0.003},
-                        "TFT Sensor": {"qytlim": 1000, "target": 0.003}
+                        "AA": {"qytlim": 1000, "target": 0.003}
                     },
                     "numerator": {},
                     "denominator": {}
@@ -145,11 +125,7 @@ class INTKPI(BaseType):
                         "TABLET": {"qytlim": 1000, "FPY": 0.89},
                         "NB": {"qytlim": 1000, "FPY": 0.93},
                         "TV": {"qytlim": 1000, "FPY": 0.90},
-                        "AA": {"qytlim": 1000, "FPY": 0.95},
-                        "IAVM": {"qytlim": 1000, "FPY": 0.95},
-                        "AUTO": {"qytlim": 1000, "FPY": 0.95},
-                        "mLED": {"qytlim": 1000, "FPY": 0.95},
-                        "TFT Sensor": {"qytlim": 1000, "FPY": 0.95}
+                        "AA": {"qytlim": 1000, "FPY": 0.95}
                     },
                     "numerator": {  # 分子
                         "PCBI": {"fromt": 1050, "tot": 1310},
@@ -172,11 +148,7 @@ class INTKPI(BaseType):
                         "TABLET": {"qytlim": 1000, "target": 0.955},
                         "NB": {"qytlim": 1000, "target": 0.96},
                         "TV": {"qytlim": 1000, "target": 0.90},
-                        "AA": {"qytlim": 1000, "target": 0.95},
-                        "IAVM": {"qytlim": 1000, "target": 0.95},
-                        "AUTO": {"qytlim": 1000, "target": 0.95},
-                        "mLED": {"qytlim": 1000, "target": 0.95},
-                        "TFT Sensor": {"qytlim": 1000, "target": 0.95}
+                        "AA": {"qytlim": 1000, "target": 0.95}
                     },
                     "numerator": {},
                     "denominator": {}
@@ -187,11 +159,7 @@ class INTKPI(BaseType):
                         "TABLET": {"qytlim": 1000, "target": 0.003},
                         "NB": {"qytlim": 1000, "target": 0.003},
                         "TV": {"qytlim": 1000, "target": 0.003},
-                        "AA": {"qytlim": 1000, "target": 0.003},
-                        "IAVM": {"qytlim": 1000, "target": 0.003},
-                        "AUTO": {"qytlim": 1000, "target": 0.003},
-                        "mLED": {"qytlim": 1000, "target": 0.003},
-                        "TFT Sensor": {"qytlim": 1000, "target": 0.003}
+                        "AA": {"qytlim": 1000, "target": 0.003}
                     },
                     "numerator": {},
                     "denominator": {}
