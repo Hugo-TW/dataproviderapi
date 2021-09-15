@@ -334,7 +334,7 @@ class INTLV2(BaseType):
                 "PROD_NBR": PROD_NBR,
                 "LCM_OWNER": {"$in": ["LCM0", "LCME", "PROD", "QTAP", "RES0"]},
                 "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, denominatorValue]},
-                "RW_COUNT": "0" 
+                "RW_COUNT": {"$lte": "1"}
             }
         }
         passGroup1 = {
@@ -426,7 +426,8 @@ class INTLV2(BaseType):
                         {"$gte": [{"$toInt": "$MAIN_WC"},numeratorData["fromt"]]},
                         {"$lte": [{"$toInt": "$MAIN_WC"},numeratorData["tot"]]}
                     ]
-                }
+                },
+                "RW_COUNT": {"$lte": "1"}
             }
         }
         deftGroup1 = {
