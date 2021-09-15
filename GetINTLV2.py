@@ -706,9 +706,13 @@ class INTLV2(BaseType):
                     })
             else:
                 for cx in DATASERIES:
-                    if cx["OPER"] == x["OPER"] and cx["DFCT_CODE"] == cDFct :
-                       cx["YVALUE"] += x["DEFECT_RATE"]*100
-                       cx["DEFECT_RATE"] += x["DEFECT_RATE"]*100
+                    if cx["OPER"] == x["OPER"] and cx["DFCT_CODE"] == cDFct :                       
+                       cx["DeftSUM"] += x["DeftSUMQty"]
+                       ds = Decimal(cx["DeftSUM"])
+                       ps = Decimal(cx["PassSUM"])
+                       dr =  self._DecimaltoFloat((ds / ps).quantize(Decimal('.00000000'), ROUND_HALF_UP))
+                       cx["DEFECT_RATE"] = dr*100
+                       cx["YVALUE"] =  dr*100
                        
         #因為使用 operator.itemgetter 方法 排序順序要反過來執行
         #不同欄位key 排序方式不同時 需要 3 - 2 - 1  反順序去寫code
