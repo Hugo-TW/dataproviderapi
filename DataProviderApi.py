@@ -32,6 +32,7 @@ from GetEQOFRHrs import EQOFRHrs
 from GetEQOFRHrsDetails import EQOFRHrsDetails
 from GetFactoryOFRHrsDetail import OFRHrsDetail
 #---------------------------------------------
+from GetINTTALK import INTTALK
 from GetINTLV3 import INTLV3
 from GetINTLV2 import INTLV2
 from GetINTKPI import INTKPI
@@ -1923,7 +1924,7 @@ INTLV2ML = api.model('GetINTLV2', {
 @INTLV2Ns.response(409, 'Conflict')
 @INTLV2Ns.response(500, 'Internal Server Error')
 class getINTLV2(Resource):
-    @INTLV2Ns.doc('INTFPYLV2')
+    @INTLV2Ns.doc('INTLV2')
     @INTLV2Ns.expect(INTLV2ML)
     def post(self):
         if not request:
@@ -1963,7 +1964,7 @@ INTLV3ML = api.model('GetINTLV3', {
 @INTLV3Ns.response(409, 'Conflict')
 @INTLV3Ns.response(500, 'Internal Server Error')
 class getINTLV3(Resource):
-    @INTLV3Ns.doc('INTFPYLV3')
+    @INTLV3Ns.doc('INTLV3')
     @INTLV3Ns.expect(INTLV3ML)
     def post(self):
         if not request:
@@ -1977,6 +1978,51 @@ class getINTLV3(Resource):
             return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
         
         v = INTLV3(jsonData)
+        return v.getData()
+
+INTTALKNs = api.namespace('GetINTTALK', description = 'INTTALK')
+INTTALKML = api.model('GetINTINTTALK', {
+    'FUNCTYPE': fields.String( required = True, description = 'FUNCTYPE', default = 'CREATE', example = 'CREATE'),
+    'COMPANY_CODE': fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+    'SITE': fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+    'FACTORY_ID': fields.String( required = True, description = 'FACTORY_ID', default = 'J001', example = 'J001'),
+    'PROD_NBR' : fields.String( required = True, description = '機種編碼', default = 'GP062CCAC100S', example = 'GP062CCAC100S'), 
+    'OPER' : fields.String( required = True, description = '站點', default = 'PCBI', example = 'PCBI'), 
+    'CODE' : fields.String( required = True, description = 'Defect or Reason Code', default = 'PCPF1', example = 'PCPF1'),
+    'CONTENTTYPE': fields.String( required = False, description = 'CONTENTTYPE', default = 'AA', example = 'AA'),
+    'CONTENT': fields.String( required = False, description = 'CONTENT', default = 'CONTENT', example = 'CONTENT'),
+    'ACCT_DATE': fields.String( required = False, description = 'ACCT_DATE', default = '20210801', example = '20210801'),
+    'STARTDT': fields.String( required = False, description = 'STARTDT', default = '20210901', example = '20210901'),
+    'ENDDT': fields.String( required = False, description = 'ENDDT', default = '20210920', example = '20210920')
+    })
+@INTTALKNs.route('', methods = ['POST'])
+@INTTALKNs.response(200, 'Sucess')
+@INTTALKNs.response(201, 'Created Sucess')
+@INTTALKNs.response(204, 'No Content')
+@INTTALKNs.response(400, 'Bad Request')
+@INTTALKNs.response(401, 'Unauthorized')
+@INTTALKNs.response(403, 'Forbidden')
+@INTTALKNs.response(404, 'Not Found')
+@INTTALKNs.response(405, 'Method Not Allowed')
+@INTTALKNs.response(409, 'Conflict')
+@INTTALKNs.response(500, 'Internal Server Error')
+class getINTTALK(Resource):
+    @INTTALKNs.doc('INT TALK')
+    @INTTALKNs.expect(INTTALKML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+           return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+
+        jsonData = BaseType.validateType(request.json)
+        
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData \
+            or "PROD_NBR" not in jsonData or "OPER" not in jsonData or "CODE" not in jsonData \
+            or "FUNCTYPE" not in jsonData :
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        
+        v = INTTALK(jsonData)
         return v.getData()
 
 if __name__ == '__main__':
