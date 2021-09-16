@@ -10,6 +10,7 @@ import copy
 from BaseType import BaseType
 from decimal import Decimal, ROUND_HALF_UP
 
+
 class INTTALK(BaseType):
     def __init__(self, jsonData):
         super().__init__()
@@ -21,7 +22,7 @@ class INTTALK(BaseType):
         try:
             self.writeLog(
                 f'{self.__class__.__name__} {sys._getframe().f_code.co_name} Start')
-            self.writeLog(f'Input Json:{self.jsonData}')       
+            self.writeLog(f'Input Json:{self.jsonData}')
             tmpFUNCTYPE = self.jsonData["FUNCTYPE"]
             tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
             tmpSITE = self.jsonData["SITE"]
@@ -30,14 +31,17 @@ class INTTALK(BaseType):
             tmpPROD_NBR = self.jsonData["PROD_NBR"]
             tmpOPER = self.jsonData["OPER"]
             tmpCODE = self.jsonData["CODE"]
-            tmpCONTENTTYPE = self.jsonData["CONTENTTYPE"]
-            tmpCONTENT = self.jsonData["CONTENT"]
-            
+
             self.getMongoConnection()
             self.setMongoDb("IAMP")
             self.setMongoCollection("intTalk")
-            
-            if tmpFUNCTYPE == "CREATE": 
+
+            if tmpFUNCTYPE == "CREATE":
+                tmpCONTENTTYPE = self.jsonData["CONTENTTYPE"] if "CONTENTTYPE" in self.jsonData else None
+                tmpCONTENT = self.jsonData["CONTENT"] if "CONTENT" in self.jsonData else None
+                tmpRATE = self.jsonData["RATE"] if "RATE" in self.jsonData else None
+                tmpTOTAL = self.jsonData["TOTAL"] if "TOTAL" in self.jsonData else None
+
                 Jmsg = {
                     "COMPANY_CODE": tmpCOMPANY_CODE,
                     "SITE": tmpSITE,
@@ -45,8 +49,8 @@ class INTTALK(BaseType):
                     "ACCT_DATE": tmpACCT_DATE,
                     "PROD_NBR": tmpPROD_NBR,
                     "OPER": tmpOPER,
-                    "CODE": tmpCODE                    
-                } 
+                    "CODE": tmpCODE
+                }
                 org = self.getMongoFindOne(Jmsg)
                 if org != None:
                     Jmsg1 = copy.deepcopy(org)
@@ -58,29 +62,36 @@ class INTTALK(BaseType):
                 elif tmpCONTENTTYPE == "COMM":
                     Jmsg1["COMM"] = tmpCONTENT
 
-                utc = datetime.datetime.strptime(Jmsg["ACCT_DATE"],'%Y%m%d')
+                if tmpRATE != None:
+                    Jmsg1["RATE"] = tmpRATE
+                if tmpTOTAL != None:
+                    Jmsg1["TOTAL"] = tmpTOTAL
+
+                utc = datetime.datetime.strptime(Jmsg["ACCT_DATE"], '%Y%m%d')
                 Jmsg1["UTC"] = int(time.mktime(utc.timetuple()))
 
                 count = self.deleteToMongo(Jmsg)
                 self.inserOneToMongo(Jmsg1)
                 self.closeMongoConncetion()
-                Jmsg1.pop("_id",'')
+                Jmsg1.pop("_id", '')
                 return Jmsg1, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
-            elif tmpFUNCTYPE == "SELECT":   
+            elif tmpFUNCTYPE == "SELECT":
                 tmpSTARTDT = self.jsonData["STARTDT"]
                 tmpENDDT = self.jsonData["ENDDT"]
 
                 dataArray = self._dataArray(tmpSTARTDT, tmpENDDT)
 
-                tempData = self._getTalkData(tmpCOMPANY_CODE, tmpSITE, tmpFACTORY_ID, \
-                    tmpPROD_NBR, tmpCODE, dataArray)
+                tempData = self._groupTalkData(self._getTalkData(tmpCOMPANY_CODE, tmpSITE, tmpFACTORY_ID,
+                                                                 tmpPROD_NBR, tmpCODE, dataArray))
 
-                returnData = self._groupTalkData(tempData)
+                returnData = {"draw": 1,
+                              "recordsTotal": len(tempData),
+                              "recordsFiltered": len(tempData),
+                              "data": tempData
+                              }
 
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
-
-
 
             else:
                 self.closeMongoConncetion()
@@ -102,7 +113,7 @@ class INTTALK(BaseType):
     def _getTalkData(self, COMPANY_CODE, SITE, FACTORY_ID, PROD_NBR, CODE, DATAARRAY):
 
         selectAggregate = []
-        #select
+        # select
         selectMatch = {
             "$match": {
                 "COMPANY_CODE": COMPANY_CODE,
@@ -151,19 +162,22 @@ class INTTALK(BaseType):
     def _groupTalkData(self, Data):
         reData = []
         for d in Data:
+            d["AA"] = d["AA"] if "AA" in d else ""
+            d["COMM"] = d["COMM"] if "COMM" in d else ""
+            d["RATE"] = d["RATE"] if "RATE" in d else ""
+            d["TOTAL"] = d["TOTAL"] if "TOTAL" in d else ""
             reData.append(d)
         return reData
 
-    def _dataArray(self, sd , ed):
+    def _dataArray(self, sd, ed):
         d = datetime.datetime
-        _sd = d.strptime(sd,'%Y%m%d')
-        _ed = d.strptime(ed,'%Y%m%d')
+        _sd = d.strptime(sd, '%Y%m%d')
+        _ed = d.strptime(ed, '%Y%m%d')
 
         dataArray = []
         _ed = _ed + datetime.timedelta(days=1)
         d = datetime.datetime
         for i in range(int((_ed - _sd).days)):
             x = _sd + datetime.timedelta(i)
-            dataArray.append( d.strftime(x, '%Y%m%d'))
+            dataArray.append(d.strftime(x, '%Y%m%d'))
         return dataArray
-

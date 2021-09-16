@@ -1981,7 +1981,7 @@ class getINTLV3(Resource):
         return v.getData()
 
 INTTALKNs = api.namespace('GetINTTALK', description = 'INTTALK')
-INTTALKML = api.model('GetINTINTTALK', {
+INTTALKML = api.model('GetINTTALK', {
     'FUNCTYPE': fields.String( required = True, description = 'FUNCTYPE', default = 'CREATE', example = 'CREATE'),
     'COMPANY_CODE': fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
     'SITE': fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
@@ -1993,7 +1993,9 @@ INTTALKML = api.model('GetINTINTTALK', {
     'CONTENT': fields.String( required = False, description = 'CONTENT', default = 'CONTENT', example = 'CONTENT'),
     'ACCT_DATE': fields.String( required = False, description = 'ACCT_DATE', default = '20210801', example = '20210801'),
     'STARTDT': fields.String( required = False, description = 'STARTDT', default = '20210901', example = '20210901'),
-    'ENDDT': fields.String( required = False, description = 'ENDDT', default = '20210920', example = '20210920')
+    'ENDDT': fields.String( required = False, description = 'ENDDT', default = '20210920', example = '20210920'),
+    'TOTAL': fields.String( required = False, description = 'TOTAL', default = '1000', example = '1000'),
+    'RATE': fields.String( required = False, description = 'RATE', default = '0.5', example = '0.5')
     })
 @INTTALKNs.route('', methods = ['POST'])
 @INTTALKNs.response(200, 'Sucess')
