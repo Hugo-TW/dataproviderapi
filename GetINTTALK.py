@@ -73,8 +73,19 @@ class INTTALK(BaseType):
                 count = self.deleteToMongo(Jmsg)
                 self.inserOneToMongo(Jmsg1)
                 self.closeMongoConncetion()
-                Jmsg1.pop("_id", '')
-                return Jmsg1, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+
+                tmpSTARTDT = self.jsonData["STARTDT"]
+                tmpENDDT = self.jsonData["ENDDT"]
+                dataArray = self._dataArray(tmpSTARTDT, tmpENDDT)
+                tempData = self._groupTalkData(self._getTalkData(tmpCOMPANY_CODE, tmpSITE, tmpFACTORY_ID,
+                                                                 tmpPROD_NBR, tmpCODE, dataArray))
+                returnData = {"draw": 1,
+                              "recordsTotal": len(tempData),
+                              "recordsFiltered": len(tempData),
+                              "data": tempData
+                              }
+
+                return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
             elif tmpFUNCTYPE == "SELECT":
                 tmpSTARTDT = self.jsonData["STARTDT"]
@@ -109,6 +120,7 @@ class INTTALK(BaseType):
             self.writeError(
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return {'Result': 'NG', 'Reason': f'{funcName} erro'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+
 
     def _getTalkData(self, COMPANY_CODE, SITE, FACTORY_ID, PROD_NBR, CODE, DATAARRAY):
 
