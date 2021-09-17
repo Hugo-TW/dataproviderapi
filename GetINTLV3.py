@@ -473,6 +473,62 @@ class INTLV3(BaseType):
 
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
+            elif tmpKPITYPE == "MSHIPLV2LINEDG":                
+                expirTimeKey = tmpFACTORY_ID + '_SCRP'
+
+                dataRange =  self._dataRange(tmpACCT_DATE)
+
+                n1d_DATA = self._getMSHIPLV2LINEDG(tmpPROD_NBR, dataRange["n1d"], dataRange["n1d_array"], 11)
+                n2d_DATA = self._getMSHIPLV2LINEDG(tmpPROD_NBR, dataRange["n2d"], dataRange["n2d_array"], 10)
+                n3d_DATA = self._getMSHIPLV2LINEDG(tmpPROD_NBR, dataRange["n3d"], dataRange["n3d_array"], 9)
+                n4d_DATA = self._getMSHIPLV2LINEDG(tmpPROD_NBR, dataRange["n4d"], dataRange["n4d_array"], 8)
+                n5d_DATA = self._getMSHIPLV2LINEDG(tmpPROD_NBR, dataRange["n5d"], dataRange["n5d_array"], 7)
+                n6d_DATA = self._getMSHIPLV2LINEDG(tmpPROD_NBR, dataRange["n6d"], dataRange["n6d_array"], 6)
+                n1w_DATA = self._getMSHIPLV2LINEDG(tmpPROD_NBR, dataRange["n1w"], dataRange["n1w_array"], 5)
+                n2w_DATA = self._getMSHIPLV2LINEDG(tmpPROD_NBR, dataRange["n2w"], dataRange["n2w_array"], 4)
+                n3w_DATA = self._getMSHIPLV2LINEDG(tmpPROD_NBR, dataRange["n3w"], dataRange["n2w_array"], 3)
+                n1m_DATA = self._getMSHIPLV2LINEDG(tmpPROD_NBR, dataRange["n1m"], dataRange["n1m_array"], 2)
+                n2m_DATA = self._getMSHIPLV2LINEDG(tmpPROD_NBR, dataRange["n2m"], dataRange["n2m_array"], 1)
+                n1s_DATA = self._getMSHIPLV2LINEDG(tmpPROD_NBR, dataRange["n1s"], dataRange["n1s_array"], 0)
+                
+                DATASERIES = self._grouptMSHIPLV2LINE(
+                    self._calMSHIPLV2DG(self._groupMSHIPLV2LINEDG(n1d_DATA), dataRange["n1d"], 11),
+                    self._calMSHIPLV2DG(self._groupMSHIPLV2LINEDG(n2d_DATA), dataRange["n2d"], 10),
+                    self._calMSHIPLV2DG(self._groupMSHIPLV2LINEDG(n3d_DATA), dataRange["n3d"], 9),
+                    self._calMSHIPLV2DG(self._groupMSHIPLV2LINEDG(n4d_DATA), dataRange["n4d"], 8),
+                    self._calMSHIPLV2DG(self._groupMSHIPLV2LINEDG(n5d_DATA), dataRange["n5d"], 7),
+                    self._calMSHIPLV2DG(self._groupMSHIPLV2LINEDG(n6d_DATA), dataRange["n6d"], 6),
+                    self._calMSHIPLV2DG(self._groupMSHIPLV2LINEDG(n1w_DATA), dataRange["n1w"], 5),
+                    self._calMSHIPLV2DG(self._groupMSHIPLV2LINEDG(n2w_DATA), dataRange["n2w"], 4),
+                    self._calMSHIPLV2DG(self._groupMSHIPLV2LINEDG(n3w_DATA), dataRange["n3w"], 3),
+                    self._calMSHIPLV2DG(self._groupMSHIPLV2LINEDG(n1m_DATA), dataRange["n1m"], 2),
+                    self._calMSHIPLV2DG(self._groupMSHIPLV2LINEDG(n2m_DATA), dataRange["n2m"], 1),
+                    self._calMSHIPLV2DG(self._groupMSHIPLV2LINEDG(n1s_DATA), dataRange["n1s"], 0))
+
+                returnData = {                    
+                    "KPITYPE": tmpKPITYPE,
+                    "COMPANY_CODE": tmpCOMPANY_CODE,
+                    "SITE": tmpSITE,
+                    "FACTORY_ID": tmpFACTORY_ID,
+                    "APPLICATION": tmpAPPLICATION,  
+                    "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
+                    "PROD_NBR": tmpPROD_NBR,         
+                    "DATASERIES": DATASERIES
+                }
+
+                """
+                self.getRedisConnection()
+                if self.searchRedisKeys(redisKey):     
+                    self.setRedisData(redisKey, json.dumps(
+                        returnData, sort_keys=True, indent=2), self.getKeyExpirTime(expirTimeKey))
+                else:
+                    self.setRedisData(redisKey, json.dumps(
+                        returnData, sort_keys=True, indent=2), 60) 
+                """ 
+
+                return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+
+
             else:
                 return {'Result': 'Fail', 'Reason': 'Parametes[KPITYPE] not in Rule'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
@@ -1847,6 +1903,363 @@ class INTLV3(BaseType):
             for d in n1d:     
                 magerData.append(d)
             return magerData
+
+    def _getMSHIPLV2LINEDG(self, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+
+        passAggregate = []
+        #pass
+        passMatch1 = {
+            "$match": {
+                "COMPANY_CODE": tmpCOMPANY_CODE,
+                "SITE": tmpSITE,
+                "FACTORY_ID": tmpFACTORY_ID,
+                "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
+                "PROD_NBR": PROD_NBR,
+                "LCM_OWNER": {"$in": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                "MAIN_WC": "1600"
+            }
+        }
+        passGroup1 = {
+            "$group": {
+                "_id": {
+                    "COMPANY_CODE": "$COMPANY_CODE",
+                    "SITE": "$SITE",
+                    "FACTORY_ID": "$FACTORY_ID",
+                    "PROD_NBR": "$PROD_NBR",
+                    "PROCESS": "$PROCESS",
+                    "APPLICATION": "$APPLICATION",
+                    "MAIN_WC": {"$toInt": "$MAIN_WC"}
+                },
+                "PASS_QTY": {
+                    "$sum": {"$toInt": "$QTY"}
+                }
+            }
+        }
+        passProject1 = {
+            "$project": {
+                "_id": 0,
+                "COMPANY_CODE": "$_id.COMPANY_CODE",
+                "SITE": "$_id.SITE",
+                "FACTORY_ID": "$_id.FACTORY_ID",
+                "PROD_NBR": "$_id.PROD_NBR",
+                "PROCESS": "$_id.PROCESS",
+                "APPLICATION": "$_id.APPLICATION",
+                "MAIN_WC": "$_id.MAIN_WC",
+                "PASS_QTY": "$PASS_QTY"
+            }
+        }
+        passGroup2 = {
+            "$group": {
+                "_id": {
+                    "COMPANY_CODE": "$COMPANY_CODE",
+                    "SITE": "$SITE",
+                    "FACTORY_ID": "$FACTORY_ID",
+                    "PROD_NBR": "$PROD_NBR",
+                    "APPLICATION": "$APPLICATION"
+                },
+                "PASS_QTY": {
+                    "$sum": {"$toInt": "$PASS_QTY"}
+                }
+            }
+        }
+        passProject2 = {
+            "$project": {
+                "_id": 0,
+                "COMPANY_CODE": "$_id.COMPANY_CODE",
+                "SITE": "$_id.SITE",
+                "FACTORY_ID": "$_id.FACTORY_ID",
+                "PROD_NBR": "$_id.PROD_NBR",
+                "APPLICATION": "$_id.APPLICATION",
+                "PASS_QTY": "$PASS_QTY"
+            }
+        }
+        passSort = {
+            "$sort": {
+                "COMPANY_CODE": 1,
+                "SITE": 1,
+                "FACTORY_ID": 1,
+                "PROD_NBR": 1,
+                "MAIN_WC": 1,
+                "APPLICATION": 1
+            }
+        }
+        
+        deftAggregate = []
+        #deft
+        deftMatch1 = {
+            "$match": {
+                "COMPANY_CODE": tmpCOMPANY_CODE,
+                "SITE": tmpSITE,
+                "FACTORY_ID": tmpFACTORY_ID,
+                "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
+                "LCM_OWNER": {"$in": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                "PROD_NBR": PROD_NBR
+            }
+        }
+        #"IS_DOWNGRADE" : "Y"
+        deftGroup1 = {
+            "$group": {
+                "_id": {
+                    "COMPANY_CODE": "$COMPANY_CODE",
+                    "SITE": "$SITE",
+                    "FACTORY_ID": "$FACTORY_ID",
+                    "PROD_NBR": "$PROD_NBR",                    
+                    "APPLICATION": "$APPLICATION",              
+                    "DFCT_CODE" : "$DFCT_CODE",
+                    "ERRC_DESCR" : "$ERRC_DESCR",
+                    
+                },
+                "DEFT_QTY": {
+                    "$sum": {"$toInt": "$QTY"}
+                }
+            }
+        }
+        deftProject1 = {
+            "$project": {
+                "_id": 0,
+                "COMPANY_CODE": "$_id.COMPANY_CODE",
+                "SITE": "$_id.SITE",
+                "FACTORY_ID": "$_id.FACTORY_ID",
+                "PROD_NBR": "$_id.PROD_NBR",
+                "APPLICATION": "$_id.APPLICATION",
+                "DFCT_CODE" : "$_id.DFCT_CODE",                
+                "ERRC_DESCR" : "$_id.ERRC_DESCR",
+                "DEFT_QTY": "$DEFT_QTY"
+            }
+        }
+        deftAdd = {
+                "$addFields": {   
+                    "DATARANGE": DATARANGENAME,
+                    "XVALUE": TYPE
+                }
+            }
+        deftSort = {
+            "$sort": {
+                "COMPANY_CODE": 1,
+                "SITE": 1,
+                "FACTORY_ID": 1,
+                "PROD_NBR": 1,
+                "APPLICATION": 1,
+                "DFCT_CODE" : 1,
+                "ERRC_DESCR" : 1
+            }
+        }
+
+        fixAggregate = []
+        #deft
+        fixMatch1 = {
+            "$match": {
+                "COMPANY_CODE": tmpCOMPANY_CODE,
+                "SITE": tmpSITE,
+                "FACTORY_ID": tmpFACTORY_ID,
+                "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
+                "LCM_OWNER": {"$in": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                "PROD_NBR": PROD_NBR,
+                "MAIN_WC": "1600"
+            }
+        }
+        fixGroup1 = {
+            "$group": {
+                "_id": {
+                    "COMPANY_CODE": "$COMPANY_CODE",
+                    "SITE": "$SITE",
+                    "FACTORY_ID": "$FACTORY_ID",
+                    "PROD_NBR": "$PROD_NBR",                    
+                    "APPLICATION": "$APPLICATION",                    
+                },
+                "FIX_QTY": {
+                    "$sum": {"$toInt": "$QTY"}
+                }
+            }
+        }
+        fixProject1 = {
+            "$project": {
+                "_id": 0,
+                "COMPANY_CODE": "$_id.COMPANY_CODE",
+                "SITE": "$_id.SITE",
+                "FACTORY_ID": "$_id.FACTORY_ID",
+                "PROD_NBR": "$_id.PROD_NBR",
+                "APPLICATION": "$_id.APPLICATION",
+                "FIX_QTY": "$FIX_QTY"
+            }
+        }
+        fixAdd = {
+                "$addFields": {   
+                    "DATARANGE": DATARANGENAME,
+                    "XVALUE": TYPE
+                }
+            }
+        fixSort = {
+            "$sort": {
+                "COMPANY_CODE": 1,
+                "SITE": 1,
+                "FACTORY_ID": 1,
+                "PROD_NBR": 1,
+                "APPLICATION": 1
+            }
+        }
+
+        fixAggregate.extend([fixMatch1, fixGroup1, fixProject1, fixAdd, fixSort])
+        deftAggregate.extend([deftMatch1, deftGroup1, deftProject1, deftAdd, deftSort])
+        passAggregate.extend([passMatch1, passGroup1, passProject1, passGroup2, passProject2, passSort])        
+
+        try:
+            self.getMongoConnection()
+            self.setMongoDb("IAMP")
+            self.setMongoCollection("passHisAndCurrent")
+            pData = self.aggregate(passAggregate)
+            self.setMongoCollection("deftHisAndCurrent")
+            dData = self.aggregate(deftAggregate)
+            self.setMongoCollection("reasonHisAndCurrent")
+            fData = self.aggregate(fixAggregate)
+            self.closeMongoConncetion()
+            returnData = {
+                "pData": pData,
+                "dData": dData,
+                "fData": fData
+            }
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+    def _groupMSHIPLV2LINEDG(self, data):
+        passData = []
+        for p in data["pData"]:
+            passData.append(p)
+        deftData = []
+        for d in data["dData"]:
+            deftData.append(d)
+        fixData = []
+        for f in data["fData"]:
+            fixData.append(f)
+
+        data = []
+        oData = {}
+        if deftData != [] and passData != [] :
+            for d in deftData:   
+                _passData = list(
+                    filter(lambda d: d["PROD_NBR"] == d["PROD_NBR"], passData))  
+                _fixData = list(
+                    filter(lambda d: d["PROD_NBR"] == d["PROD_NBR"], fixData))   
+                if len(_passData) > 0: 
+                    oData["DFCT_CODE"] = copy.deepcopy(d["DFCT_CODE"])
+                    oData["ERRC_DESCR"] = copy.deepcopy(d["ERRC_DESCR"])
+                    oData["XVALUE"] = copy.deepcopy(d["XVALUE"])                
+                    oData["DATARANGE"] = copy.deepcopy(d["DATARANGE"])
+                    oData["COMPANY_CODE"] = copy.deepcopy(
+                        _passData[0]["COMPANY_CODE"])
+                    oData["SITE"] = copy.deepcopy(_passData[0]["SITE"])
+                    oData["FACTORY_ID"] = copy.deepcopy(_passData[0]["FACTORY_ID"])
+                    if "APPLICATION" in _passData[0].keys():
+                        oData["APPLICATION"] = copy.deepcopy(
+                            _passData[0]["APPLICATION"])
+                    else:
+                        oData["APPLICATION"] = None
+                    oData["PROD_NBR"] = copy.deepcopy(_passData[0]["PROD_NBR"])
+                    oData["DEFT_QTY"] = copy.deepcopy(d["DEFT_QTY"])                    
+                    oData["PASS_QTY"] = copy.deepcopy(_passData[0]["PASS_QTY"])
+                    if len(_fixData) > 0: 
+                        oData["FIX_QTY"] = copy.deepcopy(_fixData[0]["FIX_QTY"])
+                    else:
+                        oData["FIX_QTY"] = 0
+                    oData["denominator_QTY"] = oData["PASS_QTY"]-oData["FIX_QTY"]
+
+                    if oData["denominator_QTY"] > 0 and oData["denominator_QTY"] > oData["DEFT_QTY"]:
+                        data.append(copy.deepcopy(oData))
+                    oData = {}
+        return data
+
+    def _calMSHIPLV2DG(self, tempData, DATARANGE, DATARANGEID):
+        tmpPROD_NBR = self.jsonData["PROD_NBR"]
+
+        allDFCTCount = {}
+        for x in tempData:    
+            if x["DFCT_CODE"] in allDFCTCount.keys():
+                allDFCTCount[x["DFCT_CODE"]] += x["DEFT_QTY"]
+            else:
+                allDFCTCount[x["DFCT_CODE"]] = x["DEFT_QTY"]
+        top10 = dict(sorted(allDFCTCount.items(),key=lambda item:item[1],reverse=True) [:10])
+               
+        DATASERIES = []
+        if tempData == []:
+            test = {
+                    "XVALUE": DATARANGEID,
+                    "YVALUE": 0,
+                    "RANK": 0,
+                    "DATARANGE": DATARANGE,                    
+                    "DFCT_CODE" : "OTHER",
+                    "ERRC_DESCR" :  "OTHER",                     
+                    "PROD_NBR": tmpPROD_NBR,
+                    "PASS_QTY": 0,
+                    "FIX_QTY": 0,
+                    "DEFT_QTY": 0,
+                    "DG_YIELD": 0,
+                    "denominator_QTY" : 0
+                }
+            DATASERIES.append(test)
+        else:
+            for x in tempData:  
+                cDFct = x["DFCT_CODE"] if x["DFCT_CODE"] in top10.keys() else "OTHER"
+                cERRC = x["ERRC_DESCR"] if x["DFCT_CODE"] in top10.keys() else "OTHER" 
+
+                rank = 11
+                if cDFct in top10.keys():
+                    rank = 1
+                    for i in top10:
+                        if i != x["DFCT_CODE"]:
+                            rank +=1 
+                        else:
+                            break
+                                            
+                d = list(filter(lambda d: d["DFCT_CODE"] == cDFct and d["XVALUE"] == x["XVALUE"] , DATASERIES))
+                if d == []:
+                    ds = Decimal(x["DEFT_QTY"])
+                    ps = Decimal(x["denominator_QTY"])
+                    dr =  self._DecimaltoFloat((ds / ps).quantize(Decimal('.00000000'), ROUND_HALF_UP))
+                    test = {
+                            "XVALUE": x["XVALUE"],
+                            "YVALUE": dr*100,
+                            "RANK": rank,
+                            "DATARANGE": x["DATARANGE"],
+                            "DFCT_CODE" : cDFct,
+                            "ERRC_DESCR" : cERRC,                        
+                            "PROD_NBR": tmpPROD_NBR,
+                            "PASS_QTY": x["PASS_QTY"],
+                            "FIX_QTY": x["FIX_QTY"],
+                            "DEFT_QTY": x["DEFT_QTY"],
+                            "DG_YIELD": dr*100,
+                            "denominator_QTY" : x["denominator_QTY"]
+                        }
+                    DATASERIES.append(test)
+                
+                else:
+                    for cx in DATASERIES:
+                        if  cx["DFCT_CODE"] == cDFct :                        
+                            cx["DEFT_QTY"] += x["DEFT_QTY"]
+                            ds = Decimal(cx["DEFT_QTY"])
+                            ps = Decimal(cx["denominator_QTY"])
+                            dr =  self._DecimaltoFloat((ds / ps).quantize(Decimal('.00000000'), ROUND_HALF_UP))
+                            cx["DG_YIELD"] = dr*100
+                            cx["YVALUE"] =  dr*100
+
+            DATASERIES.sort(key = operator.itemgetter("RANK", "RANK"), reverse = True)
+
+        returnData = DATASERIES
+
+        return returnData
 
     def _DecimaltoFloat(self, obj):
         if isinstance(obj, Decimal):
