@@ -516,7 +516,6 @@ class INTLV3(BaseType):
                     "DATASERIES": DATASERIES
                 }
 
-                """
                 self.getRedisConnection()
                 if self.searchRedisKeys(redisKey):     
                     self.setRedisData(redisKey, json.dumps(
@@ -524,7 +523,6 @@ class INTLV3(BaseType):
                 else:
                     self.setRedisData(redisKey, json.dumps(
                         returnData, sort_keys=True, indent=2), 60) 
-                """ 
 
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
@@ -1374,6 +1372,10 @@ class INTLV3(BaseType):
                 magerData.append(d)                       
             for d in n1d:     
                 magerData.append(d)
+
+            magerData.sort(key = operator.itemgetter("XVALUE", "XVALUE"), reverse = True)
+            magerData.sort(key = operator.itemgetter("RANK", "RANK"), reverse = True)
+            
             return magerData
 
     def _getFPYLV2LINEDataALL(self, OPER, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE):
@@ -1996,10 +1998,10 @@ class INTLV3(BaseType):
                 "FACTORY_ID": tmpFACTORY_ID,
                 "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
                 "LCM_OWNER": {"$in": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]},
-                "PROD_NBR": PROD_NBR
+                "PROD_NBR": PROD_NBR,
+                "IS_DOWNGRADE" : "Y"
             }
         }
-        #"IS_DOWNGRADE" : "Y"
         deftGroup1 = {
             "$group": {
                 "_id": {
