@@ -775,7 +775,6 @@ class INTLV3(BaseType):
 
         if DEFECTCODE != None:
             FPYLV3_Aggregate[0]["$match"]["DFCT_CODE"] = DEFECTCODE
-        self.writeLog(FPYLV3_Aggregate)
         try:
             self.getMongoConnection()
             self.setMongoDb("IAMP")
@@ -849,7 +848,6 @@ class INTLV3(BaseType):
         account = config.get("ACCOUNT",fabId)
         password = config.get("PASSWORD",fabId)
         schema = config.get("SCHEMA",fabId)
-        self.writeLog(f"FACTORY_ID:{fabId},Db2:{database},IP:{ip}:{port},ACCOUNT:{account};PASSWORD:{password};SCHEMA:{schema}")
         db = self.getDb2Connection(database ,ip, port, account, password)
         sql = f"select * from {schema}.V_BSDEFCODE where ERRC_NBR = '{code}'  with ur"
         BSDEFCODE = self.db2Select(sql)                   

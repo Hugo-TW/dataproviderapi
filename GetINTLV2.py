@@ -736,6 +736,9 @@ class INTLV2(BaseType):
         for d in DKEN:       
             deftData.append(d) 
 
+        deftData.sort(key = operator.itemgetter("XVALUE", "XVALUE"), reverse = True)
+        deftData.sort(key = operator.itemgetter("RANK", "RANK"), reverse = True)
+
         return deftData
     
     def _getMSHIPSCRAPData(self,type,PROD_NBR):

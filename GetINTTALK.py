@@ -17,6 +17,149 @@ class INTTALK(BaseType):
         self.writeLog(
             f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
         self.jsonData = jsonData
+        self.operSetData = {
+            "M011": {
+                "FPY": {
+                    "limit": {
+                        "CE": {"qytlim": 1000, "FPY": 0.94},
+                        "TABLET": {"qytlim": 1000, "FPY": 0.89},
+                        "NB": {"qytlim": 1000, "FPY": 0.93},
+                        "TV": {"qytlim": 1000, "FPY": 0.90},
+                        "AA": {"qytlim": 1000, "FPY": 0.95}
+                    },
+                    "numerator": {  # 分子
+                        "PCBI": {"fromt": 1050, "tot": 1310},
+                        "LAM": {"fromt": 1340, "tot": 1399},
+                        "AAFC": {"fromt": 1400, "tot": 1499},
+                        "CKEN": {"fromt": 1500, "tot": 1699},
+                        "DKEN": {"fromt": 1700, "tot": 1799}
+                    },
+                    "denominator": {  # 分母
+                        "PCBI": [1300, 1301],
+                        "LAM": [1355],
+                        "AAFC": [1420],
+                        "CKEN": [1600],
+                        "DKEN": [1600]
+                    }
+                },
+                "M-SHIP": {
+                    "limit": {
+                        "CE": {"qytlim": 1000, "target": 0.97},
+                        "TABLET": {"qytlim": 1000, "target": 0.955},
+                        "NB": {"qytlim": 1000, "target": 0.96},
+                        "TV": {"qytlim": 1000, "target": 0.90},
+                        "AA": {"qytlim": 1000, "target": 0.95}
+                    },
+                    "numerator": {},
+                    "denominator": {}
+                },
+                "EFA": {
+                    "limit": {
+                        "CE": {"qytlim": 1000, "target": 0.003},
+                        "TABLET": {"qytlim": 1000, "target": 0.003},
+                        "NB": {"qytlim": 1000, "target": 0.003},
+                        "TV": {"qytlim": 1000, "target": 0.003},
+                        "AA": {"qytlim": 1000, "target": 0.003}
+                    },
+                    "numerator": {},
+                    "denominator": {}
+                }
+            },
+            "J001": {
+                "FPY": {
+                    "limit": {
+                        "CE": {"qytlim": 1000, "FPY": 0.94},
+                        "TABLET": {"qytlim": 1000, "FPY": 0.89},
+                        "NB": {"qytlim": 1000, "FPY": 0.93},
+                        "TV": {"qytlim": 1000, "FPY": 0.90},
+                        "AA": {"qytlim": 1000, "FPY": 0.95}
+                    },
+                    "numerator": {  # 分子
+                        "PCBI": {"fromt": 1050, "tot": 1310},
+                        "LAM": {"fromt": 1340, "tot": 1399},
+                        "AAFC": {"fromt": 1400, "tot": 1499},
+                        "CKEN": {"fromt": 1500, "tot": 1699},
+                        "DKEN": {"fromt": 1700, "tot": 1799}
+                    },
+                    "denominator": {  # 分母
+                        "PCBI": [1300, 1301],
+                        "LAM": [1355],
+                        "AAFC": [1420],
+                        "CKEN": [1600],
+                        "DKEN": [1600]
+                    }
+                },
+                "M-SHIP": {
+                    "limit": {
+                        "CE": {"qytlim": 1000, "target": 0.97},
+                        "TABLET": {"qytlim": 1000, "target": 0.955},
+                        "NB": {"qytlim": 1000, "target": 0.96},
+                        "TV": {"qytlim": 1000, "target": 0.90},
+                        "AA": {"qytlim": 1000, "target": 0.95}
+                    },
+                    "numerator": {},
+                    "denominator": {}
+                },
+                "EFA": {
+                    "limit": {
+                        "CE": {"qytlim": 1000, "target": 0.003},
+                        "TABLET": {"qytlim": 1000, "target": 0.003},
+                        "NB": {"qytlim": 1000, "target": 0.003},
+                        "TV": {"qytlim": 1000, "target": 0.003},
+                        "AA": {"qytlim": 1000, "target": 0.003}
+                    },
+                    "numerator": {},
+                    "denominator": {}
+                }
+            },
+            "J003": {
+                "FPY": {
+                    "limit": {
+                        "CE": {"qytlim": 1000, "FPY": 0.94},
+                        "TABLET": {"qytlim": 1000, "FPY": 0.89},
+                        "NB": {"qytlim": 1000, "FPY": 0.93},
+                        "TV": {"qytlim": 1000, "FPY": 0.90},
+                        "AA": {"qytlim": 1000, "FPY": 0.95}
+                    },
+                    "numerator": {  # 分子
+                        "PCBI": {"fromt": 1050, "tot": 1310},
+                        "LAM": {"fromt": 1340, "tot": 1399},
+                        "AAFC": {"fromt": 1400, "tot": 1499},
+                        "CKEN": {"fromt": 1500, "tot": 1699},
+                        "DKEN": {"fromt": 1700, "tot": 1799}
+                    },
+                    "denominator": {  # 分母
+                        "PCBI": [1300, 1301],
+                        "LAM": [1355],
+                        "AAFC": [1420],
+                        "CKEN": [1600],
+                        "DKEN": [1600]
+                    }
+                },
+                "M-SHIP": {
+                    "limit": {
+                        "CE": {"qytlim": 1000, "target": 0.97},
+                        "TABLET": {"qytlim": 1000, "target": 0.955},
+                        "NB": {"qytlim": 1000, "target": 0.96},
+                        "TV": {"qytlim": 1000, "target": 0.90},
+                        "AA": {"qytlim": 1000, "target": 0.95}
+                    },
+                    "numerator": {},
+                    "denominator": {}
+                },
+                "EFA": {
+                    "limit": {
+                        "CE": {"qytlim": 1000, "target": 0.003},
+                        "TABLET": {"qytlim": 1000, "target": 0.003},
+                        "NB": {"qytlim": 1000, "target": 0.003},
+                        "TV": {"qytlim": 1000, "target": 0.003},
+                        "AA": {"qytlim": 1000, "target": 0.003}
+                    },
+                    "numerator": {},
+                    "denominator": {}
+                }
+            }
+        }
 
     def getData(self):
         try:
@@ -32,9 +175,7 @@ class INTTALK(BaseType):
             tmpOPER = self.jsonData["OPER"]
             tmpCODE = self.jsonData["CODE"]
 
-            self.getMongoConnection()
-            self.setMongoDb("IAMP")
-            self.setMongoCollection("intTalk")
+            
 
             if tmpFUNCTYPE == "CREATE":
                 tmpCONTENTTYPE = self.jsonData["CONTENTTYPE"] if "CONTENTTYPE" in self.jsonData else None
@@ -51,7 +192,11 @@ class INTTALK(BaseType):
                     "OPER": tmpOPER,
                     "CODE": tmpCODE
                 }
+                self.getMongoConnection()
+                self.setMongoDb("IAMP")
+                self.setMongoCollection("intTalk")
                 org = self.getMongoFindOne(Jmsg)
+                self.closeMongoConncetion()
                 if org != None:
                     Jmsg1 = copy.deepcopy(org)
                 else:
@@ -61,15 +206,27 @@ class INTTALK(BaseType):
                     Jmsg1["AA"] = tmpCONTENT
                 elif tmpCONTENTTYPE == "COMM":
                     Jmsg1["COMM"] = tmpCONTENT
+                
+                DR_DATA = self._getDRDATA(tmpOPER, tmpPROD_NBR, tmpCODE, tmpACCT_DATE)
 
+                if DR_DATA != None:
+                    Jmsg1["RATE"] = DR_DATA["RATE"]
+                    Jmsg1["TOTAL"] = DR_DATA["TOTAL"]
+
+                """
                 if tmpRATE != None:
                     Jmsg1["RATE"] = tmpRATE
                 if tmpTOTAL != None:
                     Jmsg1["TOTAL"] = tmpTOTAL
+                """ 
+                              
 
                 utc = datetime.datetime.strptime(Jmsg["ACCT_DATE"], '%Y%m%d')
                 Jmsg1["UTC"] = int(time.mktime(utc.timetuple()))
 
+                self.getMongoConnection()
+                self.setMongoDb("IAMP")
+                self.setMongoCollection("intTalk")
                 count = self.deleteToMongo(Jmsg)
                 self.inserOneToMongo(Jmsg1)
                 self.closeMongoConncetion()
@@ -193,3 +350,185 @@ class INTTALK(BaseType):
             x = _sd + datetime.timedelta(i)
             dataArray.append(d.strftime(x, '%Y%m%d'))
         return dataArray
+
+    def _getDRDATA(self, OPER, PROD_NBR, DEFECTCODE, ACCT_DATE):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        
+        getFabData = self.operSetData[tmpFACTORY_ID]
+        numeratorData = getFabData["FPY"]["numerator"][OPER]
+        denominatorValue = getFabData["FPY"]["denominator"][OPER]
+
+        DEFECT_Aggregate = [
+            {
+                "$match": {
+                    "COMPANY_CODE": tmpCOMPANY_CODE,
+                    "SITE": tmpSITE,
+                    "FACTORY_ID": tmpFACTORY_ID,
+                    "ACCT_DATE": ACCT_DATE,
+                    "PROD_NBR": PROD_NBR,
+                    "LCM_OWNER": {"$in": ["LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                    "$expr": {
+                        "$and": [
+                            {"$gte": [{"$toInt": "$MAIN_WC"}, numeratorData["fromt"]]},
+                            {"$lte": [{"$toInt": "$MAIN_WC"}, numeratorData["tot"]]}
+                        ]
+                    },
+                    "RW_COUNT": {"$lte": "1"}
+                }
+            },
+            {
+                "$group": {
+                    "_id": {
+                        "APPLICATION" : "$APPLICATION",
+                        "PROD_NBR": "$PROD_NBR"
+                    },
+                    "deftQty": {
+                        "$sum": {"$toInt": "$QTY"}
+                    }
+                }
+            },
+            {
+                "$addFields": {
+                    "APPLICATION" : "$_id.APPLICATION",
+                    "PROD_NBR": "$_id.PROD_NBR",
+                    "deftQty": "$deftQty",
+                    "passQty": 0
+                }
+            },
+            {
+                "$project": {
+                    "_id": 0
+                }
+            },
+            {
+                "$unionWith": {
+                    "coll": "passHisAndCurrent",
+                            "pipeline": [
+                                {
+                                    "$match": {
+                                        "COMPANY_CODE": tmpCOMPANY_CODE,
+                                        "SITE": tmpSITE,
+                                        "FACTORY_ID": tmpFACTORY_ID,
+                                        "ACCT_DATE": ACCT_DATE,                                       
+                                        "PROD_NBR": PROD_NBR,
+                                        "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, denominatorValue]},
+                                        "RW_COUNT": {"$lte": "1"}
+                                    }
+                                },
+                                {
+                                    "$group": {
+                                        "_id": {
+                                            "APPLICATION" : "$APPLICATION",
+                                            "PROD_NBR": "$PROD_NBR"
+                                        },
+                                        "passQty": {
+                                            "$sum": {
+                                                "$toInt": "$QTY"
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "$addFields": {
+                                        "APPLICATION" : "$_id.APPLICATION",
+                                        "PROD_NBR": "$_id.PROD_NBR",
+                                        "passQty": "$passQty",
+                                        "deftQty": 0
+                                    }
+                                },
+                                {
+                                    "$project": {
+                                        "_id": 0
+                                    }
+                                }
+                            ]
+                }
+            },
+            {
+                "$group": {
+                    "_id": {
+                        "APPLICATION" : "$APPLICATION",
+                        "PROD_NBR": "$PROD_NBR"
+                    },
+                    "deftQty": {
+                        "$sum": "$deftQty"
+                    },
+                    "passQty": {
+                        "$sum": "$passQty"
+                    }
+                }
+            },
+            {
+                "$addFields": {
+                    "APPLICATION" : "$_id.APPLICATION",
+                    "PROD_NBR": "$_id.PROD_NBR",
+                    "OPER" : OPER,
+                    "DEFECT_YIELD": {
+                        "$cond": [
+                            {
+                                "$eq": [
+                                    "$passQty",
+                                    0
+                                ]
+                            },
+                            0,
+                            {
+                                "$divide": [
+                                    "$deftQty",
+                                    "$passQty"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "$project": {
+                    "_id": 0
+                }
+            },
+            {
+                "$sort": {
+                    "APPLICATION" : 1,
+                    "PROD_NBR": 1
+                }
+            }
+        ]
+
+        if DEFECTCODE != None:
+            DEFECT_Aggregate[0]["$match"]["DFCT_CODE"] = DEFECTCODE
+        try:
+            self.getMongoConnection()
+            self.setMongoDb("IAMP")
+            self.setMongoCollection("deftHisAndCurrent")
+            rData = self.aggregate(DEFECT_Aggregate)
+            self.closeMongoConncetion()
+
+            magerData = [] 
+            for d in rData:   
+                d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0    
+                magerData.append(d)
+
+            if len(magerData) == 0:
+                return None
+            else:
+                returnData = {
+                    "RATE" : str(round(magerData[0]["DEFECT_YIELD"]*100,2)),
+                    "TOTAL" : str(magerData[0]["passQty"])
+                }                
+                return returnData           
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
