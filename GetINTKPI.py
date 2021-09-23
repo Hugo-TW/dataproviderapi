@@ -1616,12 +1616,12 @@ class INTKPI(BaseType):
 
         for x in EFAData:    
             targrt = 0.003
-            targrtQTY = 1000
+            targrtQTY = 3000
             if x["APPLICATION"] in getLimitData.keys():
                 targrt = getLimitData[x["APPLICATION"]]["target"]
                 targrtQTY = getLimitData[x["APPLICATION"]]["qytlim"]
 
-            if x["EFA"] >= targrt:
+            if x["EFA"] < targrt:
                 GREEN_VALUE += 1             
             else:
                 if targrtQTY > x["passQty"]:
