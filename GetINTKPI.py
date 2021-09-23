@@ -61,11 +61,11 @@ class INTKPI(BaseType):
                 },
                 "EFA": {
                     "limit": {
-                        "CE": {"qytlim": 1000, "target": 0.003},
-                        "TABLET": {"qytlim": 1000, "target": 0.003},
-                        "NB": {"qytlim": 1000, "target": 0.003},
-                        "TV": {"qytlim": 1000, "target": 0.003},
-                        "AA": {"qytlim": 1000, "target": 0.003}
+                        "CE": {"qytlim": 3000, "target": 0.003},
+                        "TABLET": {"qytlim": 3000, "target": 0.003},
+                        "NB": {"qytlim": 3000, "target": 0.003},
+                        "TV": {"qytlim": 3000, "target": 0.003},
+                        "AA": {"qytlim": 3000, "target": 0.003}
                     },
                     "numerator": {},
                     "denominator": {}
@@ -108,11 +108,11 @@ class INTKPI(BaseType):
                 },
                 "EFA": {
                     "limit": {
-                        "CE": {"qytlim": 1000, "target": 0.003},
-                        "TABLET": {"qytlim": 1000, "target": 0.003},
-                        "NB": {"qytlim": 1000, "target": 0.003},
-                        "TV": {"qytlim": 1000, "target": 0.003},
-                        "AA": {"qytlim": 1000, "target": 0.003}
+                        "CE": {"qytlim": 3000, "target": 0.003},
+                        "TABLET": {"qytlim": 3000, "target": 0.003},
+                        "NB": {"qytlim": 3000, "target": 0.003},
+                        "TV": {"qytlim": 3000, "target": 0.003},
+                        "AA": {"qytlim": 3000, "target": 0.003}
                     },
                     "numerator": {},
                     "denominator": {}
@@ -155,11 +155,11 @@ class INTKPI(BaseType):
                 },
                 "EFA": {
                     "limit": {
-                        "CE": {"qytlim": 1000, "target": 0.003},
-                        "TABLET": {"qytlim": 1000, "target": 0.003},
-                        "NB": {"qytlim": 1000, "target": 0.003},
-                        "TV": {"qytlim": 1000, "target": 0.003},
-                        "AA": {"qytlim": 1000, "target": 0.003}
+                        "CE": {"qytlim": 3000, "target": 0.003},
+                        "TABLET": {"qytlim": 3000, "target": 0.003},
+                        "NB": {"qytlim": 3000, "target": 0.003},
+                        "TV": {"qytlim": 3000, "target": 0.003},
+                        "AA": {"qytlim": 3000, "target": 0.003}
                     },
                     "numerator": {},
                     "denominator": {}
