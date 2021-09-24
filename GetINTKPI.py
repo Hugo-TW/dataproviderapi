@@ -8,6 +8,8 @@ import time
 import datetime
 import copy
 from BaseType import BaseType
+import decimal
+
 class INTKPI(BaseType):
     def __init__(self, jsonData):
         super().__init__()
@@ -334,164 +336,7 @@ class INTKPI(BaseType):
                         "DESC": "(A+B) Panel C-"}
                 ]
 
-                PRODDATA = [
-                    {
-                        "APPLICATION": "CE",
-                        "PROD_NBR": "GZJ055IA0200S",
-                        "MODULE": "ZJ055IA-27B",
-                        "PROJECT": "Juno_T1_VE",
-                        "CUSTOMER": "FOXCONN"
-                    },
-                    {
-                        "APPLICATION": "CE",
-                        "PROD_NBR": "GP062CCAC100S",
-                        "MODULE": "P062CCA-AZ2 ",
-                        "PROJECT": "Giant_T2_VE",
-                        "CUSTOMER": "FOXCONN"
-                    },
-                    {
-                        "APPLICATION": "CE",
-                        "PROD_NBR": "GZD070SA4030S",
-                        "MODULE": "ZD070SA-14N",
-                        "PROJECT": "GARMIN_TOD(小CG)",
-                        "CUSTOMER": "GARMIN"
-                    },
-                    {
-                        "APPLICATION": "CE",
-                        "PROD_NBR": "GZD070SAB020S",
-                        "MODULE": "ZD070SA-14M",
-                        "PROJECT": "GARMIN_TOD(中CG)",
-                        "CUSTOMER": "GARMIN"
-                    },
-                    {
-                        "APPLICATION": "CE",
-                        "PROD_NBR": "GNJ101IA0030S",
-                        "MODULE": "NJ101IA-01S",
-                        "PROJECT": "10.1_01S",
-                        "CUSTOMER": "白牌"
-                    },
-                    {
-                        "APPLICATION": "CE",
-                        "PROD_NBR": "GZJ101ZA3010S",
-                        "MODULE": "ZJ101ZA-03B",
-                        "PROJECT": "RICOH",
-                        "CUSTOMER": "RICOH"
-                    },
-                    {
-                        "APPLICATION": "CE",
-                        "PROD_NBR": "GP062CCAY010S",
-                        "MODULE": "GP062XXX",
-                        "PROJECT": "GP062XXX",
-                        "CUSTOMER": "GP062"
-                    },
-                    {
-                        "APPLICATION": "NB",
-                        "PROD_NBR": "GN116BCNA030S",
-                        "MODULE": "N116BCN-EA1",
-                        "PROJECT": "11.6_TOD",
-                        "CUSTOMER": "HP"
-                    },
-                    {
-                        "APPLICATION": "NB",
-                        "PROD_NBR": "GN140HCNA0C0S",
-                        "MODULE": "N140HCN-EA1",
-                        "PROJECT": "14_HCN",
-                        "CUSTOMER": "LENOVO"
-                    },
-                    {
-                        "APPLICATION": "NB",
-                        "PROD_NBR": "GN140HCNA0M0S",
-                        "MODULE": "N140HCN-EA1",
-                        "PROJECT": "14_HCN",
-                        "CUSTOMER": "LENOVO"
-                    },
-                    {
-                        "APPLICATION": "NB",
-                        "PROD_NBR": "GN140HCNA0N0S",
-                        "MODULE": "N140HCN-EA1",
-                        "PROJECT": "14_HCN",
-                        "CUSTOMER": "LENOVO"
-                    },
-                    {
-                        "APPLICATION": "NB",
-                        "PROD_NBR": "GN140HCNA0R0S",
-                        "MODULE": "N140HCN-EA1",
-                        "PROJECT": "14_HCN",
-                        "CUSTOMER": "LENOVO"
-                    },
-                    {
-                        "APPLICATION": "Open Cell",
-                        "PROD_NBR": "2HE080IA1010S",
-                        "MODULE": "HE080IA-01D",
-                        "PROJECT": "IPS",
-                        "CUSTOMER": "白牌"
-                    },
-                    {
-                        "APPLICATION": "Open Cell",
-                        "PROD_NBR": "2P101DEZ0020S",
-                        "MODULE": "P101DEZ-3Z3",
-                        "PROJECT": "10.1_3Z3",
-                        "CUSTOMER": "白牌"
-                    },
-                    {
-                        "APPLICATION": "TAB",
-                        "PROD_NBR": "GP080DZD00B0S",
-                        "MODULE": "P080DZD-DB2",
-                        "PROJECT": "8_ TAB5 M8(黑)",
-                        "CUSTOMER": "LENOVO"
-                    },
-                    {
-                        "APPLICATION": "TAB",
-                        "PROD_NBR": "GP080DZD00C0S",
-                        "MODULE": "P080DZD-DBE",
-                        "PROJECT": "8_TAB6(N)",
-                        "CUSTOMER": "LENOVO"
-                    },
-                    {
-                        "APPLICATION": "TAB",
-                        "PROD_NBR": "GP101KZD0210S",
-                        "MODULE": "P101KZD-DFB",
-                        "PROJECT": "Agassi3(白)",
-                        "CUSTOMER": "榮耀"
-                    },
-                    {
-                        "APPLICATION": "TAB",
-                        "PROD_NBR": "GP104ZZD0220S",
-                        "MODULE": "P104ZZD-DFA",
-                        "PROJECT": "N19(黑)",
-                        "CUSTOMER": "SAMSUNG"
-                    },
-                    {
-                        "APPLICATION": "TAB",
-                        "PROD_NBR": "GP104ZZD0240S",
-                        "MODULE": "P104ZZD-DF3",
-                        "PROJECT": "N19(黑)",
-                        "CUSTOMER": "SAMSUNG"
-                    },
-                    {
-                        "APPLICATION": "TAB",
-                        "PROD_NBR": "GP130ZFZ1020S",
-                        "MODULE": "P130ZFZ-BH2",
-                        "PROJECT": "13_Zeus",
-                        "CUSTOMER": "LENOVO"
-                    },
-                    {
-                        "APPLICATION": "TAB",
-                        "PROD_NBR": "GP130ZFA0010S",
-                        "MODULE": "P130ZFA-BA1",
-                        "PROJECT": "Wright",
-                        "CUSTOMER": "明華光電"
-                    },
-                    {
-                        "APPLICATION": "TAB",
-                        "PROD_NBR": "GP140ZKA0020S",
-                        "MODULE": "P140ZKA-BZ1",
-                        "PROJECT": "14_Kelvin",
-                        "CUSTOMER": "明華光電"
-                    }
-                ]
-
-                efaData = self._getEFAData(OPERDATA, PRODDATA)
+                efaData = self._getEFAData(OPERDATA)
                 groupEFAData = self._groupEFAData(efaData)
                 returnData = self._calEFAData(groupEFAData)
 
@@ -1398,7 +1243,7 @@ class INTKPI(BaseType):
 
         return returnData
 
-    def _getEFAData(self, OPERDATA, PRODDATA):
+    def _getEFAData(self, OPERDATA):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
@@ -1409,10 +1254,6 @@ class INTKPI(BaseType):
         for x in OPERDATA:
             OPERList.append(f'{x.get("OPER")}')
 
-        PRODList = []
-        for x in PRODDATA:
-            PRODList.append(x.get("PROD_NBR"))
-
         EFA_Aggregate = [
             {
                 "$match": {
@@ -1420,8 +1261,7 @@ class INTKPI(BaseType):
                     "SITE": tmpSITE,
                     "FACTORY_ID": tmpFACTORY_ID,
                     "ACCT_DATE": tmpACCT_DATE,
-                    "MAIN_WC": {"$in": OPERList},
-                    "PROD_NBR": {"$in": PRODList }
+                    "MAIN_WC": {"$in": OPERList}
                 }
             },
             {
@@ -1461,7 +1301,8 @@ class INTKPI(BaseType):
                 "$group": {
                     "_id": {
                         "APPLICATION" : "$APPLICATION",
-                        "PROD_NBR": "$PROD_NBR"
+                        "PROD_NBR": "$PROD_NBR",
+                        "MAIN_WC": "$MAIN_WC"
                     },
                     "deftQty": {
                         "$sum": {"$toInt": "$QTY"}
@@ -1472,6 +1313,7 @@ class INTKPI(BaseType):
                 "$addFields": {
                     "APPLICATION" : "$_id.APPLICATION",
                     "PROD_NBR": "$_id.PROD_NBR",
+                     "MAIN_WC": "$_id.MAIN_WC",
                     "deftQty": "$deftQty",
                     "passQty": 0
                 }
@@ -1491,15 +1333,15 @@ class INTKPI(BaseType):
                                         "SITE": tmpSITE,
                                         "FACTORY_ID": tmpFACTORY_ID,
                                         "ACCT_DATE": tmpACCT_DATE,
-                                        "MAIN_WC": {"$in": OPERList},
-                                        "PROD_NBR": {"$in": PRODList }
+                                        "MAIN_WC": {"$in": OPERList}
                                     }
                                 },
                                 {
                                     "$group": {
                                         "_id": {
                                             "APPLICATION" : "$APPLICATION",
-                                            "PROD_NBR": "$PROD_NBR"
+                                            "PROD_NBR": "$PROD_NBR",                                            
+                                            "MAIN_WC": "$MAIN_WC"
                                         },
                                         "passQty": {
                                             "$sum": {
@@ -1512,6 +1354,7 @@ class INTKPI(BaseType):
                                     "$addFields": {
                                         "APPLICATION" : "$_id.APPLICATION",
                                         "PROD_NBR": "$_id.PROD_NBR",
+                                        "MAIN_WC": "$_id.MAIN_WC",
                                         "passQty": "$passQty",
                                         "deftQty": 0
                                     }
@@ -1528,7 +1371,8 @@ class INTKPI(BaseType):
                 "$group": {
                     "_id": {
                         "APPLICATION" : "$APPLICATION",
-                        "PROD_NBR": "$PROD_NBR"
+                        "PROD_NBR": "$PROD_NBR",
+                        "MAIN_WC": "$MAIN_WC"
                     },
                     "deftQty": {
                         "$sum": "$deftQty"
@@ -1542,6 +1386,7 @@ class INTKPI(BaseType):
                 "$addFields": {
                     "APPLICATION" : "$_id.APPLICATION",
                     "PROD_NBR": "$_id.PROD_NBR",
+                    "MAIN_WC": "$_id.MAIN_WC",
                     "EFA": {
                         "$cond": [
                             {
@@ -1553,8 +1398,8 @@ class INTKPI(BaseType):
                             0,
                             {
                                 "$divide": [
-                                    "$deftQty",
-                                    "$passQty"
+                                    {"$toDecimal":"$deftQty"},
+                                    {"$toDecimal":"$passQty"}
                                 ]
                             }
                         ]
@@ -1608,24 +1453,34 @@ class INTKPI(BaseType):
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         getLimitData = self.operSetData[tmpFACTORY_ID]["EFA"]["limit"]
 
+        PRODList = []
+        for x in EFAData:
+            if {"PROD_NBR": x["PROD_NBR"], "APPLICATION": x["APPLICATION"]} not in PRODList:
+                PRODList.append(
+                    {"PROD_NBR": x["PROD_NBR"], "APPLICATION": x["APPLICATION"]})
+        
         GREEN_VALUE = 0
         YELLOW_VALUE = 0
         RED_VALUE = 0
 
-        for x in EFAData:    
+        for prod in PRODList:
+            d1 = list(filter(lambda d: d["PROD_NBR"] == prod["PROD_NBR"], EFAData))
             targrt = 0.003
             targrtQTY = 3000
-            if x["APPLICATION"] in getLimitData.keys():
-                targrt = getLimitData[x["APPLICATION"]]["target"]
-                targrtQTY = getLimitData[x["APPLICATION"]]["qytlim"]
+            if prod["APPLICATION"] in getLimitData.keys():
+                targrt = getLimitData[prod["APPLICATION"]]["target"]
+                targrtQTY = getLimitData[prod["APPLICATION"]]["qytlim"]           
+            
+            checkTargrt = list(filter(lambda d: d["EFA"].to_decimal() >= targrt, d1))
+            checkQTY = list(filter(lambda d: d["passQty"] >= targrtQTY, checkTargrt))
 
-            if x["EFA"] < targrt:
-                GREEN_VALUE += 1             
-            else:
-                if targrtQTY > x["passQty"]:
-                    YELLOW_VALUE += 1
-                else:                
+            if len(checkTargrt) != 0:
+                if len(checkQTY) != 0:
                     RED_VALUE += 1
+                else:
+                    YELLOW_VALUE += 1
+            else:
+                GREEN_VALUE += 1  
 
         returnData = {
             "CLASS_TYPE": "EFA",
