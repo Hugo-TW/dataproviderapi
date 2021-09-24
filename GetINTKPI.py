@@ -8,8 +8,6 @@ import time
 import datetime
 import copy
 from BaseType import BaseType
-
-
 class INTKPI(BaseType):
     def __init__(self, jsonData):
         super().__init__()
@@ -45,7 +43,7 @@ class INTKPI(BaseType):
                         "LAM": [1355],
                         "AAFC": [1420],
                         "CKEN": [1600],
-                        "DKEN": [1600]
+                        "DKEN": [1700]
                     }
                 },
                 "M-SHIP": {
@@ -92,7 +90,7 @@ class INTKPI(BaseType):
                         "LAM": [1355],
                         "AAFC": [1420],
                         "CKEN": [1600],
-                        "DKEN": [1600]
+                        "DKEN": [1700]
                     }
                 },
                 "M-SHIP": {
@@ -139,7 +137,7 @@ class INTKPI(BaseType):
                         "LAM": [1355],
                         "AAFC": [1420],
                         "CKEN": [1600],
-                        "DKEN": [1600]
+                        "DKEN": [1700]
                     }
                 },
                 "M-SHIP": {

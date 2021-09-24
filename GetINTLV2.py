@@ -41,7 +41,7 @@ class INTLV2(BaseType):
                         "LAM": [1355],
                         "AAFC": [1420],
                         "CKEN": [1600],
-                        "DKEN": [1600]
+                        "DKEN": [1700]
                     }
                 },
                 "M-SHIP": {
@@ -88,7 +88,7 @@ class INTLV2(BaseType):
                         "LAM": [1355],
                         "AAFC": [1420],
                         "CKEN": [1600],
-                        "DKEN": [1600]
+                        "DKEN": [1700]
                     }
                 },
                 "M-SHIP": {
@@ -135,7 +135,7 @@ class INTLV2(BaseType):
                         "LAM": [1355],
                         "AAFC": [1420],
                         "CKEN": [1600],
-                        "DKEN": [1600]
+                        "DKEN": [1700]
                     }
                 },
                 "M-SHIP": {
