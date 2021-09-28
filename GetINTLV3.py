@@ -415,7 +415,7 @@ class INTLV3(BaseType):
                 (3)  來料責：SQE
                 """
                 mshipDATA = {
-                    "formerfab":{"in":"usl|lcd|eqp|fab","name": "前廠責", "id":"formerfab"},
+                    "formerfab":{"in":"usl|lcd|fab","name": "前廠責", "id":"formerfab"},
                     "fab":{"in":"mfg|int|eqp|er","name": "廠責", "id":"fab"},
                     "incoming":{"in":"sqe","name": "SQE來料責", "id":"incoming"},
                 }

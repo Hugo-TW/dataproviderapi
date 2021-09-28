@@ -41,6 +41,18 @@
       "dbAccount": "IAMP_AP",
       "dbPassword": "iamP@2019",
       "SERVICE_NAME": "TNVIAMPDB.cminl.oa:1521/IAMP"
+    },
+    {
+      "identity": "INT_ORACLEDB_TEST",
+      "dbAccount": "INTMP_AP",
+      "dbPassword": "TINTMPAP3DEV",
+      "SERVICE_NAME": "tnvttncombdb:1521/ttncomb.cminl.oa"
+    },
+    {
+      "identity": "INT_ORACLEDB_PROD",
+      "dbAccount": "INTMP_AP",
+      "dbPassword": "INTMPAP243XP",
+      "SERVICE_NAME": "10.53.246.122:1521/PINTMP"
     }
   ]
 }

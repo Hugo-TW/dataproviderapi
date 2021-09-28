@@ -32,6 +32,7 @@ from GetEQOFRHrs import EQOFRHrs
 from GetEQOFRHrsDetails import EQOFRHrsDetails
 from GetFactoryOFRHrsDetail import OFRHrsDetail
 #---------------------------------------------
+from GetINTRelation import INTRelation
 from GetINTTALK import INTTALK
 from GetINTLV3 import INTLV3
 from GetINTLV2 import INTLV2
@@ -2025,6 +2026,45 @@ class getINTTALK(Resource):
             return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
         
         v = INTTALK(jsonData)
+        return v.getData()
+
+INTRelationNs = api.namespace('GetINTRelation', description = 'NTRelation')
+INTRelationML = api.model('GetINTRelation', {
+    'FUNCTYPE': fields.String( required = True, description = 'FUNCTYPE', default = 'REASON', example = 'REASON'),
+    'COMPANY_CODE': fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+    'SITE': fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+    'FACTORY_ID': fields.String( required = True, description = 'FACTORY_ID', default = 'J001', example = 'J001'),
+    'APPLICATION': fields.String( required = True, description = 'APPLICATION', default = 'ALL', example = 'ALL'),
+    'ACCT_DATE': fields.String( required = True, description = 'ACCT_DATE', default = '20210801', example = '20210801'),
+    'PROD_NBR' : fields.String( required = True, description = '機種編碼', default = 'GP101KZD0210S', example = 'GP101KZD0210S'), 
+    'OPER' : fields.String( required = True, description = '站點', default = 'PCBI', example = 'PCBI'), 
+    'CHECKCODE' : fields.String( required = False, description = 'Defect or Reason Code', default = 'FACFI-1', example = 'FACFI-1') 
+})
+@INTRelationNs.route('', methods = ['POST'])
+@INTRelationNs.response(200, 'Sucess')
+@INTRelationNs.response(201, 'Created Sucess')
+@INTRelationNs.response(204, 'No Content')
+@INTRelationNs.response(400, 'Bad Request')
+@INTRelationNs.response(401, 'Unauthorized')
+@INTRelationNs.response(403, 'Forbidden')
+@INTRelationNs.response(404, 'Not Found')
+@INTRelationNs.response(405, 'Method Not Allowed')
+@INTRelationNs.response(409, 'Conflict')
+@INTRelationNs.response(500, 'Internal Server Error')
+class getINTRelation(Resource):
+    @INTRelationNs.doc('INTRelation')
+    @INTRelationNs.expect(INTRelationML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+           return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+
+        jsonData = BaseType.validateType(request.json)
+        
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData or "FUNCTYPE" not in jsonData or "ACCT_DATE" not in jsonData or 'PROD_NBR' not in jsonData or 'OPER' not in jsonData:
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        v = INTRelation(jsonData)
         return v.getData()
 
 if __name__ == '__main__':

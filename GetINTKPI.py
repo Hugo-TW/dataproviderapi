@@ -1121,7 +1121,7 @@ class INTKPI(BaseType):
                     oData["TOTAL_YIELD"] = 1 - \
                         round(oData["DOWNGRADE_SUMQTY"] /
                               oData["TOTAL_SUMQTY"], 4)
-                oData["MSHIP"] = round(oData["GRADW_YIELD"] / oData["TOTAL_YIELD"], 4) if oData["TOTAL_YIELD"] != 0 else 0
+                oData["MSHIP"] = round(oData["GRADW_YIELD"] * oData["TOTAL_YIELD"], 4) if oData["TOTAL_YIELD"] != 0 else 0
                 if oData["MSHIP"] > 0:
                     mshipData.append(copy.deepcopy(oData))
                 oData = {}
@@ -1463,6 +1463,10 @@ class INTKPI(BaseType):
         YELLOW_VALUE = 0
         RED_VALUE = 0
 
+        GREENL = []
+        YELLOWL = []
+        REDL = []
+
         for prod in PRODList:
             d1 = list(filter(lambda d: d["PROD_NBR"] == prod["PROD_NBR"], EFAData))
             targrt = 0.003
@@ -1477,10 +1481,14 @@ class INTKPI(BaseType):
             if len(checkTargrt) != 0:
                 if len(checkQTY) != 0:
                     RED_VALUE += 1
+                    REDL.append(prod)
                 else:
                     YELLOW_VALUE += 1
+                    YELLOWL.append(prod)
             else:
                 GREEN_VALUE += 1  
+                GREENL.append(prod)
+                
 
         returnData = {
             "CLASS_TYPE": "EFA",
