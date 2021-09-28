@@ -337,7 +337,8 @@ class INTKPI(BaseType):
                 ]
 
                 efaData = self._getEFAData(OPERDATA)
-                groupEFAData = self._groupEFAData(efaData)
+                groupEFAData = self._groupEFAData(
+                    efaData["dData"], efaData["pData"])
                 returnData = self._calEFAData(groupEFAData)
 
                 # 存到 redis 暫存
@@ -1254,23 +1255,77 @@ class INTKPI(BaseType):
         for x in OPERDATA:
             OPERList.append(f'{x.get("OPER")}')
 
-        EFA_Aggregate = [
-            {
-                "$match": {
-                    "COMPANY_CODE": tmpCOMPANY_CODE,
-                    "SITE": tmpSITE,
-                    "FACTORY_ID": tmpFACTORY_ID,
-                    "ACCT_DATE": tmpACCT_DATE,
-                    "MAIN_WC": {"$in": OPERList}
+        passAggregate = []
+        deftAggregate = []
+
+        #pass
+        passMatch1 = {
+            "$match": {
+                "COMPANY_CODE": tmpCOMPANY_CODE,
+                "SITE": tmpSITE,
+                "FACTORY_ID": tmpFACTORY_ID,
+                "ACCT_DATE": tmpACCT_DATE,
+                "MAIN_WC": {"$in": OPERList}
+            }
+        }
+        passGroup1 = {
+            "$group": {
+                "_id": {
+                    "COMPANY_CODE": "$COMPANY_CODE",
+                    "SITE": "$SITE",
+                    "FACTORY_ID": "$FACTORY_ID",
+                    "PROD_NBR": "$PROD_NBR",
+                    "ACCT_DATE": "$ACCT_DATE",
+                    "APPLICATION": "$APPLICATION",
+                    "MAIN_WC": "$MAIN_WC"
+                },
+                "PASS_QTY": {
+                    "$sum": {"$toInt": "$QTY"}
                 }
-            },
-            {
+            }
+        }
+        passProject1 = {
+            "$project": {
+                "_id": 0,
+                "COMPANY_CODE": "$_id.COMPANY_CODE",
+                "SITE": "$_id.SITE",
+                "FACTORY_ID": "$_id.FACTORY_ID",
+                "PROD_NBR": "$_id.PROD_NBR",
+                "ACCT_DATE": "$_id.ACCT_DATE",
+                "APPLICATION": "$_id.APPLICATION",
+                "MAIN_WC": "$_id.MAIN_WC",
+                "PASS_QTY": "$PASS_QTY"
+            }
+        }
+        passSort = {
+            "$sort": {
+                "COMPANY_CODE": 1,
+                "SITE": 1,
+                "FACTORY_ID": 1,
+                "PROD_NBR": 1,
+                "ACCT_DATE": 1,
+                "MAIN_WC": 1,
+                "APPLICATION": 1
+            }
+        }
+
+        #deft
+        deftMatch1 = {
+            "$match": {
+                "COMPANY_CODE": tmpCOMPANY_CODE,
+                "SITE": tmpSITE,
+                "FACTORY_ID": tmpFACTORY_ID,
+                "ACCT_DATE": tmpACCT_DATE,
+                "MAIN_WC": {"$in": OPERList}
+            }
+        }
+        deftlookup1 ={
                 "$lookup": {
                     "from": "deftCodeView",
-                            "as": "deftCodeList",
-                            "let": {
-                                "dfctCode": "$DFCT_CODE"
-                            },
+                    "as": "deftCodeList",
+                    "let": {
+                        "dfctCode": "$DFCT_CODE"
+                    },
                     "pipeline": [
                                 {
                                     "$match": {
@@ -1293,142 +1348,74 @@ class INTKPI(BaseType):
                                 }
                             ]
                 }
-            },
-            {
+            }
+        deftunwind1 = {
                 "$unwind": "$deftCodeList"
-            },
-            {
-                "$group": {
-                    "_id": {
-                        "APPLICATION" : "$APPLICATION",
-                        "PROD_NBR": "$PROD_NBR",
-                        "MAIN_WC": "$MAIN_WC"
-                    },
-                    "deftQty": {
-                        "$sum": {"$toInt": "$QTY"}
-                    }
-                }
-            },
-            {
-                "$addFields": {
-                    "APPLICATION" : "$_id.APPLICATION",
-                    "PROD_NBR": "$_id.PROD_NBR",
-                     "MAIN_WC": "$_id.MAIN_WC",
-                    "deftQty": "$deftQty",
-                    "passQty": 0
-                }
-            },
-            {
-                "$project": {
-                    "_id": 0
-                }
-            },
-            {
-                "$unionWith": {
-                    "coll": "passHisAndCurrent",
-                            "pipeline": [
-                                {
-                                    "$match": {
-                                        "COMPANY_CODE": tmpCOMPANY_CODE,
-                                        "SITE": tmpSITE,
-                                        "FACTORY_ID": tmpFACTORY_ID,
-                                        "ACCT_DATE": tmpACCT_DATE,
-                                        "MAIN_WC": {"$in": OPERList}
-                                    }
-                                },
-                                {
-                                    "$group": {
-                                        "_id": {
-                                            "APPLICATION" : "$APPLICATION",
-                                            "PROD_NBR": "$PROD_NBR",                                            
-                                            "MAIN_WC": "$MAIN_WC"
-                                        },
-                                        "passQty": {
-                                            "$sum": {
-                                                "$toInt": "$QTY"
-                                            }
-                                        }
-                                    }
-                                },
-                                {
-                                    "$addFields": {
-                                        "APPLICATION" : "$_id.APPLICATION",
-                                        "PROD_NBR": "$_id.PROD_NBR",
-                                        "MAIN_WC": "$_id.MAIN_WC",
-                                        "passQty": "$passQty",
-                                        "deftQty": 0
-                                    }
-                                },
-                                {
-                                    "$project": {
-                                        "_id": 0
-                                    }
-                                }
-                            ]
-                }
-            },
-            {
-                "$group": {
-                    "_id": {
-                        "APPLICATION" : "$APPLICATION",
-                        "PROD_NBR": "$PROD_NBR",
-                        "MAIN_WC": "$MAIN_WC"
-                    },
-                    "deftQty": {
-                        "$sum": "$deftQty"
-                    },
-                    "passQty": {
-                        "$sum": "$passQty"
-                    }
-                }
-            },
-            {
-                "$addFields": {
-                    "APPLICATION" : "$_id.APPLICATION",
-                    "PROD_NBR": "$_id.PROD_NBR",
-                    "MAIN_WC": "$_id.MAIN_WC",
-                    "EFA": {
-                        "$cond": [
-                            {
-                                "$eq": [
-                                    "$passQty",
-                                    0
-                                ]
-                            },
-                            0,
-                            {
-                                "$divide": [
-                                    {"$toDecimal":"$deftQty"},
-                                    {"$toDecimal":"$passQty"}
-                                ]
-                            }
-                        ]
-                    }
-                }
-            },
-            {
-                "$project": {
-                    "_id": 0
-                }
-            },
-            {
-                "$sort": {
-                    "APPLICATION" : 1,
-                    "PROD_NBR": 1
+            }
+
+        deftGroup1 = {
+            "$group": {
+                "_id": {
+                    "COMPANY_CODE": "$COMPANY_CODE",
+                    "SITE": "$SITE",
+                    "FACTORY_ID": "$FACTORY_ID",
+                    "PROD_NBR": "$PROD_NBR",
+                    "ACCT_DATE": "$ACCT_DATE",
+                    "APPLICATION": "$APPLICATION",
+                    "MAIN_WC": "$MAIN_WC",
+                    "DFCT_CODE": "$DFCT_CODE"
+                },
+                "DEFT_QTY": {
+                    "$sum": {"$toInt": "$QTY"}
                 }
             }
-        ]
+        }
+        deftProject1 = {
+            "$project": {
+                "_id": 0,
+                "COMPANY_CODE": "$_id.COMPANY_CODE",
+                "SITE": "$_id.SITE",
+                "FACTORY_ID": "$_id.FACTORY_ID",
+                "PROD_NBR": "$_id.PROD_NBR",
+                "ACCT_DATE": "$_id.ACCT_DATE",
+                "APPLICATION": "$_id.APPLICATION",
+                "MAIN_WC": "$_id.MAIN_WC",
+                "DFCT_CODE": "$_id.DFCT_CODE",
+                "DEFT_QTY": "$DEFT_QTY"
+            }
+        }
+        deftSort = {
+            "$sort": {
+                "COMPANY_CODE": 1,
+                "SITE": 1,
+                "FACTORY_ID": 1,
+                "PROD_NBR": 1,
+                "ACCT_DATE": 1,
+                "MAIN_WC": 1,
+                "APPLICATION": 1
+            }
+        }
 
         if tmpAPPLICATION != "ALL":
-            EFA_Aggregate[0]["$match"]["APPLICATION"] = tmpAPPLICATION
-            EFA_Aggregate[6]["$unionWith"]["pipeline"][0]["$match"]["APPLICATION"] = tmpAPPLICATION
+            passMatch1["$match"]["APPLICATION"] = tmpAPPLICATION
+            deftMatch1["$match"]["APPLICATION"] = tmpAPPLICATION
+
+        passAggregate.extend([passMatch1, passGroup1, passProject1, passSort])
+        deftAggregate.extend([deftMatch1, deftlookup1, deftunwind1, deftGroup1, deftProject1, deftSort])
        
         try:
             self.getMongoConnection()
             self.setMongoDb("IAMP")
+            self.setMongoCollection("passHisAndCurrent")
+            pData = self.aggregate(passAggregate)
             self.setMongoCollection("deftHisAndCurrent")
-            returnData = self.aggregate(EFA_Aggregate)
+            dData = self.aggregate(deftAggregate)
             self.closeMongoConncetion()
+
+            returnData = {
+                "pData": pData,
+                "dData": dData
+            }
             return returnData
 
         except Exception as e:
@@ -1443,11 +1430,57 @@ class INTKPI(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
-    def _groupEFAData(self, EFAData):
-        returnData = []
-        for x in EFAData:
-            returnData.append(x)
-        return returnData
+    def _groupEFAData(self, dData, pData):
+        deftData = []
+        for d in dData:
+            deftData.append(d)
+        passData = []
+        for p in pData:
+            passData.append(p)
+        data = []
+        oData = {}
+        for p in passData:
+            d = list(filter(lambda d: d["PROD_NBR"]== p["PROD_NBR"]
+                and d["MAIN_WC"]== p["MAIN_WC"], deftData))
+            if d == []:            
+                oData["COMPANY_CODE"] = copy.deepcopy(p["COMPANY_CODE"])
+                oData["SITE"] = copy.deepcopy(p["SITE"])
+                oData["FACTORY_ID"] = copy.deepcopy(p["FACTORY_ID"])
+                oData["PROD_NBR"] = copy.deepcopy(p["PROD_NBR"])
+                oData["ACCT_DATE"] = datetime.datetime.strptime(
+                    p["ACCT_DATE"], '%Y%m%d').strftime('%Y-%m-%d')
+                if "APPLICATION" in p.keys():
+                    oData["APPLICATION"] = copy.deepcopy(p["APPLICATION"])
+                else:
+                    oData["APPLICATION"] = None
+                oData["MAIN_WC"] = copy.deepcopy(p["MAIN_WC"])
+                oData["PASS_QTY"] = copy.deepcopy(p["PASS_QTY"])
+                oData["DFCT_CODE"] = ""
+                oData["DEFT_QTY"] = 0.00
+                oData["DEFECT_RATE"] = 0.00
+                data.append(copy.deepcopy(oData))                
+                oData = {}
+            else:
+                for dd in d:
+                    oData["COMPANY_CODE"] = copy.deepcopy(p["COMPANY_CODE"])
+                    oData["SITE"] = copy.deepcopy(p["SITE"])
+                    oData["FACTORY_ID"] = copy.deepcopy(p["FACTORY_ID"])
+                    oData["PROD_NBR"] = copy.deepcopy(p["PROD_NBR"])
+                    oData["ACCT_DATE"] = datetime.datetime.strptime(
+                        p["ACCT_DATE"], '%Y%m%d').strftime('%Y-%m-%d')
+                    if "APPLICATION" in p.keys():
+                        oData["APPLICATION"] = copy.deepcopy(p["APPLICATION"])
+                    else:
+                        oData["APPLICATION"] = None
+                    oData["MAIN_WC"] = copy.deepcopy(p["MAIN_WC"])
+                    oData["PASS_QTY"] = copy.deepcopy(p["PASS_QTY"])
+                    oData["DFCT_CODE"] = copy.deepcopy(dd["DFCT_CODE"])
+                    oData["DEFT_QTY"] = copy.deepcopy(dd["DEFT_QTY"])
+                    oData["DEFECT_RATE"] = round(
+                        oData["DEFT_QTY"] / oData["PASS_QTY"], 4)
+                    data.append(copy.deepcopy(oData))
+                    oData = {}
+        return data
 
     def _calEFAData(self, EFAData):
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
@@ -1475,8 +1508,8 @@ class INTKPI(BaseType):
                 targrt = getLimitData[prod["APPLICATION"]]["target"]
                 targrtQTY = getLimitData[prod["APPLICATION"]]["qytlim"]           
             
-            checkTargrt = list(filter(lambda d: d["EFA"].to_decimal() >= targrt, d1))
-            checkQTY = list(filter(lambda d: d["passQty"] >= targrtQTY, checkTargrt))
+            checkTargrt = list(filter(lambda d: d["DEFECT_RATE"] >= targrt, d1))
+            checkQTY = list(filter(lambda d: d["PASS_QTY"] >= targrtQTY, checkTargrt))
 
             if len(checkTargrt) != 0:
                 if len(checkQTY) != 0:

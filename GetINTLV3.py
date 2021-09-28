@@ -421,7 +421,7 @@ class INTLV3(BaseType):
                 }
                 getFabData = mshipDATA[tmpOPER]   
 
-                dataRange =  self._dataRange(tmpACCT_DATE)
+                dataRange =  self._dataRangeMin(tmpACCT_DATE)
 
                 n1d_DATA = self._getMSHIPLV2LINE(getFabData, tmpPROD_NBR, dataRange["n1d"], dataRange["n1d_array"], 11)
                 n2d_DATA = self._getMSHIPLV2LINE(getFabData, tmpPROD_NBR, dataRange["n2d"], dataRange["n2d_array"], 10)
@@ -476,7 +476,7 @@ class INTLV3(BaseType):
             elif tmpKPITYPE == "MSHIPLV2LINEDG":                
                 expirTimeKey = tmpFACTORY_ID + '_SCRP'
 
-                dataRange =  self._dataRange(tmpACCT_DATE)
+                dataRange =  self._dataRangeMin(tmpACCT_DATE)
 
                 n1d_DATA = self._getMSHIPLV2LINEDG(tmpPROD_NBR, dataRange["n1d"], dataRange["n1d_array"], 11)
                 n2d_DATA = self._getMSHIPLV2LINEDG(tmpPROD_NBR, dataRange["n2d"], dataRange["n2d_array"], 10)
@@ -588,6 +588,80 @@ class INTLV3(BaseType):
             "n5d": d.strftime(n5d_sd,'%Y%m%d'),
             "n5d_array": self._dataArray(n5d_sd,n5d_sd),
             "n6d": d.strftime(n6d_sd,'%Y%m%d'),
+            "n6d_array": self._dataArray(n6d_sd,n6d_sd),
+            "n1w": f'W {d.strftime(n1w_start,"%U")}',
+            "n1w_start": d.strftime(n1w_start,'%Y%m%d %U %j'),
+            "n1w_end": d.strftime(n1w_end,'%Y%m%d %U %j'),
+            "n1w_array": self._dataArray(n1w_start,n1w_end),
+            "n2w": f'W {d.strftime(n2w_start,"%U")}',
+            "n2w_start": d.strftime(n2w_start,'%Y%m%d %U %j'),
+            "n2w_end": d.strftime(n2w_end,'%Y%m%d %U %j'),
+            "n2w_array": self._dataArray(n2w_start,n2w_end),
+            "n3w": f'W {d.strftime(n3w_start,"%U")}',
+            "n3w_start": d.strftime(n3w_start,'%Y%m%d %U %j'),
+            "n3w_end": d.strftime(n3w_end,'%Y%m%d %U %j'),
+            "n3w_array": self._dataArray(n3w_start,n3w_end),
+            "n1m": f'{d.strftime(n1m_start,"%Y%m")}',
+            "n1m_start": d.strftime(n1m_start,'%Y%m%d %U %j'),
+            "n1m_end": d.strftime(n1m_end,'%Y%m%d %U %j'),
+            "n1m_array": self._dataArray(n1m_start,n1m_end),
+            "n2m": f'{d.strftime(n2m_start,"%Y%m")}',
+            "n2m_start": d.strftime(n2m_start,'%Y%m%d %U %j'),
+            "n2m_end": d.strftime(n2m_end,'%Y%m%d %U %j'),
+            "n2m_array": self._dataArray(n2m_start,n2m_end),
+            "n1s": f'{d.strftime(n1s_start,"%Y%m")} - {d.strftime(n1s_end,"%Y%m")}',
+            "n1s_start": d.strftime(n1s_start,'%Y%m%d %U %j'),
+            "n1s_end": d.strftime(n1s_end,'%Y%m%d %U %j'),
+            "n1s_array": self._dataArray(n1s_start,n1s_end),
+        }
+        return returnData
+
+    def _dataRangeMin(self, ACCT_DATE):
+        d = datetime.datetime
+        #時間 array 組成
+        day_delta = datetime.timedelta(days=1)
+        n1d_sd = d.strptime(ACCT_DATE,'%Y%m%d')
+        n2d_sd = n1d_sd - 1*day_delta
+        n3d_sd = n1d_sd - 2*day_delta
+        n4d_sd = n1d_sd - 3*day_delta
+        n5d_sd = n1d_sd - 4*day_delta
+        n6d_sd = n1d_sd - 5*day_delta
+        
+        #3周
+        weeks_delta = datetime.timedelta(weeks=1)
+        #計算是本周哪一天要扣除
+        #因pytohn 一周開始是周一 故需要多扣一天
+        weekcount = (n1d_sd.weekday() +1) % 7
+        n1w_start = n1d_sd - weeks_delta - datetime.timedelta(days=weekcount)
+        n1w_end = n1w_start + datetime.timedelta(days=6)
+        n2w_start = n1d_sd - 2*weeks_delta - datetime.timedelta(days=weekcount) 
+        n2w_end = n2w_start + datetime.timedelta(days=6)
+        n3w_start = n1d_sd - 3*weeks_delta - datetime.timedelta(days=weekcount) 
+        n3w_end = n3w_start + datetime.timedelta(days=6)
+
+        # 兩月
+        n1d_sd_mf = n1d_sd.replace(day=1)
+        n1m_end = n1d_sd_mf - day_delta
+        n1m_start = n1m_end.replace(day=1)
+        n2m_end = n1m_start - day_delta
+        n2m_start = n2m_end.replace(day=1)
+
+        #一季
+        n1s_end = n2m_start - day_delta
+        n1s_start = n1s_end.replace(month= n1s_end.month-2).replace(day=1)
+        
+        returnData = {
+            "n1d": d.strftime(n1d_sd,'%m%d'),
+            "n1d_array": self._dataArray(n1d_sd,n1d_sd),
+            "n2d": d.strftime(n2d_sd,'%m%d'),
+            "n2d_array": self._dataArray(n2d_sd,n2d_sd),
+            "n3d": d.strftime(n3d_sd,'%m%d'),
+            "n3d_array": self._dataArray(n3d_sd,n3d_sd),
+            "n4d": d.strftime(n4d_sd,'%m%d'),
+            "n4d_array": self._dataArray(n4d_sd,n4d_sd),
+            "n5d": d.strftime(n5d_sd,'%m%d'),
+            "n5d_array": self._dataArray(n5d_sd,n5d_sd),
+            "n6d": d.strftime(n6d_sd,'%m%d'),
             "n6d_array": self._dataArray(n6d_sd,n6d_sd),
             "n1w": f'W {d.strftime(n1w_start,"%U")}',
             "n1w_start": d.strftime(n1w_start,'%Y%m%d %U %j'),
