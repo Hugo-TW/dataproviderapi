@@ -2035,10 +2035,10 @@ INTRelationML = api.model('GetINTRelation', {
     'SITE': fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
     'FACTORY_ID': fields.String( required = True, description = 'FACTORY_ID', default = 'J001', example = 'J001'),
     'APPLICATION': fields.String( required = True, description = 'APPLICATION', default = 'ALL', example = 'ALL'),
-    'ACCT_DATE': fields.String( required = True, description = 'ACCT_DATE', default = '20210801', example = '20210801'),
+    'ACCT_DATE': fields.String( required = True, description = 'ACCT_DATE', default = '20210715', example = '20210715'),
     'PROD_NBR' : fields.String( required = True, description = '機種編碼', default = 'GP101KZD0210S', example = 'GP101KZD0210S'), 
     'OPER' : fields.String( required = True, description = '站點', default = 'PCBI', example = 'PCBI'), 
-    'CHECKCODE' : fields.String( required = False, description = 'Defect or Reason Code', default = 'FACFI-1', example = 'FACFI-1') 
+    'CHECKCODE' : fields.String( required = True, description = 'Defect or Reason Code', default = 'FAFD0-1', example = 'FAFD0-1') 
 })
 @INTRelationNs.route('', methods = ['POST'])
 @INTRelationNs.response(200, 'Sucess')
@@ -2062,7 +2062,9 @@ class getINTRelation(Resource):
 
         jsonData = BaseType.validateType(request.json)
         
-        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData or "FUNCTYPE" not in jsonData or "ACCT_DATE" not in jsonData or 'PROD_NBR' not in jsonData or 'OPER' not in jsonData:
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData \
+            or "FUNCTYPE" not in jsonData or "ACCT_DATE" not in jsonData or 'PROD_NBR' not in jsonData \
+            or 'OPER' not in jsonData or 'CHECKCODE' not in jsonData:
             return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
         v = INTRelation(jsonData)
         return v.getData()

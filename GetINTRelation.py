@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 import json
 import operator
-from re import X
 import sys
 import traceback
 import time
 import datetime
 import copy
+import gc
+from re import X
 from BaseType import BaseType
 from Dao import DaoHelper,ReadConfig
 from decimal import Decimal, ROUND_HALF_UP
-
 
 class INTRelation(BaseType):
     def __init__(self, jsonData):
@@ -20,6 +20,7 @@ class INTRelation(BaseType):
         self.jsonData = jsonData
         #INT_ORACLEDB_PROD / INT_ORACLEDB_TEST
         self.DBconfig = "INT_ORACLEDB_TEST"
+        self.BASE_GROUPList = []
 
     def getData(self):
         try:
@@ -40,7 +41,7 @@ class INTRelation(BaseType):
             tmpPROD_NBR = self.jsonData["PROD_NBR"]
             tmpOPER = self.jsonData["OPER"] # or RESPTYPE
             # Defect or Reason Code 
-            tmpCHECKCODE = self.jsonData["CHECKCODE"] if "CHECKCODE" in self.jsonData else None
+            tmpCHECKCODE = self.jsonData["CHECKCODE"]
             expirSecond = 3600
 
             #redisKey
@@ -53,8 +54,7 @@ class INTRelation(BaseType):
             tmp.append(tmpACCT_DATE)
             tmp.append(tmpPROD_NBR)
             tmp.append(tmpOPER)
-            if tmpCHECKCODE != None:
-                tmp.append(tmpCHECKCODE)
+            tmp.append(tmpCHECKCODE)
             redisKey = bottomLine.join(tmp)
 
             if tmpFACTORY_ID not in ["J001"]:
@@ -67,34 +67,123 @@ class INTRelation(BaseType):
                 return json.loads(self.getRedisData(redisKey)), 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type', "Access-Control-Expose-Headers": "Expires,DataSource", "Expires": time.mktime((datetime.datetime.now() + datetime.timedelta(seconds=expirSecond)).timetuple()), "DataSource": "Redis"}
             """
             if tmpFuncType == "REASON":
-                #取得 當日 panel his
-                whereString = f" PROD_NBR= '{tmpPROD_NBR}' "
-                sql = f"with panel_his_daily as (select * from INTMP_DB.PANELHISDAILY where {whereString}), " \
-                      f"panel_his_mat as (select * from INTMP_DB.PANELHISDAILY_MAT where {whereString}) " \
-                      "select * from panel_his_daily order by PANELID, TRANSDT asc"
+                #region 準備數據
+                #comm data: 權種數據
+                whereString = f" REASONCODE = '{tmpCHECKCODE}' "
+                sql = "select REASONCODE, COMPARECODE, WEIGHT from INTMP_DB.REASON_WEIGHT " \
+                      f"where {whereString} "\
+                      "order by REASONCODE, COMPARECODE "                 
+                self.getConnection(self.DBconfig)
+                commData = self.Select(sql)
+                self.closeConnection()
+                weightData = {}
+                if(len(commData) != 0):
+                    for da in commData:
+                        weightData[da[1]] = float(da[2])
+                del commData
+                gc.collect()
+
+                #step0: 取得 與 defect / Reason 相關的 panel id
+
+                #step1: 取得 panel his
+                whereString = f" PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' "
+                sql = f"with panel_his_daily as (select * from INTMP_DB.PANELHISDAILY where {whereString}) " \
+                      "select PROD_NBR, MFGDATE, PANELID, OPER, TRANSDT, OPERATOR, EQPID, RW_COUNT, " \
+                      "OUTPUT_FG from panel_his_daily order by PANELID, TRANSDT asc"
                  
                 self.getConnection(self.DBconfig)
-                data = self.Select(sql)
+                data1 = self.Select(sql)
                 self.closeConnection()
-                calData = []
-                if(len(data) != 0):
-                    for da in data:
+                hisData = []
+                if(len(data1) != 0):
+                    for da in data1:
                         d = datetime.datetime
-                        TIMECLUST_d = d.strptime(da[3],'%Y%m%d%H%M%S')
+                        TIMECLUST_d = d.strptime(da[4],'%Y%m%d%H%M%S')
                         TIMECLUST = d.strftime(TIMECLUST_d,'%Y%m%d%H')
                         datadict={                        
-                            "PROD_NBR" : da[5],                        
-                            "MFGDATE" : da[2],
-                            "PANELID" : da[0],
-                            "OPER" : da[1],
-                            "TRANSDT" : da[3],
-                            "OPERATOR" : da[7],
-                            "EQPID" : da[8],
-                            "RW_COUNT" : da[9],
-                            "OUTPUT_FG" : da[4],
+                            "PROD_NBR" : da[0],                        
+                            "MFGDATE" : da[1],
+                            "PANELID" : da[2],
+                            "OPER" : da[3],
+                            "TRANSDT" : da[4],
+                            "OPERATOR" : da[5],
+                            "EQPID" : da[6],
+                            "RW_COUNT" : da[7],
+                            "OUTPUT_FG" : da[8],
                             "TIMECLUST" : TIMECLUST
                         }
-                        calData.append(datadict)
+                        hisData.append(datadict)
+                del data1
+                gc.collect()
+
+                #step2: 取得panel use mat
+                whereString = f" PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' "
+                sql = f"with panel_his_mat as (select * from INTMP_DB.PANELHISDAILY_MAT where {whereString}) " \
+                      "select PROD_NBR, MFGDATE, PANELID, OPER, MAT_ID, MAT_LOTID from panel_his_mat " \
+                      "order by MAT_ID, MAT_LOTID asc"
+                 
+                self.getConnection(self.DBconfig)
+                data2 = self.Select(sql)
+                self.closeConnection()
+                matData = []
+                if(len(data2) != 0):
+                    for da in data2:
+                        datadict={                        
+                            "PROD_NBR" : da[0],                        
+                            "MFGDATE" : da[1],
+                            "PANELID" : da[2],
+                            "OPER" : da[3],                            
+                            "MAT_ID_4" : da[4][0:4],
+                            "MAT_ID" : da[4],
+                            "MAT_LOTID" : da[5],
+                        }
+                        matData.append(datadict)
+                del data2
+                gc.collect()
+                #endregion
+
+                #temp list
+                #分群
+                self.BASE_GROUPList = self._Group_OPERATOR_OPER_EQPID_TIMECLUST_PANELID_List(hisData)
+                PANELID_Group = self._Group_PANELID_List()                
+                PANEL_TOTAL_COUNT = len(PANELID_Group)
+
+                #人         
+                OPERATOR_OPER_PANELID_Group = self._Group_OPERATOR_OPER_PANELID_List()
+                OPERATOR_OPER_EQPID_PANELID_Group = self._Group_OPERATOR_OPER_EQPID_PANELID_List()  
+                notInOPER1 = ["1050","1100","1200","2110"]
+                OPERATOR_OPER_Count = self._Count_OPERATOR_OPER_List(notInOPER1, OPERATOR_OPER_PANELID_Group)
+                OPERATOR_OPER_EQPID_Count = self._Count_OPERATOR_OPER_EQPID_List(notInOPER1,OPERATOR_OPER_EQPID_PANELID_Group)
+                OPER_Count = self._Count_OPER_List(notInOPER1,OPERATOR_OPER_Count)   
+                o_A_Limit = self._OPERATOR_OPER_Limit(OPER_Count, PANEL_TOTAL_COUNT)
+                o_T_Limit = 0.3
+                node_cal_OPERATOR_OPER = self._calNode_OPERATOR_OPER(OPERATOR_OPER_Count, PANEL_TOTAL_COUNT, o_A_Limit, o_T_Limit, weightData)
+                link_cal_OPERATOR_OPER = self._calLink_OPERATOR_OPER(node_cal_OPERATOR_OPER, OPERATOR_OPER_EQPID_Count)
+
+                #人時                
+                OPERATOR_OPER_TIMECLUST_PANELID_Group = self._Group_OPERATOR_OPER_TIMECLUST_PANELID_List()  
+                notInOPER2 = ["1050","1100","1200","2110"]
+                OPERATOR_OPER_TIMECLUST_Count = self._Count_OPERATOR_OPER_TIMECLUST_List(notInOPER2, OPERATOR_OPER_TIMECLUST_PANELID_Group)
+                node_cal_OPERATOR_TIMECLUST = self._calNode_OPERATOR_TIMECLUSTR(OPERATOR_OPER_TIMECLUST_Count, PANEL_TOTAL_COUNT)
+                link_cal_OPERATOR_TIMECLUST = self._calLink_OPERATOR_TIMECLUSTR(node_cal_OPERATOR_TIMECLUST)
+
+                #機時                
+                EQPID_OPER_TIMECLUST_PANELID_Group = self._Group_EQPID_OPER_TIMECLUST_PANELID_List() 
+                notInOPER3 = ["1050","1100","1200","2110"]
+                EQPID_OPER_TIMECLUST_Count = self._Count_EQPID_OPER_TIMECLUST_List(notInOPER3, EQPID_OPER_TIMECLUST_PANELID_Group)
+                node_cal_EQPID_TIMECLUST = self._calNode_EQPID_TIMECLUSTR(EQPID_OPER_TIMECLUST_Count, PANEL_TOTAL_COUNT)
+                link_cal_EQPID_TIMECLUST = self._calLink_EQPID_TIMECLUSTR(node_cal_EQPID_TIMECLUST)
+
+                #機
+                EQPID_OPER_PANELID_Group = self._Group_EQPID_OPER_PANELID_List()
+                notInOPER4 = ["1050","1100","2110"]
+                EQPID_OPER_Count = self._Count_EQPID_OPER_List(notInOPER4, EQPID_OPER_PANELID_Group)
+                OPER_Count = self._Count_OPER_List(notInOPER4,EQPID_OPER_Count)   
+                g_A_Limit = self._OPERATOR_OPER_Limit(OPER_Count, PANEL_TOTAL_COUNT)
+                g_T_Limit = 0.3
+                node_cal_EQPID_OPER = self._calNode_EQPID_OPER(EQPID_OPER_Count, PANEL_TOTAL_COUNT, g_A_Limit, g_T_Limit, weightData)
+                link_cal_EQPID_OPER = self._calLink_EQPID_OPER(node_cal_EQPID_OPER)
+
 
                 C_DESC = self._code2Desc(tmpCHECKCODE)
                 returnData = {                    
@@ -108,7 +197,10 @@ class INTRelation(BaseType):
                     "OPER": tmpOPER,
                     "C_CODE": tmpCHECKCODE,
                     "C_DESCR": C_DESC if C_DESC != None else tmpCHECKCODE,
-                    "DATASERIES": calData
+                    "TEST1": node_cal_EQPID_OPER, 
+                    "TEST2": link_cal_EQPID_OPER, 
+                    "nodes": OPER_Count,
+                    "links": ""
                 }
                 """
                 self.getRedisConnection()
@@ -137,6 +229,10 @@ class INTRelation(BaseType):
             self.writeError(
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return {'Result': 'NG', 'Reason': f'{funcName} erro'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+ 
+    def _filterListbyOPER(self, LIST, OPER):
+        d = list(filter(lambda d : d["OPER"] != OPER, LIST))
+        return d
     
     def _code2Desc(self, C_CODE):
         sql = f"select REASONCODE_DESC from INTMP_DB.REASONCODE where REASONCODE = '{C_CODE}'"
@@ -148,5 +244,407 @@ class INTRelation(BaseType):
         if(len(data) != 0):
             returnString = data[0][0]
         return returnString
+    
+    def _oper2Desc(self, OPER):
+        sql = f"select OPER_DESC from INTMP_DB.OPER where OPER_ID_C = '{OPER}'"
+        #INT_ORACLEDB_PROD
+        self.getConnection(self.DBconfig)
+        data = self.Select(sql)
+        self.closeConnection()
+        returnString = None
+        if(len(data) != 0):
+            returnString = data[0][0]
+        return returnString
+
+    def _Group_PANELID_List(self):
+        PANELIDList = []
+        for x in self.BASE_GROUPList:
+            if x["PANELID"] not in PANELIDList:
+                PANELIDList.append(x["PANELID"])
+        return PANELIDList
+    
+    def _Group_OPERATOR_OPER_EQPID_TIMECLUST_PANELID_List(self, DATA):
+        List = []
+        for x in DATA:
+            if {"OPERATOR": x["OPERATOR"], "OPER": x["OPER"], \
+                 "EQPID": x["EQPID"], "TIMECLUST": x["TIMECLUST"], "PANELID": x["PANELID"]} not in List:
+                data = {
+                        "OPERATOR": x["OPERATOR"],
+                        "OPER" : x["OPER"], 
+                        "EQPID" : x["EQPID"],
+                        "TIMECLUST": x["TIMECLUST"],
+                        "PANELID": x["PANELID"]
+                    }
+                List.append(data)
+        return List
+
+    def _Group_OPERATOR_OPER_TIMECLUST_PANELID_List(self):
+        List = []
+        for x in self.BASE_GROUPList:
+            if {"OPERATOR": x["OPERATOR"], "OPER": x["OPER"], \
+                 "TIMECLUST": x["TIMECLUST"], "PANELID": x["PANELID"]} not in List:
+                data = {
+                        "OPERATOR": x["OPERATOR"],
+                        "OPER" : x["OPER"], 
+                        "TIMECLUST" : x["TIMECLUST"],
+                        "PANELID": x["PANELID"]
+                    }
+                List.append(data)
+        return List
+
+    def _Group_EQPID_OPER_TIMECLUST_PANELID_List(self):
+        List = []
+        for x in self.BASE_GROUPList:
+            if {"EQPID": x["EQPID"], "OPER": x["OPER"], \
+                 "TIMECLUST": x["TIMECLUST"], "PANELID": x["PANELID"]} not in List:
+                data = {
+                        "EQPID": x["EQPID"],
+                        "OPER" : x["OPER"], 
+                        "TIMECLUST" : x["TIMECLUST"],
+                        "PANELID": x["PANELID"]
+                    }
+                List.append(data)
+        return List
+
+    def _Group_OPERATOR_OPER_EQPID_PANELID_List(self):
+        List = []
+        for x in self.BASE_GROUPList:
+            if {"OPERATOR": x["OPERATOR"], "OPER": x["OPER"], \
+                 "EQPID": x["EQPID"], "PANELID": x["PANELID"]} not in List:
+                data = {
+                        "OPERATOR": x["OPERATOR"],
+                        "OPER" : x["OPER"], 
+                        "EQPID" : x["EQPID"],
+                        "PANELID": x["PANELID"]
+                    }
+                List.append(data)
+        return List
+
+    def _Group_OPERATOR_OPER_PANELID_List(self):
+        List = []
+        for x in self.BASE_GROUPList:
+            if {"OPERATOR": x["OPERATOR"], "OPER": x["OPER"], "PANELID": x["PANELID"]} not in List:
+                data = {
+                        "OPERATOR": x["OPERATOR"],
+                        "OPER" : x["OPER"], 
+                        "PANELID" : x["PANELID"]
+                        }
+                List.append(data)
+        return List
+    
+    def _Group_EQPID_OPER_PANELID_List(self):
+        List = []
+        for x in self.BASE_GROUPList:
+            if {"EQPID": x["EQPID"], "OPER": x["OPER"], "PANELID": x["PANELID"]} not in List:
+                data = {
+                        "EQPID": x["EQPID"],
+                        "OPER" : x["OPER"], 
+                        "PANELID" : x["PANELID"]
+                        }
+                List.append(data)
+        return List
+
+    def _Group_OPERATOR_OPER_EQPID_List(self):
+        List = []
+        for x in self.BASE_GROUPList:
+            if {"OPERATOR": x["OPERATOR"], "OPER": x["OPER"], "EQPID": x["EQPID"]} not in List:
+                data = {
+                        "OPERATOR": x["OPERATOR"],
+                        "OPER" : x["OPER"], 
+                        "EQPID" : x["EQPID"]
+                        }
+                List.append(data)
+        return List
+
+    def _Count_OPERATOR_OPER_TIMECLUST_List(self, notInOPER, DATA):
+        List = []
+        for x in DATA:
+            if x["OPER"] not in notInOPER:
+                d = list(filter(lambda d: d["OPERATOR"] == x["OPERATOR"] and \
+                    d["OPER"] == x["OPER"] and d["TIMECLUST"] == x["TIMECLUST"], List))
+                if d == []:
+                    data = {
+                            "OPERATOR": x["OPERATOR"],
+                            "OPER" : x["OPER"],
+                            "TIMECLUST" : x["TIMECLUST"],
+                            "PANELID_COUNT": 1
+                            }
+                    List.append(data)
+                else:
+                    for cx in List:
+                        if  cx["OPERATOR"] == x["OPERATOR"] and cx["OPER"] == x["OPER"] \
+                            and cx["TIMECLUST"] == x["TIMECLUST"]:                        
+                            cx["PANELID_COUNT"] += 1
+        return List
+
+    def _Count_EQPID_OPER_TIMECLUST_List(self, notInOPER, DATA):
+        List = []
+        for x in DATA:
+            if x["OPER"] not in notInOPER:
+                d = list(filter(lambda d: d["EQPID"] == x["EQPID"] and \
+                    d["OPER"] == x["OPER"] and d["TIMECLUST"] == x["TIMECLUST"], List))
+                if d == []:
+                    data = {
+                            "EQPID": x["EQPID"],
+                            "OPER" : x["OPER"],
+                            "TIMECLUST" : x["TIMECLUST"],
+                            "PANELID_COUNT": 1
+                            }
+                    List.append(data)
+                else:
+                    for cx in List:
+                        if  cx["EQPID"] == x["EQPID"] and cx["OPER"] == x["OPER"] \
+                            and cx["TIMECLUST"] == x["TIMECLUST"]:                        
+                            cx["PANELID_COUNT"] += 1
+        return List
+
+    def _Count_OPERATOR_OPER_EQPID_List(self, notInOPER, DATA):
+        List = []
+        for x in DATA:
+            if x["OPER"] not in notInOPER:
+                d = list(filter(lambda d: d["OPERATOR"] == x["OPERATOR"] and \
+                    d["OPER"] == x["OPER"] and d["EQPID"] == x["EQPID"], List))
+                if d == []:
+                    data = {
+                            "OPERATOR": x["OPERATOR"],
+                            "OPER" : x["OPER"],
+                            "EQPID" : x["EQPID"],
+                            "PANELID_COUNT": 1
+                            }
+                    List.append(data)
+                else:
+                    for cx in List:
+                        if  cx["OPERATOR"] == x["OPERATOR"] and cx["OPER"] == x["OPER"] \
+                            and cx["EQPID"] == x["EQPID"] :                        
+                            cx["PANELID_COUNT"] += 1
+        return List
+
+    def _Count_OPERATOR_OPER_List(self, notInOPER, DATA):
+        List = []
+        for x in DATA:
+            if x["OPER"] not in notInOPER:
+                d = list(filter(lambda d: d["OPERATOR"] == x["OPERATOR"] and d["OPER"] == x["OPER"] , List))
+                if d == []:
+                    data = {
+                            "OPERATOR": x["OPERATOR"],
+                            "OPER" : x["OPER"],
+                            "PANELID_COUNT": 1
+                            }
+                    List.append(data)
+                else:
+                    for cx in List:
+                        if  cx["OPERATOR"] == x["OPERATOR"] and cx["OPER"] == x["OPER"] :                        
+                            cx["PANELID_COUNT"] += 1
+        return List
+    
+    def _Count_EQPID_OPER_List(self, notInOPER, DATA):
+        List = []
+        for x in DATA:
+            if x["OPER"] not in notInOPER:
+                d = list(filter(lambda d: d["EQPID"] == x["EQPID"] and d["OPER"] == x["OPER"] , List))
+                if d == []:
+                    data = {
+                            "EQPID": x["EQPID"],
+                            "OPER" : x["OPER"],
+                            "PANELID_COUNT": 1
+                            }
+                    List.append(data)
+                else:
+                    for cx in List:
+                        if  cx["EQPID"] == x["EQPID"] and cx["OPER"] == x["OPER"] :                        
+                            cx["PANELID_COUNT"] += 1
+        return List
+    
+
+    #OPER 出現次數
+    def _Count_OPER_List(self, notInOPER, DATA):
+        List = {}
+        for x in DATA:
+            if x["OPER"] not in notInOPER:
+                if x["OPER"] not in List:
+                    List[x["OPER"]] = 1
+                else:
+                    List[x["OPER"]] += 1
+        return List
+
+    def _OPERATOR_OPER_Limit(self, OPER_List, PANEL_TOTAL_COUNT):
+        #(PANEL_TOTAL_COUNT*70%)/(MAX(B2:N2)*35%)/PANEL_TOTAL_COUNT
+        OPER_List_MAX = max(OPER_List.values()) * 0.35
+        cal = (PANEL_TOTAL_COUNT * 0.7) / OPER_List_MAX / PANEL_TOTAL_COUNT
+        returnData = cal if cal < 0.5 else 0.5
+        return returnData
+
+    def _calNode_OPERATOR_OPER(self, OPERATOR_OPER, PANEL_TOTAL_COUNT,A_Limit, T_Limit, weightData):
+        DATASERIES = []
+        for oo in OPERATOR_OPER:
+            #aRate=>Pcs/All不良占%
+            aRate = oo["PANELID_COUNT"] / PANEL_TOTAL_COUNT
+            #bRate=>RSC權重
+            bRate = weightData.get(oo["OPER"], 0)
+            #(A*B)權重計算
+            tRate = round(aRate * bRate, 4)
+            SymbolSize = round(tRate*oo["PANELID_COUNT"])
+            if aRate >= A_Limit and tRate >= T_Limit:
+                data={
+                    "OPERATOR": f'TA_{oo["OPERATOR"]}',
+                    "OPER": oo["OPER"],
+                    "PANELID_COUNT": oo["PANELID_COUNT"],
+                    "A_Limit": A_Limit,
+                    "T_Limit": T_Limit,
+                    "aRate": aRate,
+                    "bRate": bRate,
+                    "tRate": tRate,
+                    "SymbolSize": SymbolSize,
+                    "value": oo["PANELID_COUNT"]
+                }
+                DATASERIES.append(data)
+        returnData = DATASERIES
+        return returnData
+
+    def _calLink_OPERATOR_OPER(self, node_cal_OPERATOR_OPER, OPERATOR_OPER_EQPID_Lis):
+        DATASERIES = []
+        for oo in node_cal_OPERATOR_OPER:
+            d = list(filter(lambda d: d["OPERATOR"] == oo["OPERATOR"][3:] and d["OPER"] == oo["OPER"] , OPERATOR_OPER_EQPID_Lis))
+            if d != []:
+                for dd in d:
+                    data={
+                        "Source": oo["OPERATOR"],
+                        "End": dd["EQPID"],
+                        "value": dd["PANELID_COUNT"]
+                    }
+                    DATASERIES.append(data)
+        returnData = DATASERIES
+        return returnData
+
+    def _calNode_OPERATOR_TIMECLUSTR(self, OPERATOR_TIMECLUSTR, PANEL_TOTAL_COUNT):
+        DATASERIES = []
+        for oo in OPERATOR_TIMECLUSTR:
+            #aRate=>Pcs/All不良占%
+            aRate = oo["PANELID_COUNT"] / PANEL_TOTAL_COUNT
+            SymbolSize = oo["PANELID_COUNT"]*2
+            d = datetime.datetime
+            TIMECLUST_d = d.strptime(oo["TIMECLUST"],'%Y%m%d%H')
+            TIMECLUST = d.strftime(TIMECLUST_d,'%m/%d_%H')
+            data={
+                "nodeName": f'{TIMECLUST}時{oo["OPER"]}_人',
+                "OPERATOR": f'TA_{oo["OPERATOR"]}',
+                "OPER": oo["OPER"],
+                "TIMECLUST": TIMECLUST,
+                "PANELID_COUNT": oo["PANELID_COUNT"],
+                "PANEL_TOTAL_COUNT": PANEL_TOTAL_COUNT,
+                "A_Limit": "TOP3",
+                "aRate": aRate,
+                "SymbolSize": SymbolSize,
+                "value": oo["PANELID_COUNT"]
+            }
+            DATASERIES.append(data)
+        
+        DATASERIES.sort(key = operator.itemgetter("aRate", "aRate"), reverse = True)
+
+        aRateList = []
+        for x in DATASERIES:
+            aRateList.append(f'{x.get("aRate")}')
+        qq = sorted(aRateList, reverse=True)
+        top3 = float(qq[3])
+
+        returnData = list(filter(lambda d : d["aRate"] >= top3, DATASERIES))
+        return returnData
+
+    def _calLink_OPERATOR_TIMECLUSTR(self, node_cal_OPERATOR_TIMECLUSTR):
+        DATASERIES = []
+        for oo in node_cal_OPERATOR_TIMECLUSTR:
+            data={
+                "Source": oo["nodeName"],
+                "End": oo["OPERATOR"],
+                "value": oo["value"]
+            }
+            DATASERIES.append(data)
+        returnData = DATASERIES
+        return returnData
+
+    def _calNode_EQPID_TIMECLUSTR(self, EQPID_TIMECLUSTR, PANEL_TOTAL_COUNT):
+        DATASERIES = []
+        for oo in EQPID_TIMECLUSTR:
+            #aRate=>Pcs/All不良占%
+            aRate = oo["PANELID_COUNT"] / PANEL_TOTAL_COUNT
+            SymbolSize = oo["PANELID_COUNT"]*2
+            d = datetime.datetime
+            TIMECLUST_d = d.strptime(oo["TIMECLUST"],'%Y%m%d%H')
+            TIMECLUST = d.strftime(TIMECLUST_d,'%m/%d_%H')
+            data={
+                "nodeName": f'{TIMECLUST}時{oo["OPER"]}',
+                "EQPID": f'{oo["EQPID"]}',
+                "OPER": oo["OPER"],
+                "TIMECLUST": TIMECLUST,
+                "PANELID_COUNT": oo["PANELID_COUNT"],
+                "PANEL_TOTAL_COUNT": PANEL_TOTAL_COUNT,
+                "A_Limit": "TOP3",
+                "aRate": aRate,
+                "SymbolSize": SymbolSize,
+                "value": oo["PANELID_COUNT"]
+            }
+            DATASERIES.append(data)
+        
+        DATASERIES.sort(key = operator.itemgetter("aRate", "aRate"), reverse = True)
+
+        aRateList = []
+        for x in DATASERIES:
+            aRateList.append(f'{x.get("aRate")}')
+        qq = sorted(aRateList, reverse=True)
+        top3 = float(qq[3])
+
+        returnData = list(filter(lambda d : d["aRate"] >= top3, DATASERIES))
+        return returnData
+
+    def _calLink_EQPID_TIMECLUSTR(self, node_cal_EQPID_TIMECLUSTR):
+        DATASERIES = []
+        for oo in node_cal_EQPID_TIMECLUSTR:
+            data={
+                "Source": oo["nodeName"],
+                "End": oo["EQPID"],
+                "value": oo["value"]
+            }
+            DATASERIES.append(data)
+        returnData = DATASERIES
+        return returnData
+
+    def _calNode_EQPID_OPER(self, EQPID_OPER, PANEL_TOTAL_COUNT,A_Limit, T_Limit, weightData):
+        DATASERIES = []
+        for oo in EQPID_OPER:
+            #aRate=>Pcs/All不良占%
+            aRate = oo["PANELID_COUNT"] / PANEL_TOTAL_COUNT
+            #bRate=>RSC權重
+            bRate = weightData.get(oo["OPER"], 0)
+            #(A*B)權重計算
+            tRate = round(aRate * bRate, 4)
+            SymbolSize = round(tRate*oo["PANELID_COUNT"])
+            if aRate >= A_Limit and tRate >= T_Limit:
+                data={
+                    "EQPID": f'{oo["EQPID"]}',
+                    "OPER": oo["OPER"],
+                    "PANELID_COUNT": oo["PANELID_COUNT"],
+                    "A_Limit": A_Limit,
+                    "T_Limit": T_Limit,
+                    "aRate": aRate,
+                    "bRate": bRate,
+                    "tRate": tRate,
+                    "SymbolSize": SymbolSize,
+                    "value": oo["PANELID_COUNT"]
+                }
+                DATASERIES.append(data)
+        returnData = DATASERIES
+        return returnData
+
+    def _calLink_EQPID_OPER(self, node_cal_EQPID_OPER):
+        DATASERIES = []
+        for oo in node_cal_EQPID_OPER:
+            data={
+                "Source": oo["EQPID"],
+                "End": oo["OPER"],
+                "value": oo["value"]
+            }
+            DATASERIES.append(data)
+        returnData = DATASERIES
+        return returnData
 
 
