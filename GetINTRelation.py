@@ -9,8 +9,9 @@ import copy
 import gc
 from re import X
 from BaseType import BaseType
-from Dao import DaoHelper,ReadConfig
+from Dao import DaoHelper, ReadConfig
 from decimal import Decimal, ROUND_HALF_UP
+
 
 class INTRelation(BaseType):
     def __init__(self, jsonData):
@@ -31,7 +32,7 @@ class INTRelation(BaseType):
             redisKey = ""
             tmp = []
 
-            className = f"{self.__class__.__name__}"            
+            className = f"{self.__class__.__name__}"
             tmpFuncType = self.jsonData["FUNCTYPE"]
             tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
             tmpSITE = self.jsonData["SITE"]
@@ -39,12 +40,12 @@ class INTRelation(BaseType):
             tmpAPPLICATION = self.jsonData["APPLICATION"]
             tmpACCT_DATE = self.jsonData["ACCT_DATE"]
             tmpPROD_NBR = self.jsonData["PROD_NBR"]
-            tmpOPER = self.jsonData["OPER"] # or RESPTYPE
-            # Defect or Reason Code 
+            tmpOPER = self.jsonData["OPER"]  # or RESPTYPE
+            # Defect or Reason Code
             tmpCHECKCODE = self.jsonData["CHECKCODE"]
             expirSecond = 3600
 
-            #redisKey
+            # redisKey
             tmp.append(className)
             tmp.append(tmpCOMPANY_CODE)
             tmp.append(tmpSITE)
@@ -67,12 +68,12 @@ class INTRelation(BaseType):
                 return json.loads(self.getRedisData(redisKey)), 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type', "Access-Control-Expose-Headers": "Expires,DataSource", "Expires": time.mktime((datetime.datetime.now() + datetime.timedelta(seconds=expirSecond)).timetuple()), "DataSource": "Redis"}
             """
             if tmpFuncType == "REASON":
-                #region 準備數據
-                #comm data: 權種數據
+                # region 準備數據
+                # comm data: 權種數據
                 whereString = f" REASONCODE = '{tmpCHECKCODE}' "
                 sql = "select REASONCODE, COMPARECODE, WEIGHT from INTMP_DB.REASON_WEIGHT " \
-                      f"where {whereString} "\
-                      "order by REASONCODE, COMPARECODE "                 
+                      f"where {whereString} " \
+                      "order by REASONCODE, COMPARECODE "
                 self.getConnection(self.DBconfig)
                 commData = self.Select(sql)
                 self.closeConnection()
@@ -83,14 +84,14 @@ class INTRelation(BaseType):
                 del commData
                 gc.collect()
 
-                #step0: 取得 與 defect / Reason 相關的 panel id
+                # step0: 取得 與 defect / Reason 相關的 panel id
 
-                #step1: 取得 panel his
+                # step1: 取得 panel his
                 whereString = f" PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' "
                 sql = f"with panel_his_daily as (select * from INTMP_DB.PANELHISDAILY where {whereString}) " \
                       "select PROD_NBR, MFGDATE, PANELID, OPER, TRANSDT, OPERATOR, EQPID, RW_COUNT, " \
                       "OUTPUT_FG from panel_his_daily order by PANELID, TRANSDT asc"
-                 
+
                 self.getConnection(self.DBconfig)
                 data1 = self.Select(sql)
                 self.closeConnection()
@@ -98,95 +99,156 @@ class INTRelation(BaseType):
                 if(len(data1) != 0):
                     for da in data1:
                         d = datetime.datetime
-                        TIMECLUST_d = d.strptime(da[4],'%Y%m%d%H%M%S')
-                        TIMECLUST = d.strftime(TIMECLUST_d,'%Y%m%d%H')
-                        datadict={                        
-                            "PROD_NBR" : da[0],                        
-                            "MFGDATE" : da[1],
-                            "PANELID" : da[2],
-                            "OPER" : da[3],
-                            "TRANSDT" : da[4],
-                            "OPERATOR" : da[5],
-                            "EQPID" : da[6],
-                            "RW_COUNT" : da[7],
-                            "OUTPUT_FG" : da[8],
-                            "TIMECLUST" : TIMECLUST
+                        TIMECLUST_d = d.strptime(da[4], '%Y%m%d%H%M%S')
+                        TIMECLUST = d.strftime(TIMECLUST_d, '%Y%m%d%H')
+                        datadict = {
+                            "PROD_NBR": da[0],
+                            "MFGDATE": da[1],
+                            "PANELID": da[2],
+                            "OPER": da[3],
+                            "TRANSDT": da[4],
+                            "OPERATOR": da[5],
+                            "EQPID": da[6],
+                            "RW_COUNT": da[7],
+                            "OUTPUT_FG": da[8],
+                            "TIMECLUST": TIMECLUST
                         }
                         hisData.append(datadict)
                 del data1
                 gc.collect()
 
-                #step2: 取得panel use mat
-                whereString = f" PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' "
+                # step2: 取得panel use mat
+                whereString = f" PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and OPER = '1050' "
                 sql = f"with panel_his_mat as (select * from INTMP_DB.PANELHISDAILY_MAT where {whereString}) " \
                       "select PROD_NBR, MFGDATE, PANELID, OPER, MAT_ID, MAT_LOTID from panel_his_mat " \
                       "order by MAT_ID, MAT_LOTID asc"
-                 
+
                 self.getConnection(self.DBconfig)
                 data2 = self.Select(sql)
                 self.closeConnection()
                 matData = []
                 if(len(data2) != 0):
                     for da in data2:
-                        datadict={                        
-                            "PROD_NBR" : da[0],                        
-                            "MFGDATE" : da[1],
-                            "PANELID" : da[2],
-                            "OPER" : da[3],                            
-                            "MAT_ID_4" : da[4][0:4],
-                            "MAT_ID" : da[4],
-                            "MAT_LOTID" : da[5],
+                        datadict = {
+                            "PROD_NBR": da[0],
+                            "MFGDATE": da[1],
+                            "PANELID": da[2],
+                            "OPER": da[3],
+                            "MAT_ID": da[4],
+                            "MAT_LOTID": da[5]
                         }
                         matData.append(datadict)
                 del data2
                 gc.collect()
-                #endregion
+                # endregion
 
-                #temp list
-                #分群
-                self.BASE_GROUPList = self._Group_OPERATOR_OPER_EQPID_TIMECLUST_PANELID_List(hisData)
-                PANELID_Group = self._Group_PANELID_List()                
+                # temp list
+                # 分群
+                self.BASE_GROUPList = self._Group_OPERATOR_OPER_EQPID_TIMECLUST_PANELID_List(
+                    hisData)
+                PANELID_Group = self._Group_PANELID_List()
                 PANEL_TOTAL_COUNT = len(PANELID_Group)
 
-                #人         
+                # 人
                 OPERATOR_OPER_PANELID_Group = self._Group_OPERATOR_OPER_PANELID_List()
-                OPERATOR_OPER_EQPID_PANELID_Group = self._Group_OPERATOR_OPER_EQPID_PANELID_List()  
-                notInOPER1 = ["1050","1100","1200","2110"]
-                OPERATOR_OPER_Count = self._Count_OPERATOR_OPER_List(notInOPER1, OPERATOR_OPER_PANELID_Group)
-                OPERATOR_OPER_EQPID_Count = self._Count_OPERATOR_OPER_EQPID_List(notInOPER1,OPERATOR_OPER_EQPID_PANELID_Group)
-                OPER_Count = self._Count_OPER_List(notInOPER1,OPERATOR_OPER_Count)   
-                o_A_Limit = self._OPERATOR_OPER_Limit(OPER_Count, PANEL_TOTAL_COUNT)
+                OPERATOR_OPER_EQPID_PANELID_Group = self._Group_OPERATOR_OPER_EQPID_PANELID_List()
+                notInOPER1 = ["1050", "1100", "1200", "2110"]
+                OPERATOR_OPER_Count = self._Count_OPERATOR_OPER_List(
+                    notInOPER1, OPERATOR_OPER_PANELID_Group)
+                OPERATOR_OPER_EQPID_Count = self._Count_OPERATOR_OPER_EQPID_List(
+                    notInOPER1, OPERATOR_OPER_EQPID_PANELID_Group)
+                OPER_Count = self._Count_OPER_List(
+                    notInOPER1, OPERATOR_OPER_Count)
+                o_A_Limit = self._OPERATOR_OPER_Limit(
+                    OPER_Count, PANEL_TOTAL_COUNT)
                 o_T_Limit = 0.3
-                node_cal_OPERATOR_OPER = self._calNode_OPERATOR_OPER(OPERATOR_OPER_Count, PANEL_TOTAL_COUNT, o_A_Limit, o_T_Limit, weightData)
-                link_cal_OPERATOR_OPER = self._calLink_OPERATOR_OPER(node_cal_OPERATOR_OPER, OPERATOR_OPER_EQPID_Count)
+                node_cal_OPERATOR_OPER = self._calNode_OPERATOR_OPER(
+                    OPERATOR_OPER_Count, PANEL_TOTAL_COUNT, o_A_Limit, o_T_Limit, weightData)
+                link_cal_OPERATOR_OPER = self._calLink_OPERATOR_OPER(
+                    node_cal_OPERATOR_OPER, OPERATOR_OPER_EQPID_Count)
 
-                #人時                
-                OPERATOR_OPER_TIMECLUST_PANELID_Group = self._Group_OPERATOR_OPER_TIMECLUST_PANELID_List()  
-                notInOPER2 = ["1050","1100","1200","2110"]
-                OPERATOR_OPER_TIMECLUST_Count = self._Count_OPERATOR_OPER_TIMECLUST_List(notInOPER2, OPERATOR_OPER_TIMECLUST_PANELID_Group)
-                node_cal_OPERATOR_TIMECLUST = self._calNode_OPERATOR_TIMECLUSTR(OPERATOR_OPER_TIMECLUST_Count, PANEL_TOTAL_COUNT)
-                link_cal_OPERATOR_TIMECLUST = self._calLink_OPERATOR_TIMECLUSTR(node_cal_OPERATOR_TIMECLUST)
+                # 人時
+                OPERATOR_OPER_TIMECLUST_PANELID_Group = self._Group_OPERATOR_OPER_TIMECLUST_PANELID_List()
+                notInOPER2 = ["1050", "1100", "1200", "2110"]
+                OPERATOR_OPER_TIMECLUST_Count = self._Count_OPERATOR_OPER_TIMECLUST_List(
+                    notInOPER2, OPERATOR_OPER_TIMECLUST_PANELID_Group)
+                node_cal_OPERATOR_TIMECLUST = self._calNode_OPERATOR_TIMECLUSTR(
+                    OPERATOR_OPER_TIMECLUST_Count, PANEL_TOTAL_COUNT)
+                link_cal_OPERATOR_TIMECLUST = self._calLink_OPERATOR_TIMECLUSTR(
+                    node_cal_OPERATOR_TIMECLUST)
 
-                #機時                
-                EQPID_OPER_TIMECLUST_PANELID_Group = self._Group_EQPID_OPER_TIMECLUST_PANELID_List() 
-                notInOPER3 = ["1050","1100","1200","2110"]
-                EQPID_OPER_TIMECLUST_Count = self._Count_EQPID_OPER_TIMECLUST_List(notInOPER3, EQPID_OPER_TIMECLUST_PANELID_Group)
-                node_cal_EQPID_TIMECLUST = self._calNode_EQPID_TIMECLUSTR(EQPID_OPER_TIMECLUST_Count, PANEL_TOTAL_COUNT)
-                link_cal_EQPID_TIMECLUST = self._calLink_EQPID_TIMECLUSTR(node_cal_EQPID_TIMECLUST)
+                # 機時
+                EQPID_OPER_TIMECLUST_PANELID_Group = self._Group_EQPID_OPER_TIMECLUST_PANELID_List()
+                notInOPER3 = ["1050", "1100", "1200", "2110"]
+                EQPID_OPER_TIMECLUST_Count = self._Count_EQPID_OPER_TIMECLUST_List(
+                    notInOPER3, EQPID_OPER_TIMECLUST_PANELID_Group)
+                node_cal_EQPID_TIMECLUST = self._calNode_EQPID_TIMECLUSTR(
+                    EQPID_OPER_TIMECLUST_Count, PANEL_TOTAL_COUNT)
+                link_cal_EQPID_TIMECLUST = self._calLink_EQPID_TIMECLUSTR(
+                    node_cal_EQPID_TIMECLUST)
 
-                #機
+                # 機
                 EQPID_OPER_PANELID_Group = self._Group_EQPID_OPER_PANELID_List()
-                notInOPER4 = ["1050","1100","2110"]
-                EQPID_OPER_Count = self._Count_EQPID_OPER_List(notInOPER4, EQPID_OPER_PANELID_Group)
-                OPER_Count = self._Count_OPER_List(notInOPER4,EQPID_OPER_Count)   
-                g_A_Limit = self._OPERATOR_OPER_Limit(OPER_Count, PANEL_TOTAL_COUNT)
+                notInOPER4 = ["1050", "1100", "2110"]
+                EQPID_OPER_Count = self._Count_EQPID_OPER_List(
+                    notInOPER4, EQPID_OPER_PANELID_Group)
+                OPER_Count = self._Count_OPER_List(
+                    notInOPER4, EQPID_OPER_Count)
+                g_A_Limit = self._OPERATOR_OPER_Limit(
+                    OPER_Count, PANEL_TOTAL_COUNT)
                 g_T_Limit = 0.3
-                node_cal_EQPID_OPER = self._calNode_EQPID_OPER(EQPID_OPER_Count, PANEL_TOTAL_COUNT, g_A_Limit, g_T_Limit, weightData)
-                link_cal_EQPID_OPER = self._calLink_EQPID_OPER(node_cal_EQPID_OPER)
+                node_cal_EQPID_OPER = self._calNode_EQPID_OPER(
+                    EQPID_OPER_Count, PANEL_TOTAL_COUNT, g_A_Limit, g_T_Limit, weightData)
+                link_cal_EQPID_OPER = self._calLink_EQPID_OPER(
+                    node_cal_EQPID_OPER)
 
+                # 站
+                notInOPER5 = ["1050", "1100", "2110"]
+                OPER_OPERATOR_Count = self._Count_OPERATOR_OPER_List(
+                    notInOPER5, OPERATOR_OPER_PANELID_Group)
+                OPER_Count = self._Count_OPER_List(
+                    notInOPER5, OPERATOR_OPER_Count)
+                node_cal_OPER_OPERATOR = self._calNode_OPER_OPERATOR(
+                    OPER_OPERATOR_Count, PANEL_TOTAL_COUNT, o_A_Limit, o_T_Limit, weightData)
+                link_cal_OPER_OPERATOR = self._calLink_OPER_OPERATOR(
+                    node_cal_OPER_OPERATOR)
+
+                # 料
+                MAT_OPER_PANELID_Group = self._Group_MAT_OPER_PANELID_List(
+                    matData)
+                MAT_OPER_Count = self._Count_MAT_OPER_List(
+                    MAT_OPER_PANELID_Group)
+                m_A_Limit = 0.6
+                m_T_Limit = 0.6
+                node_cal_MAT_OPER = self._calNode_MAT_OPER(
+                    MAT_OPER_Count, PANEL_TOTAL_COUNT, m_A_Limit, m_T_Limit, weightData)
+                link_cal_MAT_OPER = self._calLink_MAT_OPER(node_cal_MAT_OPER)
+
+                #資料聚合
+                nodes = self._grouptNodes(
+                                        PANEL_TOTAL_COUNT,
+                                        node_cal_OPERATOR_OPER,
+                                        node_cal_OPERATOR_TIMECLUST,
+                                        node_cal_EQPID_TIMECLUST,
+                                        node_cal_EQPID_OPER,
+                                        node_cal_OPER_OPERATOR,
+                                        node_cal_MAT_OPER
+                                    )
+
+                links = self._grouptLinks(
+                                        nodes,
+                                        link_cal_OPERATOR_OPER,
+                                        link_cal_OPERATOR_TIMECLUST,
+                                        link_cal_EQPID_TIMECLUST,
+                                        link_cal_EQPID_OPER,
+                                        link_cal_OPER_OPERATOR,
+                                        link_cal_MAT_OPER
+                                    )
+
+                categories = self._categories()
 
                 C_DESC = self._code2Desc(tmpCHECKCODE)
-                returnData = {                    
+                returnData = {
                     "RELATIONTYPE": tmpFuncType,
                     "COMPANY_CODE": tmpCOMPANY_CODE,
                     "SITE": tmpSITE,
@@ -197,10 +259,9 @@ class INTRelation(BaseType):
                     "OPER": tmpOPER,
                     "C_CODE": tmpCHECKCODE,
                     "C_DESCR": C_DESC if C_DESC != None else tmpCHECKCODE,
-                    "TEST1": node_cal_EQPID_OPER, 
-                    "TEST2": link_cal_EQPID_OPER, 
-                    "nodes": OPER_Count,
-                    "links": ""
+                    "nodes": nodes,
+                    "links": links,
+                    "categories": categories
                 }
                 """
                 self.getRedisConnection()
@@ -229,14 +290,14 @@ class INTRelation(BaseType):
             self.writeError(
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return {'Result': 'NG', 'Reason': f'{funcName} erro'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
- 
+
     def _filterListbyOPER(self, LIST, OPER):
-        d = list(filter(lambda d : d["OPER"] != OPER, LIST))
+        d = list(filter(lambda d: d["OPER"] != OPER, LIST))
         return d
-    
+
     def _code2Desc(self, C_CODE):
         sql = f"select REASONCODE_DESC from INTMP_DB.REASONCODE where REASONCODE = '{C_CODE}'"
-        #INT_ORACLEDB_PROD
+        # INT_ORACLEDB_PROD
         self.getConnection(self.DBconfig)
         data = self.Select(sql)
         self.closeConnection()
@@ -244,10 +305,10 @@ class INTRelation(BaseType):
         if(len(data) != 0):
             returnString = data[0][0]
         return returnString
-    
+
     def _oper2Desc(self, OPER):
         sql = f"select OPER_DESC from INTMP_DB.OPER where OPER_ID_C = '{OPER}'"
-        #INT_ORACLEDB_PROD
+        # INT_ORACLEDB_PROD
         self.getConnection(self.DBconfig)
         data = self.Select(sql)
         self.closeConnection()
@@ -262,61 +323,75 @@ class INTRelation(BaseType):
             if x["PANELID"] not in PANELIDList:
                 PANELIDList.append(x["PANELID"])
         return PANELIDList
-    
+
     def _Group_OPERATOR_OPER_EQPID_TIMECLUST_PANELID_List(self, DATA):
         List = []
         for x in DATA:
-            if {"OPERATOR": x["OPERATOR"], "OPER": x["OPER"], \
-                 "EQPID": x["EQPID"], "TIMECLUST": x["TIMECLUST"], "PANELID": x["PANELID"]} not in List:
+            if {"OPERATOR": x["OPERATOR"], "OPER": x["OPER"],
+                    "EQPID": x["EQPID"], "TIMECLUST": x["TIMECLUST"], "PANELID": x["PANELID"]} not in List:
                 data = {
-                        "OPERATOR": x["OPERATOR"],
-                        "OPER" : x["OPER"], 
-                        "EQPID" : x["EQPID"],
-                        "TIMECLUST": x["TIMECLUST"],
-                        "PANELID": x["PANELID"]
-                    }
+                    "OPERATOR": x["OPERATOR"],
+                    "OPER": x["OPER"],
+                    "EQPID": x["EQPID"],
+                    "TIMECLUST": x["TIMECLUST"],
+                    "PANELID": x["PANELID"]
+                }
+                List.append(data)
+        return List
+
+    def _Group_MAT_OPER_PANELID_List(self, DATA):
+        List = []
+        for x in DATA:
+            if {"OPER": x["OPER"], "MAT_ID": x["MAT_ID"], "MAT_LOTID": x["MAT_LOTID"],
+                    "PANELID": x["PANELID"]} not in List:
+                data = {
+                    "OPER": x["OPER"],
+                    "MAT_ID": x["MAT_ID"],
+                    "MAT_LOTID": x["MAT_LOTID"],
+                    "PANELID": x["PANELID"]
+                }
                 List.append(data)
         return List
 
     def _Group_OPERATOR_OPER_TIMECLUST_PANELID_List(self):
         List = []
         for x in self.BASE_GROUPList:
-            if {"OPERATOR": x["OPERATOR"], "OPER": x["OPER"], \
-                 "TIMECLUST": x["TIMECLUST"], "PANELID": x["PANELID"]} not in List:
+            if {"OPERATOR": x["OPERATOR"], "OPER": x["OPER"],
+                    "TIMECLUST": x["TIMECLUST"], "PANELID": x["PANELID"]} not in List:
                 data = {
-                        "OPERATOR": x["OPERATOR"],
-                        "OPER" : x["OPER"], 
-                        "TIMECLUST" : x["TIMECLUST"],
-                        "PANELID": x["PANELID"]
-                    }
+                    "OPERATOR": x["OPERATOR"],
+                    "OPER": x["OPER"],
+                    "TIMECLUST": x["TIMECLUST"],
+                    "PANELID": x["PANELID"]
+                }
                 List.append(data)
         return List
 
     def _Group_EQPID_OPER_TIMECLUST_PANELID_List(self):
         List = []
         for x in self.BASE_GROUPList:
-            if {"EQPID": x["EQPID"], "OPER": x["OPER"], \
-                 "TIMECLUST": x["TIMECLUST"], "PANELID": x["PANELID"]} not in List:
+            if {"EQPID": x["EQPID"], "OPER": x["OPER"],
+                    "TIMECLUST": x["TIMECLUST"], "PANELID": x["PANELID"]} not in List:
                 data = {
-                        "EQPID": x["EQPID"],
-                        "OPER" : x["OPER"], 
-                        "TIMECLUST" : x["TIMECLUST"],
-                        "PANELID": x["PANELID"]
-                    }
+                    "EQPID": x["EQPID"],
+                    "OPER": x["OPER"],
+                    "TIMECLUST": x["TIMECLUST"],
+                    "PANELID": x["PANELID"]
+                }
                 List.append(data)
         return List
 
     def _Group_OPERATOR_OPER_EQPID_PANELID_List(self):
         List = []
         for x in self.BASE_GROUPList:
-            if {"OPERATOR": x["OPERATOR"], "OPER": x["OPER"], \
-                 "EQPID": x["EQPID"], "PANELID": x["PANELID"]} not in List:
+            if {"OPERATOR": x["OPERATOR"], "OPER": x["OPER"],
+                    "EQPID": x["EQPID"], "PANELID": x["PANELID"]} not in List:
                 data = {
-                        "OPERATOR": x["OPERATOR"],
-                        "OPER" : x["OPER"], 
-                        "EQPID" : x["EQPID"],
-                        "PANELID": x["PANELID"]
-                    }
+                    "OPERATOR": x["OPERATOR"],
+                    "OPER": x["OPER"],
+                    "EQPID": x["EQPID"],
+                    "PANELID": x["PANELID"]
+                }
                 List.append(data)
         return List
 
@@ -325,22 +400,22 @@ class INTRelation(BaseType):
         for x in self.BASE_GROUPList:
             if {"OPERATOR": x["OPERATOR"], "OPER": x["OPER"], "PANELID": x["PANELID"]} not in List:
                 data = {
-                        "OPERATOR": x["OPERATOR"],
-                        "OPER" : x["OPER"], 
-                        "PANELID" : x["PANELID"]
-                        }
+                    "OPERATOR": x["OPERATOR"],
+                    "OPER": x["OPER"],
+                    "PANELID": x["PANELID"]
+                }
                 List.append(data)
         return List
-    
+
     def _Group_EQPID_OPER_PANELID_List(self):
         List = []
         for x in self.BASE_GROUPList:
             if {"EQPID": x["EQPID"], "OPER": x["OPER"], "PANELID": x["PANELID"]} not in List:
                 data = {
-                        "EQPID": x["EQPID"],
-                        "OPER" : x["OPER"], 
-                        "PANELID" : x["PANELID"]
-                        }
+                    "EQPID": x["EQPID"],
+                    "OPER": x["OPER"],
+                    "PANELID": x["PANELID"]
+                }
                 List.append(data)
         return List
 
@@ -349,10 +424,10 @@ class INTRelation(BaseType):
         for x in self.BASE_GROUPList:
             if {"OPERATOR": x["OPERATOR"], "OPER": x["OPER"], "EQPID": x["EQPID"]} not in List:
                 data = {
-                        "OPERATOR": x["OPERATOR"],
-                        "OPER" : x["OPER"], 
-                        "EQPID" : x["EQPID"]
-                        }
+                    "OPERATOR": x["OPERATOR"],
+                    "OPER": x["OPER"],
+                    "EQPID": x["EQPID"]
+                }
                 List.append(data)
         return List
 
@@ -360,20 +435,20 @@ class INTRelation(BaseType):
         List = []
         for x in DATA:
             if x["OPER"] not in notInOPER:
-                d = list(filter(lambda d: d["OPERATOR"] == x["OPERATOR"] and \
-                    d["OPER"] == x["OPER"] and d["TIMECLUST"] == x["TIMECLUST"], List))
+                d = list(filter(lambda d: d["OPERATOR"] == x["OPERATOR"] and
+                                d["OPER"] == x["OPER"] and d["TIMECLUST"] == x["TIMECLUST"], List))
                 if d == []:
                     data = {
-                            "OPERATOR": x["OPERATOR"],
-                            "OPER" : x["OPER"],
-                            "TIMECLUST" : x["TIMECLUST"],
-                            "PANELID_COUNT": 1
-                            }
+                        "OPERATOR": x["OPERATOR"],
+                        "OPER": x["OPER"],
+                        "TIMECLUST": x["TIMECLUST"],
+                        "PANELID_COUNT": 1
+                    }
                     List.append(data)
                 else:
                     for cx in List:
-                        if  cx["OPERATOR"] == x["OPERATOR"] and cx["OPER"] == x["OPER"] \
-                            and cx["TIMECLUST"] == x["TIMECLUST"]:                        
+                        if (cx["OPERATOR"] == x["OPERATOR"] and cx["OPER"] == x["OPER"]
+                                and cx["TIMECLUST"] == x["TIMECLUST"]):
                             cx["PANELID_COUNT"] += 1
         return List
 
@@ -381,20 +456,20 @@ class INTRelation(BaseType):
         List = []
         for x in DATA:
             if x["OPER"] not in notInOPER:
-                d = list(filter(lambda d: d["EQPID"] == x["EQPID"] and \
-                    d["OPER"] == x["OPER"] and d["TIMECLUST"] == x["TIMECLUST"], List))
+                d = list(filter(lambda d: d["EQPID"] == x["EQPID"] and
+                                d["OPER"] == x["OPER"] and d["TIMECLUST"] == x["TIMECLUST"], List))
                 if d == []:
                     data = {
-                            "EQPID": x["EQPID"],
-                            "OPER" : x["OPER"],
-                            "TIMECLUST" : x["TIMECLUST"],
-                            "PANELID_COUNT": 1
-                            }
+                        "EQPID": x["EQPID"],
+                        "OPER": x["OPER"],
+                        "TIMECLUST": x["TIMECLUST"],
+                        "PANELID_COUNT": 1
+                    }
                     List.append(data)
                 else:
                     for cx in List:
-                        if  cx["EQPID"] == x["EQPID"] and cx["OPER"] == x["OPER"] \
-                            and cx["TIMECLUST"] == x["TIMECLUST"]:                        
+                        if (cx["EQPID"] == x["EQPID"] and cx["OPER"] == x["OPER"]
+                                and cx["TIMECLUST"] == x["TIMECLUST"]):
                             cx["PANELID_COUNT"] += 1
         return List
 
@@ -402,20 +477,20 @@ class INTRelation(BaseType):
         List = []
         for x in DATA:
             if x["OPER"] not in notInOPER:
-                d = list(filter(lambda d: d["OPERATOR"] == x["OPERATOR"] and \
-                    d["OPER"] == x["OPER"] and d["EQPID"] == x["EQPID"], List))
+                d = list(filter(lambda d: d["OPERATOR"] == x["OPERATOR"] and
+                                d["OPER"] == x["OPER"] and d["EQPID"] == x["EQPID"], List))
                 if d == []:
                     data = {
-                            "OPERATOR": x["OPERATOR"],
-                            "OPER" : x["OPER"],
-                            "EQPID" : x["EQPID"],
-                            "PANELID_COUNT": 1
-                            }
+                        "OPERATOR": x["OPERATOR"],
+                        "OPER": x["OPER"],
+                        "EQPID": x["EQPID"],
+                        "PANELID_COUNT": 1
+                    }
                     List.append(data)
                 else:
                     for cx in List:
-                        if  cx["OPERATOR"] == x["OPERATOR"] and cx["OPER"] == x["OPER"] \
-                            and cx["EQPID"] == x["EQPID"] :                        
+                        if (cx["OPERATOR"] == x["OPERATOR"] and cx["OPER"] == x["OPER"]
+                                and cx["EQPID"] == x["EQPID"]):
                             cx["PANELID_COUNT"] += 1
         return List
 
@@ -423,40 +498,62 @@ class INTRelation(BaseType):
         List = []
         for x in DATA:
             if x["OPER"] not in notInOPER:
-                d = list(filter(lambda d: d["OPERATOR"] == x["OPERATOR"] and d["OPER"] == x["OPER"] , List))
+                d = list(filter(
+                    lambda d: d["OPERATOR"] == x["OPERATOR"] and d["OPER"] == x["OPER"], List))
                 if d == []:
                     data = {
-                            "OPERATOR": x["OPERATOR"],
-                            "OPER" : x["OPER"],
-                            "PANELID_COUNT": 1
-                            }
+                        "OPERATOR": x["OPERATOR"],
+                        "OPER": x["OPER"],
+                        "PANELID_COUNT": 1
+                    }
                     List.append(data)
                 else:
                     for cx in List:
-                        if  cx["OPERATOR"] == x["OPERATOR"] and cx["OPER"] == x["OPER"] :                        
+                        if (cx["OPERATOR"] == x["OPERATOR"] and cx["OPER"] == x["OPER"]):
                             cx["PANELID_COUNT"] += 1
         return List
-    
+
     def _Count_EQPID_OPER_List(self, notInOPER, DATA):
         List = []
         for x in DATA:
             if x["OPER"] not in notInOPER:
-                d = list(filter(lambda d: d["EQPID"] == x["EQPID"] and d["OPER"] == x["OPER"] , List))
+                d = list(
+                    filter(lambda d: d["EQPID"] == x["EQPID"] and d["OPER"] == x["OPER"], List))
                 if d == []:
                     data = {
-                            "EQPID": x["EQPID"],
-                            "OPER" : x["OPER"],
-                            "PANELID_COUNT": 1
-                            }
+                        "EQPID": x["EQPID"],
+                        "OPER": x["OPER"],
+                        "PANELID_COUNT": 1
+                    }
                     List.append(data)
                 else:
                     for cx in List:
-                        if  cx["EQPID"] == x["EQPID"] and cx["OPER"] == x["OPER"] :                        
+                        if (cx["EQPID"] == x["EQPID"] and cx["OPER"] == x["OPER"]):
                             cx["PANELID_COUNT"] += 1
         return List
-    
 
-    #OPER 出現次數
+    def _Count_MAT_OPER_List(self, DATA):
+        List = []
+        for x in DATA:
+            d = list(filter(lambda d: d["OPER"] == x["OPER"] and d["MAT_ID"] == x["MAT_ID"]
+                            and d["MAT_LOTID"] == x["MAT_LOTID"], List))
+            if d == []:
+                data = {
+                    "OPER": x["OPER"],
+                    "MAT_ID": x["MAT_ID"],
+                    "MAT_LOTID": x["MAT_LOTID"],
+                    "PANELID_COUNT": 1
+                }
+                List.append(data)
+            else:
+                for cx in List:
+                    if (cx["OPER"] == x["OPER"] and cx["MAT_ID"] == x["MAT_ID"]
+                            and cx["MAT_LOTID"] == x["MAT_LOTID"]):
+                        cx["PANELID_COUNT"] += 1
+        return List
+
+    # OPER 出現次數
+
     def _Count_OPER_List(self, notInOPER, DATA):
         List = {}
         for x in DATA:
@@ -468,24 +565,25 @@ class INTRelation(BaseType):
         return List
 
     def _OPERATOR_OPER_Limit(self, OPER_List, PANEL_TOTAL_COUNT):
-        #(PANEL_TOTAL_COUNT*70%)/(MAX(B2:N2)*35%)/PANEL_TOTAL_COUNT
+        # (PANEL_TOTAL_COUNT*70%)/(MAX(B2:N2)*35%)/PANEL_TOTAL_COUNT
         OPER_List_MAX = max(OPER_List.values()) * 0.35
         cal = (PANEL_TOTAL_COUNT * 0.7) / OPER_List_MAX / PANEL_TOTAL_COUNT
         returnData = cal if cal < 0.5 else 0.5
         return returnData
 
-    def _calNode_OPERATOR_OPER(self, OPERATOR_OPER, PANEL_TOTAL_COUNT,A_Limit, T_Limit, weightData):
+    def _calNode_OPERATOR_OPER(self, OPERATOR_OPER, PANEL_TOTAL_COUNT, A_Limit, T_Limit, weightData):
         DATASERIES = []
         for oo in OPERATOR_OPER:
-            #aRate=>Pcs/All不良占%
+            # aRate=>Pcs/All不良占%
             aRate = oo["PANELID_COUNT"] / PANEL_TOTAL_COUNT
-            #bRate=>RSC權重
+            # bRate=>RSC權重
             bRate = weightData.get(oo["OPER"], 0)
-            #(A*B)權重計算
+            # (A*B)權重計算
             tRate = round(aRate * bRate, 4)
             SymbolSize = round(tRate*oo["PANELID_COUNT"])
             if aRate >= A_Limit and tRate >= T_Limit:
-                data={
+                data = {
+                    "NAME": f'TA_{oo["OPERATOR"]}',
                     "OPERATOR": f'TA_{oo["OPERATOR"]}',
                     "OPER": oo["OPER"],
                     "PANELID_COUNT": oo["PANELID_COUNT"],
@@ -504,12 +602,13 @@ class INTRelation(BaseType):
     def _calLink_OPERATOR_OPER(self, node_cal_OPERATOR_OPER, OPERATOR_OPER_EQPID_Lis):
         DATASERIES = []
         for oo in node_cal_OPERATOR_OPER:
-            d = list(filter(lambda d: d["OPERATOR"] == oo["OPERATOR"][3:] and d["OPER"] == oo["OPER"] , OPERATOR_OPER_EQPID_Lis))
+            d = list(filter(lambda d: d["OPERATOR"] == oo["OPERATOR"][3:]
+                     and d["OPER"] == oo["OPER"], OPERATOR_OPER_EQPID_Lis))
             if d != []:
                 for dd in d:
-                    data={
-                        "Source": oo["OPERATOR"],
-                        "End": dd["EQPID"],
+                    data = {
+                        "source": oo["NAME"],
+                        "target": dd["EQPID"],
                         "value": dd["PANELID_COUNT"]
                     }
                     DATASERIES.append(data)
@@ -519,14 +618,14 @@ class INTRelation(BaseType):
     def _calNode_OPERATOR_TIMECLUSTR(self, OPERATOR_TIMECLUSTR, PANEL_TOTAL_COUNT):
         DATASERIES = []
         for oo in OPERATOR_TIMECLUSTR:
-            #aRate=>Pcs/All不良占%
+            # aRate=>Pcs/All不良占%
             aRate = oo["PANELID_COUNT"] / PANEL_TOTAL_COUNT
             SymbolSize = oo["PANELID_COUNT"]*2
             d = datetime.datetime
-            TIMECLUST_d = d.strptime(oo["TIMECLUST"],'%Y%m%d%H')
-            TIMECLUST = d.strftime(TIMECLUST_d,'%m/%d_%H')
-            data={
-                "nodeName": f'{TIMECLUST}時{oo["OPER"]}_人',
+            TIMECLUST_d = d.strptime(oo["TIMECLUST"], '%Y%m%d%H')
+            TIMECLUST = d.strftime(TIMECLUST_d, '%m/%d_%H')
+            data = {
+                "NAME": f'{TIMECLUST}時{oo["OPER"]}_人',
                 "OPERATOR": f'TA_{oo["OPERATOR"]}',
                 "OPER": oo["OPER"],
                 "TIMECLUST": TIMECLUST,
@@ -538,8 +637,9 @@ class INTRelation(BaseType):
                 "value": oo["PANELID_COUNT"]
             }
             DATASERIES.append(data)
-        
-        DATASERIES.sort(key = operator.itemgetter("aRate", "aRate"), reverse = True)
+
+        DATASERIES.sort(key=operator.itemgetter(
+            "aRate", "aRate"), reverse=True)
 
         aRateList = []
         for x in DATASERIES:
@@ -547,15 +647,15 @@ class INTRelation(BaseType):
         qq = sorted(aRateList, reverse=True)
         top3 = float(qq[3])
 
-        returnData = list(filter(lambda d : d["aRate"] >= top3, DATASERIES))
+        returnData = list(filter(lambda d: d["aRate"] >= top3, DATASERIES))
         return returnData
 
     def _calLink_OPERATOR_TIMECLUSTR(self, node_cal_OPERATOR_TIMECLUSTR):
         DATASERIES = []
         for oo in node_cal_OPERATOR_TIMECLUSTR:
-            data={
-                "Source": oo["nodeName"],
-                "End": oo["OPERATOR"],
+            data = {
+                "source": oo["NAME"],
+                "target": oo["OPERATOR"],
                 "value": oo["value"]
             }
             DATASERIES.append(data)
@@ -565,14 +665,14 @@ class INTRelation(BaseType):
     def _calNode_EQPID_TIMECLUSTR(self, EQPID_TIMECLUSTR, PANEL_TOTAL_COUNT):
         DATASERIES = []
         for oo in EQPID_TIMECLUSTR:
-            #aRate=>Pcs/All不良占%
+            # aRate=>Pcs/All不良占%
             aRate = oo["PANELID_COUNT"] / PANEL_TOTAL_COUNT
             SymbolSize = oo["PANELID_COUNT"]*2
             d = datetime.datetime
-            TIMECLUST_d = d.strptime(oo["TIMECLUST"],'%Y%m%d%H')
-            TIMECLUST = d.strftime(TIMECLUST_d,'%m/%d_%H')
-            data={
-                "nodeName": f'{TIMECLUST}時{oo["OPER"]}',
+            TIMECLUST_d = d.strptime(oo["TIMECLUST"], '%Y%m%d%H')
+            TIMECLUST = d.strftime(TIMECLUST_d, '%m/%d_%H')
+            data = {
+                "NAME": f'{TIMECLUST}時{oo["OPER"]}',
                 "EQPID": f'{oo["EQPID"]}',
                 "OPER": oo["OPER"],
                 "TIMECLUST": TIMECLUST,
@@ -584,8 +684,9 @@ class INTRelation(BaseType):
                 "value": oo["PANELID_COUNT"]
             }
             DATASERIES.append(data)
-        
-        DATASERIES.sort(key = operator.itemgetter("aRate", "aRate"), reverse = True)
+
+        DATASERIES.sort(key=operator.itemgetter(
+            "aRate", "aRate"), reverse=True)
 
         aRateList = []
         for x in DATASERIES:
@@ -593,33 +694,34 @@ class INTRelation(BaseType):
         qq = sorted(aRateList, reverse=True)
         top3 = float(qq[3])
 
-        returnData = list(filter(lambda d : d["aRate"] >= top3, DATASERIES))
+        returnData = list(filter(lambda d: d["aRate"] >= top3, DATASERIES))
         return returnData
 
     def _calLink_EQPID_TIMECLUSTR(self, node_cal_EQPID_TIMECLUSTR):
         DATASERIES = []
         for oo in node_cal_EQPID_TIMECLUSTR:
-            data={
-                "Source": oo["nodeName"],
-                "End": oo["EQPID"],
+            data = {
+                "source": oo["NAME"],
+                "target": oo["EQPID"],
                 "value": oo["value"]
             }
             DATASERIES.append(data)
         returnData = DATASERIES
         return returnData
 
-    def _calNode_EQPID_OPER(self, EQPID_OPER, PANEL_TOTAL_COUNT,A_Limit, T_Limit, weightData):
+    def _calNode_EQPID_OPER(self, EQPID_OPER, PANEL_TOTAL_COUNT, A_Limit, T_Limit, weightData):
         DATASERIES = []
         for oo in EQPID_OPER:
-            #aRate=>Pcs/All不良占%
+            # aRate=>Pcs/All不良占%
             aRate = oo["PANELID_COUNT"] / PANEL_TOTAL_COUNT
-            #bRate=>RSC權重
+            # bRate=>RSC權重
             bRate = weightData.get(oo["OPER"], 0)
-            #(A*B)權重計算
+            # (A*B)權重計算
             tRate = round(aRate * bRate, 4)
             SymbolSize = round(tRate*oo["PANELID_COUNT"])
             if aRate >= A_Limit and tRate >= T_Limit:
-                data={
+                data = {
+                    "NAME": f'{oo["EQPID"]}',
                     "EQPID": f'{oo["EQPID"]}',
                     "OPER": oo["OPER"],
                     "PANELID_COUNT": oo["PANELID_COUNT"],
@@ -638,13 +740,260 @@ class INTRelation(BaseType):
     def _calLink_EQPID_OPER(self, node_cal_EQPID_OPER):
         DATASERIES = []
         for oo in node_cal_EQPID_OPER:
-            data={
-                "Source": oo["EQPID"],
-                "End": oo["OPER"],
+            data = {
+                "source": oo["NAME"],
+                "target": oo["OPER"],
                 "value": oo["value"]
             }
             DATASERIES.append(data)
         returnData = DATASERIES
         return returnData
 
+    def _calNode_OPER_OPERATOR(self, OPER_OPERATOR, PANEL_TOTAL_COUNT, A_Limit, T_Limit, weightData):
+        DATASERIES = []
+        for oo in OPER_OPERATOR:
+            # aRate=>Pcs/All不良占%
+            aRate = oo["PANELID_COUNT"] / PANEL_TOTAL_COUNT
+            # bRate=>RSC權重
+            bRate = weightData.get(oo["OPER"], 0)
+            # (A*B)權重計算
+            tRate = round(aRate * bRate, 4)
+            SymbolSize = round(tRate*oo["PANELID_COUNT"])
+            if aRate >= A_Limit and tRate >= T_Limit:
+                data = {
+                    "NAME": f'{oo["OPER"]}',
+                    "OPERATOR": f'TA_{oo["OPERATOR"]}',
+                    "OPER": oo["OPER"],
+                    "PANELID_COUNT": oo["PANELID_COUNT"],
+                    "A_Limit": A_Limit,
+                    "T_Limit": T_Limit,
+                    "aRate": aRate,
+                    "bRate": bRate,
+                    "tRate": tRate,
+                    "SymbolSize": SymbolSize,
+                    "value": oo["PANELID_COUNT"]
+                }
+                DATASERIES.append(data)
+        returnData = DATASERIES
+        return returnData
 
+    def _calLink_OPER_OPERATOR(self, node_cal_OPER_OPERATOR):
+        DATASERIES = []
+        for oo in node_cal_OPER_OPERATOR:
+            data = {
+                "source": oo["NAME"],
+                "target": oo["OPERATOR"],
+                "value": oo["value"]
+            }
+            DATASERIES.append(data)
+        returnData = DATASERIES
+        return returnData
+
+    def _calNode_MAT_OPER(self, MAT_OPER, PANEL_TOTAL_COUNT, A_Limit, T_Limit, weightData):
+        DATASERIES = []
+        for oo in MAT_OPER:
+            # aRate=>Pcs/All不良占%
+            aRate = oo["PANELID_COUNT"] / PANEL_TOTAL_COUNT
+            # bRate=>RSC權重
+            mat4 = oo["MAT_ID"][0:4]
+            bRate = weightData.get(mat4, 0)
+            # (A*B)權重計算
+            tRate = round(aRate * bRate, 4)
+            SymbolSize = round(tRate*oo["PANELID_COUNT"])
+            if aRate >= A_Limit and tRate >= T_Limit:
+                data = {
+                    "NAME": f'{oo["MAT_LOTID"]}_{mat4}',
+                    "OPER": oo["OPER"],
+                    "MAT4": mat4,
+                    "MAT_ID": oo["MAT_ID"],
+                    "MAT_LOTID": oo["MAT_LOTID"],
+                    "PANELID_COUNT": oo["PANELID_COUNT"],
+                    "A_Limit": A_Limit,
+                    "T_Limit": T_Limit,
+                    "aRate": aRate,
+                    "bRate": bRate,
+                    "tRate": tRate,
+                    "SymbolSize": SymbolSize,
+                    "value": oo["PANELID_COUNT"]
+                }
+                DATASERIES.append(data)
+        returnData = DATASERIES
+        return returnData
+
+    def _calLink_MAT_OPER(self, node_cal_MAT_OPER):
+        DATASERIES = []
+        for oo in node_cal_MAT_OPER:
+            data = {
+                "source": oo["NAME"],
+                "target": oo["OPER"],
+                "value": oo["value"]
+            }
+            DATASERIES.append(data)
+        returnData = DATASERIES
+        return returnData
+
+    def _grouptNodes(self, PANEL_TOTAL_COUNT, n1d,n2d,n3d,n4d,n5d,n6d): 
+        #{"id": "1", "name": "TA_AUTO_1301", "symbolSize": 10.4, "symbol": "circle", "value": 13, "category": 0 },
+            magerData = []                                     
+            for d in n1d:  
+                oData = {
+                    "id": 0, 
+                    "name": d["NAME"], 
+                    "symbolSize": d["SymbolSize"], 
+                    "symbol": "circle", 
+                    "value": d["value"],
+                    "category": 0 
+                }    
+                magerData.append(oData)
+            for d in n2d:     
+                oData = {
+                    "id": 0, 
+                    "name": d["NAME"], 
+                    "symbolSize": d["SymbolSize"], 
+                    "symbol": "triangle", 
+                    "value": d["value"],
+                    "category": 1 
+                }    
+                magerData.append(oData)
+            for d in n3d:     
+                oData = {
+                    "id": 0, 
+                    "name": d["NAME"], 
+                    "symbolSize": d["SymbolSize"], 
+                    "symbol": "triangle", 
+                    "value": d["value"],
+                    "category": 1 
+                }    
+                magerData.append(oData)
+            for d in n4d:     
+                oData = {
+                    "id": 0, 
+                    "name": d["NAME"], 
+                    "symbolSize": d["SymbolSize"], 
+                    "symbol": "rect", 
+                    "value": d["value"],
+                    "category": 2 
+                }    
+                magerData.append(oData)
+            for d in n5d:    
+                oData = {
+                    "id": 0, 
+                    "name": d["NAME"], 
+                    "symbolSize": d["SymbolSize"], 
+                    "symbol": "pin", 
+                    "value": d["value"],
+                    "category": 3
+                }    
+                magerData.append(oData)
+            if n6d != []:                
+                oData = {
+                    "id": 0, 
+                    "name": "1050", 
+                    "symbolSize": 1, 
+                    "symbol": "pin", 
+                    "value": 1,
+                    "category": 3
+                }    
+                magerData.append(oData)
+            for d in n6d:    
+                oData = {
+                    "id": 0, 
+                    "name": d["NAME"], 
+                    "symbolSize": d["SymbolSize"], 
+                    "symbol": "roundRect", 
+                    "value": d["value"],
+                    "category": 4
+                }    
+                magerData.append(oData)
+
+            #symbolSize resize
+            if(PANEL_TOTAL_COUNT >= 25):
+                magerData.sort(key = operator.itemgetter("symbolSize", "symbolSize"), reverse = True)
+                maxSymbolSize = magerData[0]["symbolSize"]
+                for x in magerData:
+                    weight = 25/maxSymbolSize
+                    x["symbolSize"] = round( x["symbolSize"]*weight,4) 
+            
+            magerData.sort(key = operator.itemgetter("name", "name"))
+            magerData.sort(key = operator.itemgetter("category", "category"))
+              
+            idCount = 1     
+            for x in magerData:
+                x["id"] = idCount 
+                idCount += 1
+
+            return magerData
+
+    def _grouptLinks(self, nodes, n1d,n2d,n3d,n4d,n5d,n6d): 
+        #{ "source": "2", "target": "9", "value":21 },
+            magerData = []                                  
+            for d in n1d:    
+                magerData.append(self._getLinkData(nodes, d)) 
+            for d in n2d:     
+                magerData.append(self._getLinkData(nodes, d)) 
+            for d in n3d:     
+                magerData.append(self._getLinkData(nodes, d)) 
+            for d in n4d:     
+                magerData.append(self._getLinkData(nodes, d)) 
+            for d in n5d:    
+                magerData.append(self._getLinkData(nodes, d)) 
+            for d in n6d:    
+                magerData.append(self._getLinkData(nodes, d))  
+            
+            returnData = d = list(
+                    filter(lambda d: d["source"] != 0 or d["target"] != 0, magerData))
+
+            return returnData
+
+    def _getLinkData(self,nodes, data):
+        oData = {
+            "source_n" :data["source"],
+            "source": self._getIDbyNodeName(nodes, data["source"]),
+            "target_n" :data["target"],
+            "target": self._getIDbyNodeName(nodes, data["target"]),
+            "value": data["value"]
+        }    
+        return oData
+
+    def _getIDbyNodeName(self, nodes, NodeName):        
+        d = list(filter(lambda d: d["name"] == NodeName, nodes)) 
+        returnData = 0
+        if d != []:
+            returnData = d[0]["id"]
+        return returnData
+
+    def _categories(self):
+        returnData = [
+            {
+                    "name": "人員",
+                    "itemStyle":{
+                        "color": "#3F70BF"
+                    }
+                },
+                {
+                    "name": "分時",
+                    "itemStyle":{
+                        "color": "#F75356"
+                    }
+                },
+                {
+                    "name": "機台",
+                    "itemStyle":{
+                        "color": "#70BF3F"
+                    }
+                },
+                {
+                    "name": "站點",
+                    "itemStyle":{
+                        "color": "#F9CE24"
+                    }
+                },
+                {
+                    "name": "物料",
+                    "itemStyle":{
+                        "color": "#E561C6"
+                    }
+                }
+        ]
+        return returnData
+    
