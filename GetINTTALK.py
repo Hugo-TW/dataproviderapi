@@ -351,14 +351,14 @@ class INTTALK(BaseType):
             dataArray.append(d.strftime(x, '%Y%m%d'))
         return dataArray
 
-    def _getDRDATA(self, OPER, PROD_NBR, DEFECTCODE, ACCT_DATE):
+    def _getDRDATA(self, OPER, PROD_NBR, DEFECTCODE, ACCT_DATE, type ):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         
         getFabData = self.operSetData[tmpFACTORY_ID]
-        numeratorData = getFabData["FPY"]["numerator"][OPER]
-        denominatorValue = getFabData["FPY"]["denominator"][OPER]
+        numeratorData = getFabData["FPY"]["numerator"][OPER] if type == "FPY" else OPER
+        denominatorValue = getFabData["FPY"]["denominator"][OPER] if type == "FPY" else OPER
 
         DEFECT_Aggregate = [
             {

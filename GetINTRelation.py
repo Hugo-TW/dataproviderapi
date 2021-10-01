@@ -1182,7 +1182,7 @@ class INTRelation(BaseType):
                 magerData.append(self._getLinkData(nodes, d))  
             
             returnData = d = list(
-                    filter(lambda d: d["source"] != 0 or d["target"] != 0, magerData))
+                    filter(lambda d: d["source"] != 0 and d["target"] != 0, magerData))
 
             return returnData
 
