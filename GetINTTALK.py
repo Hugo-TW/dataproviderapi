@@ -422,8 +422,8 @@ class INTTALK(BaseType):
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         
         getFabData = self.operSetData[tmpFACTORY_ID]
-        numeratorData = getFabData["FPY"]["numerator"][OPER] if type == "FPY" else OPER
-        denominatorValue = getFabData["FPY"]["denominator"][OPER] if type == "FPY" else OPER
+        numeratorData = getFabData["FPY"]["numerator"][OPER] 
+        denominatorValue = getFabData["FPY"]["denominator"][OPER]
 
         DEFECT_Aggregate = [
             {
