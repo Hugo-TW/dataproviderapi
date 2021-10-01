@@ -886,7 +886,7 @@ class INTRelation(BaseType):
         for x in DATASERIES:
             aRateList.append(f'{x.get("aRate")}')
         qq = sorted(aRateList, reverse=True)
-        top3 = float(qq[3])
+        top3 = float(qq[2])
 
         returnData = list(filter(lambda d: d["aRate"] >= top3, DATASERIES))
         return returnData
@@ -933,7 +933,7 @@ class INTRelation(BaseType):
         for x in DATASERIES:
             aRateList.append(f'{x.get("aRate")}')
         qq = sorted(aRateList, reverse=True)
-        top3 = float(qq[3])
+        top3 = float(qq[2])
 
         returnData = list(filter(lambda d: d["aRate"] >= top3, DATASERIES))
         return returnData
