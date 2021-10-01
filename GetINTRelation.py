@@ -1188,9 +1188,7 @@ class INTRelation(BaseType):
 
     def _getLinkData(self,nodes, data):
         oData = {
-            "source_n" :data["source"],
             "source": self._getIDbyNodeName(nodes, data["source"]),
-            "target_n" :data["target"],
             "target": self._getIDbyNodeName(nodes, data["target"]),
             "value": data["value"]
         }    
