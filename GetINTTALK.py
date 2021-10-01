@@ -175,9 +175,7 @@ class INTTALK(BaseType):
             tmpOPER = self.jsonData["OPER"]
             tmpCODE = self.jsonData["CODE"]
 
-            
-
-            if tmpFUNCTYPE == "CREATE":
+            if tmpFUNCTYPE == "CREATE_FPY":
                 tmpCONTENTTYPE = self.jsonData["CONTENTTYPE"] if "CONTENTTYPE" in self.jsonData else None
                 tmpCONTENT = self.jsonData["CONTENT"] if "CONTENT" in self.jsonData else None
                 tmpRATE = self.jsonData["RATE"] if "RATE" in self.jsonData else None
@@ -207,7 +205,7 @@ class INTTALK(BaseType):
                 elif tmpCONTENTTYPE == "COMM":
                     Jmsg1["COMM"] = tmpCONTENT
                 
-                DR_DATA = self._getDRDATA(tmpOPER, tmpPROD_NBR, tmpCODE, tmpACCT_DATE)
+                DR_DATA = self._getDRDATA_FPY(tmpOPER, tmpPROD_NBR, tmpCODE, tmpACCT_DATE)
 
                 if DR_DATA != None:
                     Jmsg1["RATE"] = DR_DATA["RATE"]
@@ -244,6 +242,74 @@ class INTTALK(BaseType):
 
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
+            elif tmpFUNCTYPE == "CREATE_EFA":
+                tmpCONTENTTYPE = self.jsonData["CONTENTTYPE"] if "CONTENTTYPE" in self.jsonData else None
+                tmpCONTENT = self.jsonData["CONTENT"] if "CONTENT" in self.jsonData else None
+                tmpRATE = self.jsonData["RATE"] if "RATE" in self.jsonData else None
+                tmpTOTAL = self.jsonData["TOTAL"] if "TOTAL" in self.jsonData else None
+
+                Jmsg = {
+                    "COMPANY_CODE": tmpCOMPANY_CODE,
+                    "SITE": tmpSITE,
+                    "FACTORY_ID": tmpFACTORY_ID,
+                    "ACCT_DATE": tmpACCT_DATE,
+                    "PROD_NBR": tmpPROD_NBR,
+                    "OPER": tmpOPER,
+                    "CODE": tmpCODE
+                }
+                self.getMongoConnection()
+                self.setMongoDb("IAMP")
+                self.setMongoCollection("intTalk")
+                org = self.getMongoFindOne(Jmsg)
+                self.closeMongoConncetion()
+                if org != None:
+                    Jmsg1 = copy.deepcopy(org)
+                else:
+                    Jmsg1 = copy.deepcopy(Jmsg)
+
+                if tmpCONTENTTYPE == "AA":
+                    Jmsg1["AA"] = tmpCONTENT
+                elif tmpCONTENTTYPE == "COMM":
+                    Jmsg1["COMM"] = tmpCONTENT
+                
+                DR_DATA = self._getDRDATA_EFA(tmpOPER, tmpPROD_NBR, tmpCODE, tmpACCT_DATE)
+
+                if DR_DATA != None:
+                    Jmsg1["RATE"] = DR_DATA["RATE"]
+                    Jmsg1["TOTAL"] = DR_DATA["TOTAL"]
+
+                """
+                if tmpRATE != None:
+                    Jmsg1["RATE"] = tmpRATE
+                if tmpTOTAL != None:
+                    Jmsg1["TOTAL"] = tmpTOTAL
+                """ 
+                              
+
+                utc = datetime.datetime.strptime(Jmsg["ACCT_DATE"], '%Y%m%d')
+                Jmsg1["UTC"] = int(time.mktime(utc.timetuple()))
+
+                self.getMongoConnection()
+                self.setMongoDb("IAMP")
+                self.setMongoCollection("intTalk")
+                count = self.deleteToMongo(Jmsg)
+                self.inserOneToMongo(Jmsg1)
+                self.closeMongoConncetion()
+
+                tmpSTARTDT = self.jsonData["STARTDT"]
+                tmpENDDT = self.jsonData["ENDDT"]
+                dataArray = self._dataArray(tmpSTARTDT, tmpENDDT)
+                tempData = self._groupTalkData(self._getTalkData(tmpCOMPANY_CODE, tmpSITE, tmpFACTORY_ID,
+                                                                 tmpPROD_NBR, tmpCODE, dataArray))
+                returnData = {"draw": 1,
+                              "recordsTotal": len(tempData),
+                              "recordsFiltered": len(tempData),
+                              "data": tempData
+                              }
+
+                return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+
+
             elif tmpFUNCTYPE == "SELECT":
                 tmpSTARTDT = self.jsonData["STARTDT"]
                 tmpENDDT = self.jsonData["ENDDT"]
@@ -262,8 +328,7 @@ class INTTALK(BaseType):
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
             else:
-                self.closeMongoConncetion()
-                return {'Result': 'Fail', 'Reason': 'Parametes[KPITYPE] not in Rule'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+                return {'Result': 'Fail', 'Reason': 'Parametes[FUNCTYPE] not in Rule'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
         except Exception as e:
             self.closeMongoConncetion()
@@ -351,7 +416,7 @@ class INTTALK(BaseType):
             dataArray.append(d.strftime(x, '%Y%m%d'))
         return dataArray
 
-    def _getDRDATA(self, OPER, PROD_NBR, DEFECTCODE, ACCT_DATE, type ):
+    def _getDRDATA_FPY(self, OPER, PROD_NBR, DEFECTCODE, ACCT_DATE):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
@@ -531,4 +596,178 @@ class INTTALK(BaseType):
             self.writeError(
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
+
+    def _getDRDATA_EFA(self, OPER, PROD_NBR, DEFECTCODE, ACCT_DATE):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        
+        numeratorData = OPER
+        denominatorValue = OPER
+
+        DEFECT_Aggregate = [
+            {
+                "$match": {
+                    "COMPANY_CODE": tmpCOMPANY_CODE,
+                    "SITE": tmpSITE,
+                    "FACTORY_ID": tmpFACTORY_ID,
+                    "ACCT_DATE": ACCT_DATE,
+                    "PROD_NBR": PROD_NBR,
+                    "LCM_OWNER": {"$in": ["LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                    "MAIN_WC": numeratorData
+                }
+            },
+            {
+                "$group": {
+                    "_id": {
+                        "APPLICATION" : "$APPLICATION",
+                        "PROD_NBR": "$PROD_NBR"
+                    },
+                    "deftQty": {
+                        "$sum": {"$toInt": "$QTY"}
+                    }
+                }
+            },
+            {
+                "$addFields": {
+                    "APPLICATION" : "$_id.APPLICATION",
+                    "PROD_NBR": "$_id.PROD_NBR",
+                    "deftQty": "$deftQty",
+                    "passQty": 0
+                }
+            },
+            {
+                "$project": {
+                    "_id": 0
+                }
+            },
+            {
+                "$unionWith": {
+                    "coll": "passHisAndCurrent",
+                            "pipeline": [
+                                {
+                                    "$match": {
+                                        "COMPANY_CODE": tmpCOMPANY_CODE,
+                                        "SITE": tmpSITE,
+                                        "FACTORY_ID": tmpFACTORY_ID,
+                                        "ACCT_DATE": ACCT_DATE,                                       
+                                        "PROD_NBR": PROD_NBR,
+                                        "MAIN_WC": denominatorValue
+                                    }
+                                },
+                                {
+                                    "$group": {
+                                        "_id": {
+                                            "APPLICATION" : "$APPLICATION",
+                                            "PROD_NBR": "$PROD_NBR"
+                                        },
+                                        "passQty": {
+                                            "$sum": {
+                                                "$toInt": "$QTY"
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "$addFields": {
+                                        "APPLICATION" : "$_id.APPLICATION",
+                                        "PROD_NBR": "$_id.PROD_NBR",
+                                        "passQty": "$passQty",
+                                        "deftQty": 0
+                                    }
+                                },
+                                {
+                                    "$project": {
+                                        "_id": 0
+                                    }
+                                }
+                            ]
+                }
+            },
+            {
+                "$group": {
+                    "_id": {
+                        "APPLICATION" : "$APPLICATION",
+                        "PROD_NBR": "$PROD_NBR"
+                    },
+                    "deftQty": {
+                        "$sum": "$deftQty"
+                    },
+                    "passQty": {
+                        "$sum": "$passQty"
+                    }
+                }
+            },
+            {
+                "$addFields": {
+                    "APPLICATION" : "$_id.APPLICATION",
+                    "PROD_NBR": "$_id.PROD_NBR",
+                    "OPER" : OPER,
+                    "DEFECT_YIELD": {
+                        "$cond": [
+                            {
+                                "$eq": [
+                                    "$passQty",
+                                    0
+                                ]
+                            },
+                            0,
+                            {
+                                "$divide": [
+                                    "$deftQty",
+                                    "$passQty"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "$project": {
+                    "_id": 0
+                }
+            },
+            {
+                "$sort": {
+                    "APPLICATION" : 1,
+                    "PROD_NBR": 1
+                }
+            }
+        ]
+
+        if DEFECTCODE != None:
+            DEFECT_Aggregate[0]["$match"]["DFCT_CODE"] = DEFECTCODE
+        try:
+            self.getMongoConnection()
+            self.setMongoDb("IAMP")
+            self.setMongoCollection("deftHisAndCurrent")
+            rData = self.aggregate(DEFECT_Aggregate)
+            self.closeMongoConncetion()
+
+            magerData = [] 
+            for d in rData:   
+                d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0    
+                magerData.append(d)
+
+            if len(magerData) == 0:
+                return None
+            else:
+                returnData = {
+                    "RATE" : str(round(magerData[0]["DEFECT_YIELD"]*100,2)),
+                    "TOTAL" : str(magerData[0]["passQty"])
+                }                
+                return returnData           
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
 
