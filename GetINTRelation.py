@@ -1078,7 +1078,7 @@ class INTRelation(BaseType):
             magerData = []                                     
             for d in n1d:  
                 oData = {
-                    "id": 0, 
+                    "id": "0", 
                     "name": d["NAME"], 
                     "symbolSize": d["SymbolSize"], 
                     "symbol": "circle", 
@@ -1088,7 +1088,7 @@ class INTRelation(BaseType):
                 magerData.append(oData)
             for d in n2d:     
                 oData = {
-                    "id": 0, 
+                    "id": "0", 
                     "name": d["NAME"], 
                     "symbolSize": d["SymbolSize"], 
                     "symbol": "triangle", 
@@ -1098,7 +1098,7 @@ class INTRelation(BaseType):
                 magerData.append(oData)
             for d in n3d:     
                 oData = {
-                    "id": 0, 
+                    "id": "0", 
                     "name": d["NAME"], 
                     "symbolSize": d["SymbolSize"], 
                     "symbol": "triangle", 
@@ -1108,7 +1108,7 @@ class INTRelation(BaseType):
                 magerData.append(oData)
             for d in n4d:     
                 oData = {
-                    "id": 0, 
+                    "id": "0", 
                     "name": d["NAME"], 
                     "symbolSize": d["SymbolSize"], 
                     "symbol": "rect", 
@@ -1118,7 +1118,7 @@ class INTRelation(BaseType):
                 magerData.append(oData)
             for d in n5d:    
                 oData = {
-                    "id": 0, 
+                    "id": "0", 
                     "name": d["NAME"], 
                     "symbolSize": d["SymbolSize"], 
                     "symbol": "pin", 
@@ -1128,7 +1128,7 @@ class INTRelation(BaseType):
                 magerData.append(oData)
             if n6d != []:                
                 oData = {
-                    "id": 0, 
+                    "id": "0", 
                     "name": "1050", 
                     "symbolSize": 1, 
                     "symbol": "pin", 
@@ -1138,7 +1138,7 @@ class INTRelation(BaseType):
                 magerData.append(oData)
             for d in n6d:    
                 oData = {
-                    "id": 0, 
+                    "id": "0", 
                     "name": d["NAME"], 
                     "symbolSize": d["SymbolSize"], 
                     "symbol": "roundRect", 
@@ -1160,7 +1160,7 @@ class INTRelation(BaseType):
               
             idCount = 1     
             for x in magerData:
-                x["id"] = idCount 
+                x["id"] = f"{idCount}"
                 idCount += 1
 
             return magerData
@@ -1182,7 +1182,7 @@ class INTRelation(BaseType):
                 magerData.append(self._getLinkData(nodes, d))  
             
             returnData = d = list(
-                    filter(lambda d: d["source"] != 0 and d["target"] != 0, magerData))
+                    filter(lambda d: d["source"] != "0" and d["target"] != "0", magerData))
 
             return returnData
 
@@ -1199,7 +1199,7 @@ class INTRelation(BaseType):
         returnData = 0
         if d != []:
             returnData = d[0]["id"]
-        return returnData
+        return f'{returnData}'
 
     def _categories(self):
         returnData = [
