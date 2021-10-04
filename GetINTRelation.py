@@ -319,8 +319,14 @@ class INTRelation(BaseType):
 
                 PANELID_Group = self._Group_PANELID_ListbyReason(panelData)
 
+                PANELID_Group_SQL_LIST = ""
+                for x in PANELID_Group:
+                    PANELID_Group_SQL_LIST = PANELID_Group_SQL_LIST + f"'{x}',"
+                if PANELID_Group_SQL_LIST != "":
+                    PANELID_Group_SQL_LIST = PANELID_Group_SQL_LIST[:-1]
+
                 # step1: 取得 panel his
-                whereString = f"where PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and PANELID in {tuple(PANELID_Group)} "
+                whereString = f"where PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and PANELID in ({PANELID_Group_SQL_LIST}) "
                 sql = f"with panel_his_daily as (select * from INTMP_DB.PANELHISDAILY {whereString} ) " \
                       "select PROD_NBR, MFGDATE, PANELID, OPER, TRANSDT, OPERATOR, EQPID, RW_COUNT, " \
                       "OUTPUT_FG from panel_his_daily order by PANELID, TRANSDT asc"
@@ -351,7 +357,7 @@ class INTRelation(BaseType):
                 gc.collect()
 
                 # step2: 取得panel use mat
-                whereString = f" PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and OPER = '1050' and PANELID in {tuple(PANELID_Group)} "
+                whereString = f" PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and OPER = '1050' and PANELID in ({PANELID_Group_SQL_LIST}) "
                 sql = f"with panel_his_mat as (select * from INTMP_DB.PANELHISDAILY_MAT where {whereString}) " \
                       "select PROD_NBR, MFGDATE, PANELID, OPER, MAT_ID, MAT_LOTID from panel_his_mat " \
                       "order by MAT_ID, MAT_LOTID asc"
@@ -382,6 +388,8 @@ class INTRelation(BaseType):
                 PANEL_TOTAL_COUNT = len(PANELID_Group)
 
                 # 人
+                node_cal_OPERATOR_OPER = []
+                link_cal_OPERATOR_OPER = []
                 OPERATOR_OPER_PANELID_Group = self._Group_OPERATOR_OPER_PANELID_List()
                 OPERATOR_OPER_EQPID_PANELID_Group = self._Group_OPERATOR_OPER_EQPID_PANELID_List()
                 notInOPER1 = ["1050", "1100", "1200", "2110"]
@@ -399,6 +407,10 @@ class INTRelation(BaseType):
                 link_cal_OPERATOR_OPER = self._calLink_OPERATOR_OPER(
                     node_cal_OPERATOR_OPER, OPERATOR_OPER_EQPID_Count)
                 
+                node_cal_OPERATOR_TIMECLUST = []
+                link_cal_OPERATOR_TIMECLUST = []
+                node_cal_EQPID_TIMECLUST = []
+                link_cal_EQPID_TIMECLUST = []
                 if PANEL_TOTAL_COUNT > 10: #沒大於10片 不計算分時
                 # 人時
                     OPERATOR_OPER_TIMECLUST_PANELID_Group = self._Group_OPERATOR_OPER_TIMECLUST_PANELID_List()
@@ -424,6 +436,8 @@ class INTRelation(BaseType):
                         node_cal_EQPID_TIMECLUST)
 
                 # 機
+                node_cal_EQPID_OPER = []
+                link_cal_EQPID_OPER = []
                 EQPID_OPER_PANELID_Group = self._Group_EQPID_OPER_PANELID_List()
                 notInOPER4 = ["1050", "1100", "2110"]
                 EQPID_OPER_Count = self._Count_EQPID_OPER_List(
@@ -439,6 +453,8 @@ class INTRelation(BaseType):
                     node_cal_EQPID_OPER)
 
                 # 站
+                node_cal_OPER_OPERATOR = []
+                link_cal_OPER_OPERATOR = []
                 notInOPER5 = ["1050", "1100", "2110"]
                 OPER_OPERATOR_Count = self._Count_OPERATOR_OPER_List(
                     notInOPER5, OPERATOR_OPER_PANELID_Group)
@@ -450,6 +466,8 @@ class INTRelation(BaseType):
                     node_cal_OPER_OPERATOR)
 
                 # 料
+                node_cal_MAT_OPER = []
+                link_cal_MAT_OPER = []
                 MAT_OPER_PANELID_Group = self._Group_MAT_OPER_PANELID_List(
                     matData)
                 MAT_OPER_Count = self._Count_MAT_OPER_List(
