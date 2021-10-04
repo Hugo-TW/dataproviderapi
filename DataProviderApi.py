@@ -2030,7 +2030,7 @@ class getINTTALK(Resource):
 
 INTRelationNs = api.namespace('GetINTRelation', description = 'NTRelation')
 INTRelationML = api.model('GetINTRelation', {
-    'FUNCTYPE': fields.String( required = True, description = 'FUNCTYPE', default = 'REASON', example = 'REASON'),
+    'FUNCTYPE': fields.String( required = True, description = 'FUNCTYPE', default = 'REASON_PROD', example = 'REASON_PROD'),
     'COMPANY_CODE': fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
     'SITE': fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
     'FACTORY_ID': fields.String( required = True, description = 'FACTORY_ID', default = 'J001', example = 'J001'),

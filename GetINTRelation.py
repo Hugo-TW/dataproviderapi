@@ -67,7 +67,7 @@ class INTRelation(BaseType):
                 self.writeLog(f"Cache Data From Redis")
                 return json.loads(self.getRedisData(redisKey)), 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type', "Access-Control-Expose-Headers": "Expires,DataSource", "Expires": time.mktime((datetime.datetime.now() + datetime.timedelta(seconds=expirSecond)).timetuple()), "DataSource": "Redis"}
             """
-            if tmpFuncType == "REASON":
+            if tmpFuncType == "REASON_TEST":
                 # region 準備數據
                 # comm data: 權種數據
                 whereString = f" REASONCODE = '{tmpCHECKCODE}' "
@@ -159,7 +159,7 @@ class INTRelation(BaseType):
                     notInOPER1, OPERATOR_OPER_EQPID_PANELID_Group)
                 OPER_Count = self._Count_OPER_List(
                     notInOPER1, OPERATOR_OPER_Count)
-                o_A_Limit = self._OPERATOR_OPER_Limit(
+                o_A_Limit = self._OPER_Limit(
                     OPER_Count, PANEL_TOTAL_COUNT)
                 o_T_Limit = 0.3
                 node_cal_OPERATOR_OPER = self._calNode_OPERATOR_OPER(
@@ -194,7 +194,7 @@ class INTRelation(BaseType):
                     notInOPER4, EQPID_OPER_PANELID_Group)
                 OPER_Count = self._Count_OPER_List(
                     notInOPER4, EQPID_OPER_Count)
-                g_A_Limit = self._OPERATOR_OPER_Limit(
+                g_A_Limit = self._OPER_Limit(
                     OPER_Count, PANEL_TOTAL_COUNT)
                 g_T_Limit = 0.3
                 node_cal_EQPID_OPER = self._calNode_EQPID_OPER(
@@ -378,8 +378,7 @@ class INTRelation(BaseType):
                 # temp list
                 # 分群
                 self.BASE_GROUPList = self._Group_OPERATOR_OPER_EQPID_TIMECLUST_PANELID_List(
-                    hisData)
-                
+                    hisData)                
                 PANEL_TOTAL_COUNT = len(PANELID_Group)
 
                 # 人
@@ -392,33 +391,37 @@ class INTRelation(BaseType):
                     notInOPER1, OPERATOR_OPER_EQPID_PANELID_Group)
                 OPER_Count = self._Count_OPER_List(
                     notInOPER1, OPERATOR_OPER_Count)
-                o_A_Limit = self._OPERATOR_OPER_Limit(
+                o_A_Limit = self._OPER_Limit(
                     OPER_Count, PANEL_TOTAL_COUNT)
                 o_T_Limit = 0.3
                 node_cal_OPERATOR_OPER = self._calNode_OPERATOR_OPER(
                     OPERATOR_OPER_Count, PANEL_TOTAL_COUNT, o_A_Limit, o_T_Limit, weightData)
                 link_cal_OPERATOR_OPER = self._calLink_OPERATOR_OPER(
                     node_cal_OPERATOR_OPER, OPERATOR_OPER_EQPID_Count)
-
+                
+                if PANEL_TOTAL_COUNT > 10: #沒大於10片 不計算分時
                 # 人時
-                OPERATOR_OPER_TIMECLUST_PANELID_Group = self._Group_OPERATOR_OPER_TIMECLUST_PANELID_List()
-                notInOPER2 = ["1050", "1100", "1200", "2110"]
-                OPERATOR_OPER_TIMECLUST_Count = self._Count_OPERATOR_OPER_TIMECLUST_List(
-                    notInOPER2, OPERATOR_OPER_TIMECLUST_PANELID_Group)
-                node_cal_OPERATOR_TIMECLUST = self._calNode_OPERATOR_TIMECLUSTR(
-                    OPERATOR_OPER_TIMECLUST_Count, PANEL_TOTAL_COUNT)
-                link_cal_OPERATOR_TIMECLUST = self._calLink_OPERATOR_TIMECLUSTR(
-                    node_cal_OPERATOR_TIMECLUST)
-
+                    OPERATOR_OPER_TIMECLUST_PANELID_Group = self._Group_OPERATOR_OPER_TIMECLUST_PANELID_List()
+                    notInOPER2 = ["1050", "1100", "1200", "2110"]
+                    OPERATOR_OPER_TIMECLUST_Count = self._Count_OPERATOR_OPER_TIMECLUST_List(
+                        notInOPER2, OPERATOR_OPER_TIMECLUST_PANELID_Group)
+                    _OPERATOR_OPER_Count = self._SUM_OPERATOR_OPER_List(
+                        OPERATOR_OPER_TIMECLUST_Count, PANEL_TOTAL_COUNT)
+                    node_cal_OPERATOR_TIMECLUST = self._calNode_OPERATOR_TIMECLUSTR(
+                        OPERATOR_OPER_TIMECLUST_Count, PANEL_TOTAL_COUNT, _OPERATOR_OPER_Count)
+                    link_cal_OPERATOR_TIMECLUST = self._calLink_OPERATOR_TIMECLUSTR(
+                        node_cal_OPERATOR_TIMECLUST)
                 # 機時
-                EQPID_OPER_TIMECLUST_PANELID_Group = self._Group_EQPID_OPER_TIMECLUST_PANELID_List()
-                notInOPER3 = ["1050", "1100", "1200", "2110"]
-                EQPID_OPER_TIMECLUST_Count = self._Count_EQPID_OPER_TIMECLUST_List(
-                    notInOPER3, EQPID_OPER_TIMECLUST_PANELID_Group)
-                node_cal_EQPID_TIMECLUST = self._calNode_EQPID_TIMECLUSTR(
-                    EQPID_OPER_TIMECLUST_Count, PANEL_TOTAL_COUNT)
-                link_cal_EQPID_TIMECLUST = self._calLink_EQPID_TIMECLUSTR(
-                    node_cal_EQPID_TIMECLUST)
+                    EQPID_OPER_TIMECLUST_PANELID_Group = self._Group_EQPID_OPER_TIMECLUST_PANELID_List()
+                    notInOPER3 = ["1050", "1100", "1200", "2110"]
+                    EQPID_OPER_TIMECLUST_Count = self._Count_EQPID_OPER_TIMECLUST_List(
+                        notInOPER3, EQPID_OPER_TIMECLUST_PANELID_Group)
+                    _EQPID_OPER_Count = self._SUM_EQPID_OPER_List(
+                        EQPID_OPER_TIMECLUST_Count, PANEL_TOTAL_COUNT)
+                    node_cal_EQPID_TIMECLUST = self._calNode_EQPID_TIMECLUSTR(
+                        EQPID_OPER_TIMECLUST_Count, PANEL_TOTAL_COUNT, _EQPID_OPER_Count)
+                    link_cal_EQPID_TIMECLUST = self._calLink_EQPID_TIMECLUSTR(
+                        node_cal_EQPID_TIMECLUST)
 
                 # 機
                 EQPID_OPER_PANELID_Group = self._Group_EQPID_OPER_PANELID_List()
@@ -427,7 +430,7 @@ class INTRelation(BaseType):
                     notInOPER4, EQPID_OPER_PANELID_Group)
                 OPER_Count = self._Count_OPER_List(
                     notInOPER4, EQPID_OPER_Count)
-                g_A_Limit = self._OPERATOR_OPER_Limit(
+                g_A_Limit = self._OPER_Limit(
                     OPER_Count, PANEL_TOTAL_COUNT)
                 g_T_Limit = 0.3
                 node_cal_EQPID_OPER = self._calNode_EQPID_OPER(
@@ -482,6 +485,8 @@ class INTRelation(BaseType):
 
                 C_DESC = self._code2Desc(tmpCHECKCODE)
                 returnData = {
+                    "node_cal_OPERATOR_TIMECLUST":node_cal_OPERATOR_TIMECLUST,
+                    "node_cal_EQPID_TIMECLUST":node_cal_EQPID_TIMECLUST,
                     "RELATIONTYPE": tmpFuncType,
                     "COMPANY_CODE": tmpCOMPANY_CODE,
                     "SITE": tmpSITE,
@@ -794,7 +799,6 @@ class INTRelation(BaseType):
         return List
 
     # OPER 出現次數
-
     def _Count_OPER_List(self, notInOPER, DATA):
         List = {}
         for x in DATA:
@@ -805,12 +809,66 @@ class INTRelation(BaseType):
                     List[x["OPER"]] += 1
         return List
 
-    def _OPERATOR_OPER_Limit(self, OPER_List, PANEL_TOTAL_COUNT):
+    def _OPER_Limit(self, OPER_List, PANEL_TOTAL_COUNT):
         # (PANEL_TOTAL_COUNT*70%)/(MAX(B2:N2)*35%)/PANEL_TOTAL_COUNT
         OPER_List_MAX = max(OPER_List.values()) * 0.35
         cal = (PANEL_TOTAL_COUNT * 0.7) / OPER_List_MAX / PANEL_TOTAL_COUNT
         returnData = cal if cal < 0.5 else 0.5
         return returnData
+
+    def _SUM_OPERATOR_OPER_List(self, OPERATOR_List, PANEL_TOTAL_COUNT):
+        List = []
+        for x in OPERATOR_List:
+            if {"OPERATOR": x["OPERATOR"], "OPER": x["OPER"]} not in List:
+                data = {
+                    "OPERATOR": x["OPERATOR"],
+                    "OPER": x["OPER"]
+                }
+                List.append(data)
+
+        List2 = []
+        for x in List:
+            d = list(
+                filter(lambda d: d["OPERATOR"] == x["OPERATOR"] and d["OPER"] == x["OPER"], OPERATOR_List))
+            if d != []:
+                PANELID_COUNT = 0
+                for dd in d:
+                    PANELID_COUNT += dd["PANELID_COUNT"]
+                data = {
+                    "OPERATOR": x["OPERATOR"],
+                    "OPER": x["OPER"],
+                    "PANELID_COUNT": PANELID_COUNT,
+                    "A_LIMIT": round( PANELID_COUNT/PANEL_TOTAL_COUNT, 4)
+                }
+                List2.append(data)
+        return List2
+    
+    def _SUM_EQPID_OPER_List(self, EQPID_List, PANEL_TOTAL_COUNT):
+        List = []
+        for x in EQPID_List:
+            if {"EQPID": x["EQPID"], "OPER": x["OPER"]} not in List:
+                data = {
+                    "EQPID": x["EQPID"],
+                    "OPER": x["OPER"]
+                }
+                List.append(data)
+
+        List2 = []
+        for x in List:
+            d = list(
+                filter(lambda d: d["EQPID"] == x["EQPID"] and d["OPER"] == x["OPER"], EQPID_List))
+            if d != []:
+                PANELID_COUNT = 0
+                for dd in d:
+                    PANELID_COUNT += dd["PANELID_COUNT"]
+                data = {
+                    "EQPID": x["EQPID"],
+                    "OPER": x["OPER"],
+                    "PANELID_COUNT": PANELID_COUNT,
+                    "A_LIMIT": round( PANELID_COUNT/PANEL_TOTAL_COUNT, 4)
+                }
+                List2.append(data)
+        return List2
 
     def _calNode_OPERATOR_OPER(self, OPERATOR_OPER, PANEL_TOTAL_COUNT, A_Limit, T_Limit, weightData):
         DATASERIES = []
@@ -856,7 +914,7 @@ class INTRelation(BaseType):
         returnData = DATASERIES
         return returnData
 
-    def _calNode_OPERATOR_TIMECLUSTR(self, OPERATOR_TIMECLUSTR, PANEL_TOTAL_COUNT):
+    def _calNode_OPERATOR_TIMECLUSTR(self, OPERATOR_TIMECLUSTR, PANEL_TOTAL_COUNT, aLimit_List):
         DATASERIES = []
         for oo in OPERATOR_TIMECLUSTR:
             # aRate=>Pcs/All不良占%
@@ -865,6 +923,8 @@ class INTRelation(BaseType):
             d = datetime.datetime
             TIMECLUST_d = d.strptime(oo["TIMECLUST"], '%Y%m%d%H')
             TIMECLUST = d.strftime(TIMECLUST_d, '%m/%d_%H')
+            A_Limit =  list(filter(lambda d: d["OPERATOR"] == oo["OPERATOR"]
+                     and d["OPER"] == oo["OPER"], aLimit_List))[0]["A_LIMIT"]
             data = {
                 "NAME": f'{TIMECLUST}時{oo["OPER"]}_人',
                 "OPERATOR": f'TA_{oo["OPERATOR"]}',
@@ -872,7 +932,7 @@ class INTRelation(BaseType):
                 "TIMECLUST": TIMECLUST,
                 "PANELID_COUNT": oo["PANELID_COUNT"],
                 "PANEL_TOTAL_COUNT": PANEL_TOTAL_COUNT,
-                "A_Limit": "TOP3",
+                "A_Limit": A_Limit,
                 "aRate": aRate,
                 "SymbolSize": SymbolSize,
                 "value": oo["PANELID_COUNT"]
@@ -887,8 +947,8 @@ class INTRelation(BaseType):
             aRateList.append(f'{x.get("aRate")}')
         qq = sorted(aRateList, reverse=True)
         top3 = float(qq[2])
-
-        returnData = list(filter(lambda d: d["aRate"] >= top3, DATASERIES))
+        top3Filter = list(filter(lambda d: d["aRate"] >= top3, DATASERIES))
+        returnData = list(filter(lambda d: d["A_Limit"] >= 0.36, top3Filter))
         return returnData
 
     def _calLink_OPERATOR_TIMECLUSTR(self, node_cal_OPERATOR_TIMECLUSTR):
@@ -903,7 +963,7 @@ class INTRelation(BaseType):
         returnData = DATASERIES
         return returnData
 
-    def _calNode_EQPID_TIMECLUSTR(self, EQPID_TIMECLUSTR, PANEL_TOTAL_COUNT):
+    def _calNode_EQPID_TIMECLUSTR(self, EQPID_TIMECLUSTR, PANEL_TOTAL_COUNT, aLimit_List):
         DATASERIES = []
         for oo in EQPID_TIMECLUSTR:
             # aRate=>Pcs/All不良占%
@@ -912,6 +972,8 @@ class INTRelation(BaseType):
             d = datetime.datetime
             TIMECLUST_d = d.strptime(oo["TIMECLUST"], '%Y%m%d%H')
             TIMECLUST = d.strftime(TIMECLUST_d, '%m/%d_%H')
+            A_Limit =  list(filter(lambda d: d["EQPID"] == oo["EQPID"]
+                     and d["OPER"] == oo["OPER"], aLimit_List))[0]["A_LIMIT"]
             data = {
                 "NAME": f'{TIMECLUST}時{oo["OPER"]}',
                 "EQPID": f'{oo["EQPID"]}',
@@ -919,7 +981,7 @@ class INTRelation(BaseType):
                 "TIMECLUST": TIMECLUST,
                 "PANELID_COUNT": oo["PANELID_COUNT"],
                 "PANEL_TOTAL_COUNT": PANEL_TOTAL_COUNT,
-                "A_Limit": "TOP3",
+                "A_Limit": A_Limit,
                 "aRate": aRate,
                 "SymbolSize": SymbolSize,
                 "value": oo["PANELID_COUNT"]
@@ -934,8 +996,8 @@ class INTRelation(BaseType):
             aRateList.append(f'{x.get("aRate")}')
         qq = sorted(aRateList, reverse=True)
         top3 = float(qq[2])
-
-        returnData = list(filter(lambda d: d["aRate"] >= top3, DATASERIES))
+        top3Filter = list(filter(lambda d: d["aRate"] >= top3, DATASERIES))
+        returnData = list(filter(lambda d: d["A_Limit"] >= 0.36, top3Filter))
         return returnData
 
     def _calLink_EQPID_TIMECLUSTR(self, node_cal_EQPID_TIMECLUSTR):
@@ -1123,16 +1185,6 @@ class INTRelation(BaseType):
                     "symbolSize": d["SymbolSize"], 
                     "symbol": "pin", 
                     "value": d["value"],
-                    "category": 3
-                }    
-                magerData.append(oData)
-            if n6d != []:                
-                oData = {
-                    "id": "0", 
-                    "name": "1050", 
-                    "symbolSize": 1, 
-                    "symbol": "pin", 
-                    "value": 1,
                     "category": 3
                 }    
                 magerData.append(oData)
