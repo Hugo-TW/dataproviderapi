@@ -67,198 +67,97 @@ class INTRelation(BaseType):
                 self.writeLog(f"Cache Data From Redis")
                 return json.loads(self.getRedisData(redisKey)), 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type', "Access-Control-Expose-Headers": "Expires,DataSource", "Expires": time.mktime((datetime.datetime.now() + datetime.timedelta(seconds=expirSecond)).timetuple()), "DataSource": "Redis"}
             """
-            if tmpFuncType == "REASON_TEST":
-                # region 準備數據
-                # comm data: 權種數據
-                whereString = f" REASONCODE = '{tmpCHECKCODE}' "
-                sql = "select REASONCODE, COMPARECODE, WEIGHT from INTMP_DB.REASON_WEIGHT " \
-                      f"where {whereString} " \
-                      "order by REASONCODE, COMPARECODE "
-                self.getConnection(self.DBconfig)
-                commData = self.Select(sql)
-                self.closeConnection()
-                weightData = {}
-                if(len(commData) != 0):
-                    for da in commData:
-                        weightData[da[1]] = float(da[2])
-                del commData
-                gc.collect()
+            if tmpFuncType == "FPY_TEST":
+                nodes = [
+                    {"id": "0", "name": "TA_20001704", "symbolSize": 22.5,
+                        "symbol": "circle", "value": 3, "category": 0},
+                    {"id": "1", "name": "TA_20007668", "symbolSize": 13.75,
+                        "symbol": "circle", "value": 4, "category": 0},
+                    {"id": "2", "name": "09/07_21時1415", "symbolSize": 25,
+                        "symbol": "triangle", "value": 0, "category": 1},
+                    {"id": "3", "name": "09/07_22時1415", "symbolSize": 25,
+                        "symbol": "triangle", "value": 0, "category": 1},
+                    {"id": "4", "name": "09/07_23時1415", "symbolSize": 25,
+                        "symbol": "triangle", "value": 0, "category": 1},
+                    {"id": "5", "name": "09/08_02時1415", "symbolSize": 25,
+                        "symbol": "triangle", "value": 0, "category": 1},
+                    {"id": "6", "name": "09/08_02時1420", "symbolSize": 25,
+                        "symbol": "triangle", "value": 0, "category": 1},
+                    {"id": "7", "name": "09/08_03時1420", "symbolSize": 12.5,
+                        "symbol": "triangle", "value": 0, "category": 1},
+                    {"id": "9", "name": "ASSY3606", "symbolSize": 22.5,
+                        "symbol": "rect", "value": 3, "category": 2},
+                    {"id": "10", "name": "AAFC3144", "symbolSize": 13.75,
+                        "symbol": "rect", "value": 4, "category": 2},
+                    {"id": "11", "name": "1415_Assy(B/L外購)", "symbolSize": 45,
+                     "symbol": "pin", "value": 4, "category": 3},
+                    {"id": "12", "name": "1420_AAFC", "symbolSize": 27.5,
+                        "symbol": "pin", "value": 4, "category": 3}
+                ]
 
-                # step0: 取得 與 defect / Reason 相關的 panel id
-
-                # step1: 取得 panel his
-                whereString = f" PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' "
-                sql = f"with panel_his_daily as (select * from INTMP_DB.PANELHISDAILY where {whereString}) " \
-                      "select PROD_NBR, MFGDATE, PANELID, OPER, TRANSDT, OPERATOR, EQPID, RW_COUNT, " \
-                      "OUTPUT_FG from panel_his_daily order by PANELID, TRANSDT asc"
-
-                self.getConnection(self.DBconfig)
-                data1 = self.Select(sql)
-                self.closeConnection()
-                hisData = []
-                if(len(data1) != 0):
-                    for da in data1:
-                        d = datetime.datetime
-                        TIMECLUST_d = d.strptime(da[4], '%Y%m%d%H%M%S')
-                        TIMECLUST = d.strftime(TIMECLUST_d, '%Y%m%d%H')
-                        datadict = {
-                            "PROD_NBR": da[0],
-                            "MFGDATE": da[1],
-                            "PANELID": da[2],
-                            "OPER": da[3],
-                            "TRANSDT": da[4],
-                            "OPERATOR": da[5],
-                            "EQPID": da[6],
-                            "RW_COUNT": da[7],
-                            "OUTPUT_FG": da[8],
-                            "TIMECLUST": TIMECLUST
+                links = [
+                    {"source": "0", "target": "9", "value": 3},
+                    {"source": "1", "target": "10", "value": 4},
+                    {"source": "2", "target": "0", "value": 1},
+                    {"source": "2", "target": "9", "value": 1},
+                    {"source": "3", "target": "0", "value": 1},
+                    {"source": "3", "target": "9", "value": 1},
+                    {"source": "4", "target": "0", "value": 1},
+                    {"source": "4", "target": "9", "value": 1},
+                    {"source": "6", "target": "1", "value": 2},
+                    {"source": "6", "target": "10", "value": 2},
+                    {"source": "7", "target": "1", "value": 1},
+                    {"source": "8", "target": "1", "value": 1},
+                    {"source": "8", "target": "10", "value": 1},
+                    {"source": "9", "target": "11", "value": 3},
+                    {"source": "10", "target": "12", "value": 4},
+                    {"source": "11", "target": "0", "value": 3},
+                    {"source": "12", "target": "1", "value": 4}
+                ]
+                categories = [
+                    {
+                        "name": "人員",
+                        "itemStyle": {
+                            "color": "#3F70BF"
                         }
-                        hisData.append(datadict)
-                del data1
-                gc.collect()
-
-                # step2: 取得panel use mat
-                whereString = f" PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and OPER = '1050' "
-                sql = f"with panel_his_mat as (select * from INTMP_DB.PANELHISDAILY_MAT where {whereString}) " \
-                      "select PROD_NBR, MFGDATE, PANELID, OPER, MAT_ID, MAT_LOTID from panel_his_mat " \
-                      "order by MAT_ID, MAT_LOTID asc"
-
-                self.getConnection(self.DBconfig)
-                data2 = self.Select(sql)
-                self.closeConnection()
-                matData = []
-                if(len(data2) != 0):
-                    for da in data2:
-                        datadict = {
-                            "PROD_NBR": da[0],
-                            "MFGDATE": da[1],
-                            "PANELID": da[2],
-                            "OPER": da[3],
-                            "MAT_ID": da[4],
-                            "MAT_LOTID": da[5]
+                    },
+                    {
+                        "name": "分時",
+                        "itemStyle": {
+                            "color": "#F75356"
                         }
-                        matData.append(datadict)
-                del data2
-                gc.collect()
-                # endregion
+                    },
+                    {
+                        "name": "機台",
+                        "itemStyle": {
+                            "color": "#70BF3F"
+                        }
+                    },
+                    {
+                        "name": "站點",
+                        "itemStyle": {
+                            "color": "#F9CE24"
+                        }
+                    },
+                    {
+                        "name": "物料",
+                        "itemStyle": {
+                            "color": "#E561C6"
+                        }
+                    }
+                ]
 
-                # temp list
-                # 分群
-                self.BASE_GROUPList = self._Group_OPERATOR_OPER_EQPID_TIMECLUST_PANELID_List(
-                    hisData)
-                PANELID_Group = self._Group_PANELID_List()
-                PANEL_TOTAL_COUNT = len(PANELID_Group)
-
-                # 人
-                OPERATOR_OPER_PANELID_Group = self._Group_OPERATOR_OPER_PANELID_List()
-                OPERATOR_OPER_EQPID_PANELID_Group = self._Group_OPERATOR_OPER_EQPID_PANELID_List()
-                notInOPER1 = ["1050", "1100", "1200", "2110"]
-                OPERATOR_OPER_Count = self._Count_OPERATOR_OPER_List(
-                    notInOPER1, OPERATOR_OPER_PANELID_Group)
-                OPERATOR_OPER_EQPID_Count = self._Count_OPERATOR_OPER_EQPID_List(
-                    notInOPER1, OPERATOR_OPER_EQPID_PANELID_Group)
-                OPER_Count = self._Count_OPER_List(
-                    notInOPER1, OPERATOR_OPER_Count)
-                o_A_Limit = self._OPER_Limit(
-                    OPER_Count, PANEL_TOTAL_COUNT)
-                o_T_Limit = 0.3
-                node_cal_OPERATOR_OPER = self._calNode_OPERATOR_OPER(
-                    OPERATOR_OPER_Count, PANEL_TOTAL_COUNT, o_A_Limit, o_T_Limit, weightData)
-                link_cal_OPERATOR_OPER = self._calLink_OPERATOR_OPER(
-                    node_cal_OPERATOR_OPER, OPERATOR_OPER_EQPID_Count)
-
-                # 人時
-                OPERATOR_OPER_TIMECLUST_PANELID_Group = self._Group_OPERATOR_OPER_TIMECLUST_PANELID_List()
-                notInOPER2 = ["1050", "1100", "1200", "2110"]
-                OPERATOR_OPER_TIMECLUST_Count = self._Count_OPERATOR_OPER_TIMECLUST_List(
-                    notInOPER2, OPERATOR_OPER_TIMECLUST_PANELID_Group)
-                node_cal_OPERATOR_TIMECLUST = self._calNode_OPERATOR_TIMECLUSTR(
-                    OPERATOR_OPER_TIMECLUST_Count, PANEL_TOTAL_COUNT)
-                link_cal_OPERATOR_TIMECLUST = self._calLink_OPERATOR_TIMECLUSTR(
-                    node_cal_OPERATOR_TIMECLUST)
-
-                # 機時
-                EQPID_OPER_TIMECLUST_PANELID_Group = self._Group_EQPID_OPER_TIMECLUST_PANELID_List()
-                notInOPER3 = ["1050", "1100", "1200", "2110"]
-                EQPID_OPER_TIMECLUST_Count = self._Count_EQPID_OPER_TIMECLUST_List(
-                    notInOPER3, EQPID_OPER_TIMECLUST_PANELID_Group)
-                node_cal_EQPID_TIMECLUST = self._calNode_EQPID_TIMECLUSTR(
-                    EQPID_OPER_TIMECLUST_Count, PANEL_TOTAL_COUNT)
-                link_cal_EQPID_TIMECLUST = self._calLink_EQPID_TIMECLUSTR(
-                    node_cal_EQPID_TIMECLUST)
-
-                # 機
-                EQPID_OPER_PANELID_Group = self._Group_EQPID_OPER_PANELID_List()
-                notInOPER4 = ["1050", "1100", "2110"]
-                EQPID_OPER_Count = self._Count_EQPID_OPER_List(
-                    notInOPER4, EQPID_OPER_PANELID_Group)
-                OPER_Count = self._Count_OPER_List(
-                    notInOPER4, EQPID_OPER_Count)
-                g_A_Limit = self._OPER_Limit(
-                    OPER_Count, PANEL_TOTAL_COUNT)
-                g_T_Limit = 0.3
-                node_cal_EQPID_OPER = self._calNode_EQPID_OPER(
-                    EQPID_OPER_Count, PANEL_TOTAL_COUNT, g_A_Limit, g_T_Limit, weightData)
-                link_cal_EQPID_OPER = self._calLink_EQPID_OPER(
-                    node_cal_EQPID_OPER)
-
-                # 站
-                notInOPER5 = ["1050", "1100", "2110"]
-                OPER_OPERATOR_Count = self._Count_OPERATOR_OPER_List(
-                    notInOPER5, OPERATOR_OPER_PANELID_Group)
-                OPER_Count = self._Count_OPER_List(
-                    notInOPER5, OPERATOR_OPER_Count)
-                node_cal_OPER_OPERATOR = self._calNode_OPER_OPERATOR(
-                    OPER_OPERATOR_Count, PANEL_TOTAL_COUNT, o_A_Limit, o_T_Limit, weightData)
-                link_cal_OPER_OPERATOR = self._calLink_OPER_OPERATOR(
-                    node_cal_OPER_OPERATOR)
-
-                # 料
-                MAT_OPER_PANELID_Group = self._Group_MAT_OPER_PANELID_List(
-                    matData)
-                MAT_OPER_Count = self._Count_MAT_OPER_List(
-                    MAT_OPER_PANELID_Group)
-                m_A_Limit = 0.6
-                m_T_Limit = 0.6
-                node_cal_MAT_OPER = self._calNode_MAT_OPER(
-                    MAT_OPER_Count, PANEL_TOTAL_COUNT, m_A_Limit, m_T_Limit, weightData)
-                link_cal_MAT_OPER = self._calLink_MAT_OPER(node_cal_MAT_OPER)
-
-                #資料聚合
-                nodes = self._grouptNodes(
-                                        PANEL_TOTAL_COUNT,
-                                        node_cal_OPERATOR_OPER,
-                                        node_cal_OPERATOR_TIMECLUST,
-                                        node_cal_EQPID_TIMECLUST,
-                                        node_cal_EQPID_OPER,
-                                        node_cal_OPER_OPERATOR,
-                                        node_cal_MAT_OPER
-                                    )
-
-                links = self._grouptLinks(
-                                        nodes,
-                                        link_cal_OPERATOR_OPER,
-                                        link_cal_OPERATOR_TIMECLUST,
-                                        link_cal_EQPID_TIMECLUST,
-                                        link_cal_EQPID_OPER,
-                                        link_cal_OPER_OPERATOR,
-                                        link_cal_MAT_OPER
-                                    )
-
-                categories = self._categories()
-
-                C_DESC = self._code2Desc(tmpCHECKCODE)
                 returnData = {
                     "RELATIONTYPE": tmpFuncType,
                     "COMPANY_CODE": tmpCOMPANY_CODE,
                     "SITE": tmpSITE,
                     "FACTORY_ID": tmpFACTORY_ID,
                     "APPLICATION": tmpAPPLICATION,
-                    "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
-                    "PROD_NBR": tmpPROD_NBR,
-                    "OPER": tmpOPER,
-                    "C_CODE": tmpCHECKCODE,
-                    "C_DESCR": C_DESC if C_DESC != None else tmpCHECKCODE,
+                    "ACCT_DATE": "0908",
+                    "PROD_NBR": "GZJ133IA0010S",
+                    "OPER": "AAFC",
+                    "C_CODE": "PCU16",
+                    "C_DESCR": "周邊框線",
                     "nodes": nodes,
                     "links": links,
                     "categories": categories
@@ -293,7 +192,7 @@ class INTRelation(BaseType):
 
                 # step0: 取得 與 defect / Reason 相關的 panel id
                 whereString = f"where PROD_NBR = '{tmpPROD_NBR}' and  DEFT_REASON = '{tmpCHECKCODE}' "\
-                        f" and MAIN_OPER = '{tmpOPER}'  and MFGDATE = '{tmpACCT_DATE}' "
+                    f" and MAIN_OPER = '{tmpOPER}'  and MFGDATE = '{tmpACCT_DATE}' "
                 sql = "select PROD_NBR, DEFT_REASON, MFGDATE, MAIN_OPER, PANELID, RW_COUNT "\
                       " from INTMP_DB.PANELHISDAILY_REASON " \
                       f"{whereString} " \
@@ -384,7 +283,7 @@ class INTRelation(BaseType):
                 # temp list
                 # 分群
                 self.BASE_GROUPList = self._Group_OPERATOR_OPER_EQPID_TIMECLUST_PANELID_List(
-                    hisData)                
+                    hisData)
                 PANEL_TOTAL_COUNT = len(PANELID_Group)
 
                 # 人
@@ -406,13 +305,13 @@ class INTRelation(BaseType):
                     OPERATOR_OPER_Count, PANEL_TOTAL_COUNT, o_A_Limit, o_T_Limit, weightData)
                 link_cal_OPERATOR_OPER = self._calLink_OPERATOR_OPER(
                     node_cal_OPERATOR_OPER, OPERATOR_OPER_EQPID_Count)
-                
+
                 node_cal_OPERATOR_TIMECLUST = []
                 link_cal_OPERATOR_TIMECLUST = []
                 node_cal_EQPID_TIMECLUST = []
                 link_cal_EQPID_TIMECLUST = []
-                if PANEL_TOTAL_COUNT > 10: #沒大於10片 不計算分時
-                # 人時
+                if PANEL_TOTAL_COUNT > 10:  # 沒大於10片 不計算分時
+                    # 人時
                     OPERATOR_OPER_TIMECLUST_PANELID_Group = self._Group_OPERATOR_OPER_TIMECLUST_PANELID_List()
                     notInOPER2 = ["1050", "1100", "1200", "2110"]
                     OPERATOR_OPER_TIMECLUST_Count = self._Count_OPERATOR_OPER_TIMECLUST_List(
@@ -478,33 +377,31 @@ class INTRelation(BaseType):
                     MAT_OPER_Count, PANEL_TOTAL_COUNT, m_A_Limit, m_T_Limit, weightData)
                 link_cal_MAT_OPER = self._calLink_MAT_OPER(node_cal_MAT_OPER)
 
-                #資料聚合
+                # 資料聚合
                 nodes = self._grouptNodes(
-                                        PANEL_TOTAL_COUNT,
-                                        node_cal_OPERATOR_OPER,
-                                        node_cal_OPERATOR_TIMECLUST,
-                                        node_cal_EQPID_TIMECLUST,
-                                        node_cal_EQPID_OPER,
-                                        node_cal_OPER_OPERATOR,
-                                        node_cal_MAT_OPER
-                                    )
+                    PANEL_TOTAL_COUNT,
+                    node_cal_OPERATOR_OPER,
+                    node_cal_OPERATOR_TIMECLUST,
+                    node_cal_EQPID_TIMECLUST,
+                    node_cal_EQPID_OPER,
+                    node_cal_OPER_OPERATOR,
+                    node_cal_MAT_OPER
+                )
 
                 links = self._grouptLinks(
-                                        nodes,
-                                        link_cal_OPERATOR_OPER,
-                                        link_cal_OPERATOR_TIMECLUST,
-                                        link_cal_EQPID_TIMECLUST,
-                                        link_cal_EQPID_OPER,
-                                        link_cal_OPER_OPERATOR,
-                                        link_cal_MAT_OPER
-                                    )
+                    nodes,
+                    link_cal_OPERATOR_OPER,
+                    link_cal_OPERATOR_TIMECLUST,
+                    link_cal_EQPID_TIMECLUST,
+                    link_cal_EQPID_OPER,
+                    link_cal_OPER_OPERATOR,
+                    link_cal_MAT_OPER
+                )
 
                 categories = self._categories()
 
                 C_DESC = self._code2Desc(tmpCHECKCODE)
                 returnData = {
-                    "node_cal_OPERATOR_TIMECLUST":node_cal_OPERATOR_TIMECLUST,
-                    "node_cal_EQPID_TIMECLUST":node_cal_EQPID_TIMECLUST,
                     "RELATIONTYPE": tmpFuncType,
                     "COMPANY_CODE": tmpCOMPANY_CODE,
                     "SITE": tmpSITE,
@@ -529,7 +426,6 @@ class INTRelation(BaseType):
                         returnData, sort_keys=True, indent=2), expirSecond)
                 """
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
-
 
             else:
                 self.closeConnection()
@@ -580,7 +476,7 @@ class INTRelation(BaseType):
             if x["PANELID"] not in PANELIDList:
                 PANELIDList.append(x["PANELID"])
         return PANELIDList
-    
+
     def _Group_PANELID_ListbyReason(self, PANEL_List):
         PANELIDList = []
         for x in PANEL_List:
@@ -856,11 +752,11 @@ class INTRelation(BaseType):
                     "OPERATOR": x["OPERATOR"],
                     "OPER": x["OPER"],
                     "PANELID_COUNT": PANELID_COUNT,
-                    "A_LIMIT": round( PANELID_COUNT/PANEL_TOTAL_COUNT, 4)
+                    "A_LIMIT": round(PANELID_COUNT/PANEL_TOTAL_COUNT, 4)
                 }
                 List2.append(data)
         return List2
-    
+
     def _SUM_EQPID_OPER_List(self, EQPID_List, PANEL_TOTAL_COUNT):
         List = []
         for x in EQPID_List:
@@ -883,7 +779,7 @@ class INTRelation(BaseType):
                     "EQPID": x["EQPID"],
                     "OPER": x["OPER"],
                     "PANELID_COUNT": PANELID_COUNT,
-                    "A_LIMIT": round( PANELID_COUNT/PANEL_TOTAL_COUNT, 4)
+                    "A_LIMIT": round(PANELID_COUNT/PANEL_TOTAL_COUNT, 4)
                 }
                 List2.append(data)
         return List2
@@ -941,8 +837,8 @@ class INTRelation(BaseType):
             d = datetime.datetime
             TIMECLUST_d = d.strptime(oo["TIMECLUST"], '%Y%m%d%H')
             TIMECLUST = d.strftime(TIMECLUST_d, '%m/%d_%H')
-            A_Limit =  list(filter(lambda d: d["OPERATOR"] == oo["OPERATOR"]
-                     and d["OPER"] == oo["OPER"], aLimit_List))[0]["A_LIMIT"]
+            A_Limit = list(filter(lambda d: d["OPERATOR"] == oo["OPERATOR"]
+                                  and d["OPER"] == oo["OPER"], aLimit_List))[0]["A_LIMIT"]
             data = {
                 "NAME": f'{TIMECLUST}時{oo["OPER"]}_人',
                 "OPERATOR": f'TA_{oo["OPERATOR"]}',
@@ -990,8 +886,8 @@ class INTRelation(BaseType):
             d = datetime.datetime
             TIMECLUST_d = d.strptime(oo["TIMECLUST"], '%Y%m%d%H')
             TIMECLUST = d.strftime(TIMECLUST_d, '%m/%d_%H')
-            A_Limit =  list(filter(lambda d: d["EQPID"] == oo["EQPID"]
-                     and d["OPER"] == oo["OPER"], aLimit_List))[0]["A_LIMIT"]
+            A_Limit = list(filter(lambda d: d["EQPID"] == oo["EQPID"]
+                                  and d["OPER"] == oo["OPER"], aLimit_List))[0]["A_LIMIT"]
             data = {
                 "NAME": f'{TIMECLUST}時{oo["OPER"]}',
                 "EQPID": f'{oo["EQPID"]}',
@@ -1153,119 +1049,120 @@ class INTRelation(BaseType):
         returnData = DATASERIES
         return returnData
 
-    def _grouptNodes(self, PANEL_TOTAL_COUNT, n1d,n2d,n3d,n4d,n5d,n6d): 
+    def _grouptNodes(self, PANEL_TOTAL_COUNT, n1d, n2d, n3d, n4d, n5d, n6d):
         #{"id": "1", "name": "TA_AUTO_1301", "symbolSize": 10.4, "symbol": "circle", "value": 13, "category": 0 },
-            magerData = []                                     
-            for d in n1d:  
-                oData = {
-                    "id": "0", 
-                    "name": d["NAME"], 
-                    "symbolSize": d["SymbolSize"], 
-                    "symbol": "circle", 
-                    "value": d["value"],
-                    "category": 0 
-                }    
-                magerData.append(oData)
-            for d in n2d:     
-                oData = {
-                    "id": "0", 
-                    "name": d["NAME"], 
-                    "symbolSize": d["SymbolSize"], 
-                    "symbol": "triangle", 
-                    "value": d["value"],
-                    "category": 1 
-                }    
-                magerData.append(oData)
-            for d in n3d:     
-                oData = {
-                    "id": "0", 
-                    "name": d["NAME"], 
-                    "symbolSize": d["SymbolSize"], 
-                    "symbol": "triangle", 
-                    "value": d["value"],
-                    "category": 1 
-                }    
-                magerData.append(oData)
-            for d in n4d:     
-                oData = {
-                    "id": "0", 
-                    "name": d["NAME"], 
-                    "symbolSize": d["SymbolSize"], 
-                    "symbol": "rect", 
-                    "value": d["value"],
-                    "category": 2 
-                }    
-                magerData.append(oData)
-            for d in n5d:    
-                oData = {
-                    "id": "0", 
-                    "name": d["NAME"], 
-                    "symbolSize": d["SymbolSize"], 
-                    "symbol": "pin", 
-                    "value": d["value"],
-                    "category": 3
-                }    
-                magerData.append(oData)
-            for d in n6d:    
-                oData = {
-                    "id": "0", 
-                    "name": d["NAME"], 
-                    "symbolSize": d["SymbolSize"], 
-                    "symbol": "roundRect", 
-                    "value": d["value"],
-                    "category": 4
-                }    
-                magerData.append(oData)
+        magerData = []
+        for d in n1d:
+            oData = {
+                "id": "0",
+                "name": d["NAME"],
+                "symbolSize": d["SymbolSize"],
+                "symbol": "circle",
+                "value": d["value"],
+                "category": 0
+            }
+            magerData.append(oData)
+        for d in n2d:
+            oData = {
+                "id": "0",
+                "name": d["NAME"],
+                "symbolSize": d["SymbolSize"],
+                "symbol": "triangle",
+                "value": d["value"],
+                "category": 1
+            }
+            magerData.append(oData)
+        for d in n3d:
+            oData = {
+                "id": "0",
+                "name": d["NAME"],
+                "symbolSize": d["SymbolSize"],
+                "symbol": "triangle",
+                "value": d["value"],
+                "category": 1
+            }
+            magerData.append(oData)
+        for d in n4d:
+            oData = {
+                "id": "0",
+                "name": d["NAME"],
+                "symbolSize": d["SymbolSize"],
+                "symbol": "rect",
+                "value": d["value"],
+                "category": 2
+            }
+            magerData.append(oData)
+        for d in n5d:
+            oData = {
+                "id": "0",
+                "name": d["NAME"],
+                "symbolSize": d["SymbolSize"],
+                "symbol": "pin",
+                "value": d["value"],
+                "category": 3
+            }
+            magerData.append(oData)
+        for d in n6d:
+            oData = {
+                "id": "0",
+                "name": d["NAME"],
+                "symbolSize": d["SymbolSize"],
+                "symbol": "roundRect",
+                "value": d["value"],
+                "category": 4
+            }
+            magerData.append(oData)
 
-            #symbolSize resize
-            if(PANEL_TOTAL_COUNT >= 25):
-                magerData.sort(key = operator.itemgetter("symbolSize", "symbolSize"), reverse = True)
-                maxSymbolSize = magerData[0]["symbolSize"]
-                for x in magerData:
-                    weight = 25/maxSymbolSize
-                    x["symbolSize"] = round( x["symbolSize"]*weight,4) 
-            
-            magerData.sort(key = operator.itemgetter("name", "name"))
-            magerData.sort(key = operator.itemgetter("category", "category"))
-              
-            idCount = 1     
+        # symbolSize resize
+        if(PANEL_TOTAL_COUNT >= 25):
+            magerData.sort(key=operator.itemgetter(
+                "symbolSize", "symbolSize"), reverse=True)
+            maxSymbolSize = magerData[0]["symbolSize"]
             for x in magerData:
-                x["id"] = f"{idCount}"
-                idCount += 1
+                weight = 25/maxSymbolSize
+                x["symbolSize"] = round(x["symbolSize"]*weight, 4)
 
-            return magerData
+        magerData.sort(key=operator.itemgetter("name", "name"))
+        magerData.sort(key=operator.itemgetter("category", "category"))
 
-    def _grouptLinks(self, nodes, n1d,n2d,n3d,n4d,n5d,n6d): 
+        idCount = 1
+        for x in magerData:
+            x["id"] = f"{idCount}"
+            idCount += 1
+
+        return magerData
+
+    def _grouptLinks(self, nodes, n1d, n2d, n3d, n4d, n5d, n6d):
         #{ "source": "2", "target": "9", "value":21 },
-            magerData = []                                  
-            for d in n1d:    
-                magerData.append(self._getLinkData(nodes, d)) 
-            for d in n2d:     
-                magerData.append(self._getLinkData(nodes, d)) 
-            for d in n3d:     
-                magerData.append(self._getLinkData(nodes, d)) 
-            for d in n4d:     
-                magerData.append(self._getLinkData(nodes, d)) 
-            for d in n5d:    
-                magerData.append(self._getLinkData(nodes, d)) 
-            for d in n6d:    
-                magerData.append(self._getLinkData(nodes, d))  
-            
-            returnData = d = list(
-                    filter(lambda d: d["source"] != "0" and d["target"] != "0", magerData))
+        magerData = []
+        for d in n1d:
+            magerData.append(self._getLinkData(nodes, d))
+        for d in n2d:
+            magerData.append(self._getLinkData(nodes, d))
+        for d in n3d:
+            magerData.append(self._getLinkData(nodes, d))
+        for d in n4d:
+            magerData.append(self._getLinkData(nodes, d))
+        for d in n5d:
+            magerData.append(self._getLinkData(nodes, d))
+        for d in n6d:
+            magerData.append(self._getLinkData(nodes, d))
 
-            return returnData
+        returnData = d = list(
+            filter(lambda d: d["source"] != "0" and d["target"] != "0", magerData))
 
-    def _getLinkData(self,nodes, data):
+        return returnData
+
+    def _getLinkData(self, nodes, data):
         oData = {
             "source": self._getIDbyNodeName(nodes, data["source"]),
             "target": self._getIDbyNodeName(nodes, data["target"]),
             "value": data["value"]
-        }    
+        }
         return oData
 
-    def _getIDbyNodeName(self, nodes, NodeName):        
-        d = list(filter(lambda d: d["name"] == NodeName, nodes)) 
+    def _getIDbyNodeName(self, nodes, NodeName):
+        d = list(filter(lambda d: d["name"] == NodeName, nodes))
         returnData = 0
         if d != []:
             returnData = d[0]["id"]
@@ -1274,35 +1171,34 @@ class INTRelation(BaseType):
     def _categories(self):
         returnData = [
             {
-                    "name": "人員",
-                    "itemStyle":{
+                "name": "人員",
+                "itemStyle": {
                         "color": "#3F70BF"
-                    }
-                },
-                {
-                    "name": "分時",
-                    "itemStyle":{
-                        "color": "#F75356"
-                    }
-                },
-                {
-                    "name": "機台",
-                    "itemStyle":{
-                        "color": "#70BF3F"
-                    }
-                },
-                {
-                    "name": "站點",
-                    "itemStyle":{
-                        "color": "#F9CE24"
-                    }
-                },
-                {
-                    "name": "物料",
-                    "itemStyle":{
-                        "color": "#E561C6"
-                    }
                 }
+            },
+            {
+                "name": "分時",
+                "itemStyle": {
+                        "color": "#F75356"
+                }
+            },
+            {
+                "name": "機台",
+                "itemStyle": {
+                        "color": "#70BF3F"
+                }
+            },
+            {
+                "name": "站點",
+                "itemStyle": {
+                        "color": "#F9CE24"
+                }
+            },
+            {
+                "name": "物料",
+                "itemStyle": {
+                        "color": "#E561C6"
+                }
+            }
         ]
         return returnData
-    

@@ -371,18 +371,18 @@ class INTLV3(BaseType):
                 n1s_DATA = self._getFPYLV2LINEDataALL(tmpOPER, tmpPROD_NBR, dataRange["n1s"], dataRange["n1s_array"], 0)
                 
                 DATASERIES = self._grouptFPYLV2LINE(
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n1d_DATA["dData"], n1d_DATA["pData"]), tmpOPER, dataRange["n1d"], 11),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n2d_DATA["dData"], n2d_DATA["pData"]), tmpOPER, dataRange["n2d"], 10),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n3d_DATA["dData"], n3d_DATA["pData"]), tmpOPER, dataRange["n3d"], 9),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n4d_DATA["dData"], n4d_DATA["pData"]), tmpOPER, dataRange["n4d"], 8),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n5d_DATA["dData"], n5d_DATA["pData"]), tmpOPER, dataRange["n5d"], 7),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n6d_DATA["dData"], n6d_DATA["pData"]), tmpOPER, dataRange["n6d"], 6),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n1w_DATA["dData"], n1w_DATA["pData"]), tmpOPER, dataRange["n1w"], 5),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n2w_DATA["dData"], n2w_DATA["pData"]), tmpOPER, dataRange["n2w"], 4),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n3w_DATA["dData"], n3w_DATA["pData"]), tmpOPER, dataRange["n3w"], 3),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n1m_DATA["dData"], n1m_DATA["pData"]), tmpOPER, dataRange["n1m"], 2),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n2m_DATA["dData"], n2m_DATA["pData"]), tmpOPER, dataRange["n2m"], 1),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n1s_DATA["dData"], n1s_DATA["pData"]), tmpOPER, dataRange["n1s"], 0))
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPERALL(n1d_DATA["dData"], n1d_DATA["pData"]), tmpOPER, dataRange["n1d"], 11),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPERALL(n2d_DATA["dData"], n2d_DATA["pData"]), tmpOPER, dataRange["n2d"], 10),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPERALL(n3d_DATA["dData"], n3d_DATA["pData"]), tmpOPER, dataRange["n3d"], 9),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPERALL(n4d_DATA["dData"], n4d_DATA["pData"]), tmpOPER, dataRange["n4d"], 8),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPERALL(n5d_DATA["dData"], n5d_DATA["pData"]), tmpOPER, dataRange["n5d"], 7),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPERALL(n6d_DATA["dData"], n6d_DATA["pData"]), tmpOPER, dataRange["n6d"], 6),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPERALL(n1w_DATA["dData"], n1w_DATA["pData"]), tmpOPER, dataRange["n1w"], 5),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPERALL(n2w_DATA["dData"], n2w_DATA["pData"]), tmpOPER, dataRange["n2w"], 4),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPERALL(n3w_DATA["dData"], n3w_DATA["pData"]), tmpOPER, dataRange["n3w"], 3),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPERALL(n1m_DATA["dData"], n1m_DATA["pData"]), tmpOPER, dataRange["n1m"], 2),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPERALL(n2m_DATA["dData"], n2m_DATA["pData"]), tmpOPER, dataRange["n2m"], 1),
+                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPERALL(n1s_DATA["dData"], n1s_DATA["pData"]), tmpOPER, dataRange["n1s"], 0))
 
                 returnData = {                    
                     "KPITYPE": tmpKPITYPE,
@@ -1458,23 +1458,15 @@ class INTLV3(BaseType):
         getFabData = self.operSetData[tmpFACTORY_ID]          
         denominatorValue = getFabData["FPY"]["denominator"]
 
-        passAggregate = []
+        passAggregate_PCBI = []
+        passAggregate_LAM = []
+        passAggregate_AAFC = []
+        passAggregate_CKEN = []
+        passAggregate_DKEN = []
         deftAggregate = []
         
-        AlldenominatorValue = []
-        for x in denominatorValue["PCBI"]:
-            AlldenominatorValue.append(x)
-        for x in denominatorValue["LAM"]:
-            AlldenominatorValue.append(x)
-        for x in denominatorValue["AAFC"]:
-            AlldenominatorValue.append(x)
-        for x in denominatorValue["CKEN"]:
-            AlldenominatorValue.append(x)
-        for x in denominatorValue["DKEN"]:
-            AlldenominatorValue.append(x)
-
         #pass
-        passMatch1 = {
+        passMatchPCBI = {
             "$match": {
                 "COMPANY_CODE": tmpCOMPANY_CODE,
                 "SITE": tmpSITE,
@@ -1482,7 +1474,55 @@ class INTLV3(BaseType):
                 "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
                 "PROD_NBR": PROD_NBR,
                 "LCM_OWNER": {"$in": ["LCM0", "LCME", "PROD", "QTAP", "RES0"]},
-                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, AlldenominatorValue]},
+                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, denominatorValue["PCBI"]]},
+                "RW_COUNT": {"$lte": "1"}
+            }
+        }
+        passMatchLAM = {
+            "$match": {
+                "COMPANY_CODE": tmpCOMPANY_CODE,
+                "SITE": tmpSITE,
+                "FACTORY_ID": tmpFACTORY_ID,
+                "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
+                "PROD_NBR": PROD_NBR,
+                "LCM_OWNER": {"$in": ["LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, denominatorValue["LAM"]]},
+                "RW_COUNT": {"$lte": "1"}
+            }
+        }
+        passMatchAAFC = {
+            "$match": {
+                "COMPANY_CODE": tmpCOMPANY_CODE,
+                "SITE": tmpSITE,
+                "FACTORY_ID": tmpFACTORY_ID,
+                "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
+                "PROD_NBR": PROD_NBR,
+                "LCM_OWNER": {"$in": ["LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, denominatorValue["AAFC"]]},
+                "RW_COUNT": {"$lte": "1"}
+            }
+        }
+        passMatchCKEN = {
+            "$match": {
+                "COMPANY_CODE": tmpCOMPANY_CODE,
+                "SITE": tmpSITE,
+                "FACTORY_ID": tmpFACTORY_ID,
+                "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
+                "PROD_NBR": PROD_NBR,
+                "LCM_OWNER": {"$in": ["LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, denominatorValue["CKEN"]]},
+                "RW_COUNT": {"$lte": "1"}
+            }
+        }
+        passMatchDKEN = {
+            "$match": {
+                "COMPANY_CODE": tmpCOMPANY_CODE,
+                "SITE": tmpSITE,
+                "FACTORY_ID": tmpFACTORY_ID,
+                "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
+                "PROD_NBR": PROD_NBR,
+                "LCM_OWNER": {"$in": ["LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, denominatorValue["DKEN"]]},
                 "RW_COUNT": {"$lte": "1"}
             }
         }
@@ -1643,18 +1683,31 @@ class INTLV3(BaseType):
         }
 
         deftAggregate.extend([deftMatch1, deftGroup1, deftProject1, deftAdd, deftSort])
-        passAggregate.extend([passMatch1, passGroup1, passProject1, passGroup2, passProject2, passAdd, passSort])        
+        passAggregate_PCBI.extend([passMatchPCBI, passGroup1, passProject1, passGroup2, passProject2, passAdd, passSort])
+        passAggregate_LAM.extend([passMatchLAM, passGroup1, passProject1, passGroup2, passProject2, passAdd, passSort])
+        passAggregate_AAFC.extend([passMatchAAFC, passGroup1, passProject1, passGroup2, passProject2, passAdd, passSort])
+        passAggregate_CKEN.extend([passMatchCKEN, passGroup1, passProject1, passGroup2, passProject2, passAdd, passSort])        
+        passAggregate_DKEN.extend([passMatchDKEN, passGroup1, passProject1, passGroup2, passProject2, passAdd, passSort])        
 
         try:
             self.getMongoConnection()
             self.setMongoDb("IAMP")
             self.setMongoCollection("passHisAndCurrent")
-            pData = self.aggregate(passAggregate)
+            PCBI_Data = self.aggregate(passAggregate_PCBI)
+            LAM_Data = self.aggregate(passAggregate_LAM)
+            AAFC_Data = self.aggregate(passAggregate_AAFC)
+            CKEN_Data = self.aggregate(passAggregate_CKEN)
+            DKEN_Data = self.aggregate(passAggregate_DKEN)
             self.setMongoCollection("deftHisAndCurrent")
             dData = self.aggregate(deftAggregate)
             self.closeMongoConncetion()
             returnData = {
-                "pData": pData,
+                "pData": {
+                    "PCBI": PCBI_Data,
+                    "LAM": LAM_Data,
+                    "AAFC": AAFC_Data,
+                    "CKEN": CKEN_Data,
+                    "DKEN": DKEN_Data},
                 "dData": dData
             }
             return returnData
@@ -1670,6 +1723,72 @@ class INTLV3(BaseType):
             self.writeError(
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
+
+    def _groupPassDeftByPRODandOPERALL(self, dData, pData):        
+        tempPassData = []
+        for p in pData["PCBI"]:
+            tempPassData.append(p)
+        for p in pData["LAM"]:
+            tempPassData.append(p)
+        for p in pData["AAFC"]:
+            tempPassData.append(p)
+        for p in pData["CKEN"]:
+            tempPassData.append(p)
+        for p in pData["DKEN"]:
+            tempPassData.append(p)
+
+        passData = []
+        PASSQTYSUM = 0
+        PASSOPER = 0
+        for x in tempPassData:
+            if x["PassSUMQty"] > 0:
+                PASSQTYSUM += x["PassSUMQty"]
+                PASSOPER += 1
+
+        if PASSOPER != 0:
+            AVGPASS = round(PASSQTYSUM/PASSOPER, 4)
+            passData.append({
+                "COMPANY_CODE": tempPassData[0]["COMPANY_CODE"],
+                "SITE": tempPassData[0]["SITE"],
+                "FACTORY_ID": tempPassData[0]["FACTORY_ID"],
+                "PROD_NBR": tempPassData[0]["PROD_NBR"],
+                "APPLICATION": tempPassData[0]["APPLICATION"],
+                "PassSUMQty": AVGPASS,
+                "OPER": "ALL"
+            })
+
+        deftData = []
+        for d in dData:
+            deftData.append(d)
+        data = []
+        oData = {}
+        if deftData != [] and passData != []:
+            for d in deftData:
+                p = list(filter(lambda d: d["PROD_NBR"]
+                        == p["PROD_NBR"], passData))[0]
+                oData["XVALUE"] = copy.deepcopy(d["XVALUE"])                
+                oData["DATARANGE"] = copy.deepcopy(d["DATARANGE"])
+                oData["COMPANY_CODE"] = copy.deepcopy(p["COMPANY_CODE"])
+                oData["SITE"] = copy.deepcopy(p["SITE"])
+                oData["FACTORY_ID"] = copy.deepcopy(p["FACTORY_ID"])
+                oData["PROD_NBR"] = copy.deepcopy(p["PROD_NBR"])
+                if "APPLICATION" in p.keys():
+                    oData["APPLICATION"] = copy.deepcopy(p["APPLICATION"])
+                else:
+                    oData["APPLICATION"] = None
+                oData["OPER"] = copy.deepcopy(p["OPER"])
+                oData["DFCT_CODE"] = copy.deepcopy(d["DFCT_CODE"])
+                oData["ERRC_DESCR"] = copy.deepcopy(d["ERRC_DESCR"])
+                oData["PassSUMQty"] = copy.deepcopy(p["PassSUMQty"])
+                if d == []:
+                    oData["DeftSUMQty"] = 0
+                else:
+                    oData["DeftSUMQty"] = copy.deepcopy(d["DEFT_QTY"])
+                if oData["DeftSUMQty"] < oData["PassSUMQty"]:
+                    data.append(copy.deepcopy(oData))
+                oData = {}
+        return data
+
 
     def _getMSHIPLV2LINE(self,getFabData, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
