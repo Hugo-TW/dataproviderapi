@@ -1120,7 +1120,11 @@ class INTRelation(BaseType):
             maxSymbolSize = magerData[0]["symbolSize"]
             for x in magerData:
                 weight = 25/maxSymbolSize
-                x["symbolSize"] = round(x["symbolSize"]*weight, 4)
+                x["symbolSize"] = round(x["symbolSize"]*weight, 4)        
+        else:
+            multiple = round(25 / PANEL_TOTAL_COUNT, 4)
+            for x in magerData:
+                x["symbolSize"] = round(x["symbolSize"]*multiple, 4)
 
         magerData.sort(key=operator.itemgetter("name", "name"))
         magerData.sort(key=operator.itemgetter("category", "category"))
