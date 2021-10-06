@@ -22,6 +22,7 @@ class INTLV3(BaseType):
         #M011 => MOD1
         #J001 => MOD2
         #J003 => MOD3
+        self.__tmpAPPLICATION = ""
         self.operSetData = {
             "M011": {
                 "FPY": {
@@ -330,6 +331,16 @@ class INTLV3(BaseType):
                     self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n2m_DATA["dData"], n2m_DATA["pData"]), tmpOPER, dataRange["n2m"], 1),
                     self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n1s_DATA["dData"], n1s_DATA["pData"]), tmpOPER, dataRange["n1s"], 0))
 
+                getLimitData = self.operSetData[tmpFACTORY_ID]["FPY"]["limit"]
+                xLimit = None
+                yLimit = None
+                if self.__tmpAPPLICATION in getLimitData.keys():
+                    xLimit = getLimitData[self.__tmpAPPLICATION]["qytlim"]
+                    yLimit = getLimitData[self.__tmpAPPLICATION]["FPY"] * 100
+                else:
+                    xLimit = 1000
+                    yLimit = 90
+
                 returnData = {                    
                     "KPITYPE": tmpKPITYPE,
                     "COMPANY_CODE": tmpCOMPANY_CODE,
@@ -339,6 +350,8 @@ class INTLV3(BaseType):
                     "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
                     "PROD_NBR": tmpPROD_NBR,                                      
                     "OPER": tmpOPER,
+                    "xLimit": xLimit,
+                    "yLimit": 100-yLimit,
                     "DATASERIES": DATASERIES
                 }
 
@@ -384,6 +397,16 @@ class INTLV3(BaseType):
                     self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPERALL(n2m_DATA["dData"], n2m_DATA["pData"]), tmpOPER, dataRange["n2m"], 1),
                     self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPERALL(n1s_DATA["dData"], n1s_DATA["pData"]), tmpOPER, dataRange["n1s"], 0))
 
+                getLimitData = self.operSetData[tmpFACTORY_ID]["FPY"]["limit"]
+                xLimit = None
+                yLimit = None
+                if self.__tmpAPPLICATION in getLimitData.keys():
+                    xLimit = getLimitData[self.__tmpAPPLICATION]["qytlim"]
+                    yLimit = getLimitData[self.__tmpAPPLICATION]["FPY"] * 100
+                else:
+                    xLimit = 1000
+                    yLimit = 90
+
                 returnData = {                    
                     "KPITYPE": tmpKPITYPE,
                     "COMPANY_CODE": tmpCOMPANY_CODE,
@@ -393,6 +416,8 @@ class INTLV3(BaseType):
                     "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
                     "PROD_NBR": tmpPROD_NBR,                                      
                     "OPER": "ALL",
+                    "xLimit": xLimit,
+                    "yLimit": 100-yLimit,
                     "DATASERIES": DATASERIES
                 }
 
@@ -1343,8 +1368,11 @@ class INTLV3(BaseType):
     def _calFPYLV2LINEOPER(self, tempData, OPER, DATARANGE, DATARANGEID):
         tmpPROD_NBR = self.jsonData["PROD_NBR"]
 
+        if tempData != []:
+            self.__tmpAPPLICATION =  tempData[0]["APPLICATION"]
+
         allDFCTCount = {}
-        for x in tempData:    
+        for x in tempData:  
             if x["DFCT_CODE"] in allDFCTCount.keys():
                 allDFCTCount[x["DFCT_CODE"]] += x["DeftSUMQty"]
             else:
