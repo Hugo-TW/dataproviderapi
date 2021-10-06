@@ -989,6 +989,7 @@ class INTLV3(BaseType):
                     "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
                     "LCM_OWNER": {"$in": ["LCM0", "LCME", "PROD", "QTAP", "RES0"]},
                     "MAIN_WC": {"$in": OPERList},
+                    "WORK_CTR": "2110",
                     "PROD_NBR": PROD_NBR
                 }
             },
