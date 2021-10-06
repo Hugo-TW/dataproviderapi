@@ -795,9 +795,12 @@ class INTRelation(BaseType):
             tRate = round(aRate * bRate, 4)
             SymbolSize = round(tRate*oo["PANELID_COUNT"])
             if aRate >= A_Limit and tRate >= T_Limit:
+                NAME = f'TA_{oo["OPERATOR"]}' 
+                if oo["OPERATOR"] == "AUTO":
+                    NAME = f'TA_{oo["OPERATOR"]}{oo["OPER"]}' 
                 data = {
-                    "NAME": f'TA_{oo["OPERATOR"]}',
-                    "OPERATOR": f'TA_{oo["OPERATOR"]}',
+                    "NAME": NAME,
+                    "OPERATOR": oo["OPERATOR"],
                     "OPER": oo["OPER"],
                     "PANELID_COUNT": oo["PANELID_COUNT"],
                     "A_Limit": A_Limit,
@@ -815,7 +818,7 @@ class INTRelation(BaseType):
     def _calLink_OPERATOR_OPER(self, node_cal_OPERATOR_OPER, OPERATOR_OPER_EQPID_Lis):
         DATASERIES = []
         for oo in node_cal_OPERATOR_OPER:
-            d = list(filter(lambda d: d["OPERATOR"] == oo["OPERATOR"][3:]
+            d = list(filter(lambda d: d["OPERATOR"] == oo["OPERATOR"]
                      and d["OPER"] == oo["OPER"], OPERATOR_OPER_EQPID_Lis))
             if d != []:
                 for dd in d:
@@ -841,7 +844,7 @@ class INTRelation(BaseType):
                                   and d["OPER"] == oo["OPER"], aLimit_List))[0]["A_LIMIT"]
             data = {
                 "NAME": f'{TIMECLUST}時{oo["OPER"]}_人',
-                "OPERATOR": f'TA_{oo["OPERATOR"]}',
+                "OPERATOR": f'{oo["OPERATOR"]}',
                 "OPER": oo["OPER"],
                 "TIMECLUST": TIMECLUST,
                 "PANELID_COUNT": oo["PANELID_COUNT"],
@@ -868,9 +871,12 @@ class INTRelation(BaseType):
     def _calLink_OPERATOR_TIMECLUSTR(self, node_cal_OPERATOR_TIMECLUSTR):
         DATASERIES = []
         for oo in node_cal_OPERATOR_TIMECLUSTR:
+            target = f'TA_{oo["OPERATOR"]}' 
+            if oo["OPERATOR"] == "AUTO":
+                target = f'TA_{oo["OPERATOR"]}{oo["OPER"]}' 
             data = {
                 "source": oo["NAME"],
-                "target": oo["OPERATOR"],
+                "target": target,
                 "value": oo["value"]
             }
             DATASERIES.append(data)
@@ -979,7 +985,7 @@ class INTRelation(BaseType):
             if aRate >= A_Limit and tRate >= T_Limit:
                 data = {
                     "NAME": f'{oo["OPER"]}',
-                    "OPERATOR": f'TA_{oo["OPERATOR"]}',
+                    "OPERATOR": f'{oo["OPERATOR"]}',
                     "OPER": oo["OPER"],
                     "PANELID_COUNT": oo["PANELID_COUNT"],
                     "A_Limit": A_Limit,
@@ -997,9 +1003,12 @@ class INTRelation(BaseType):
     def _calLink_OPER_OPERATOR(self, node_cal_OPER_OPERATOR):
         DATASERIES = []
         for oo in node_cal_OPER_OPERATOR:
+            target = f'TA_{oo["OPERATOR"]}' 
+            if oo["OPERATOR"] == "AUTO":
+                target = f'TA_{oo["OPERATOR"]}{oo["OPER"]}' 
             data = {
                 "source": oo["NAME"],
-                "target": oo["OPERATOR"],
+                "target":target,
                 "value": oo["value"]
             }
             DATASERIES.append(data)
@@ -1122,7 +1131,7 @@ class INTRelation(BaseType):
                 weight = 25/maxSymbolSize
                 x["symbolSize"] = round(x["symbolSize"]*weight, 4)        
         else:
-            multiple = round(25 / PANEL_TOTAL_COUNT, 4)
+            multiple = round(40 / PANEL_TOTAL_COUNT, 4)
             for x in magerData:
                 x["symbolSize"] = round(x["symbolSize"]*multiple, 4)
 
