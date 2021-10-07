@@ -23,15 +23,15 @@ class INTKPI(BaseType):
             "M011": {
                 "FPY": {
                     "limit": {
-                        "CE": {"qytlim": 1000, "FPY": 0.94},
-                        "TABLET": {"qytlim": 1000, "FPY": 0.89},
-                        "NB": {"qytlim": 1000, "FPY": 0.93},
-                        "TV": {"qytlim": 1000, "FPY": 0.90},
-                        "AA": {"qytlim": 1000, "FPY": 0.95},
-                        "IAVM": {"qytlim": 1000, "FPY": 0.95},
-                        "AUTO": {"qytlim": 1000, "FPY": 0.95},
-                        "mLED": {"qytlim": 1000, "FPY": 0.95},
-                        "TFT Sensor": {"qytlim": 1000, "FPY": 0.95}
+                        "CE": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.94},
+                        "TABLET": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.89},
+                        "NB": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.93},
+                        "TV": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.90},
+                        "AA": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95},
+                        "IAVM": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95},
+                        "AUTO": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95},
+                        "mLED": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95},
+                        "TFT Sensor": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95}
                     },
                     "numerator": {  # 分子
                         "PCBI": {"fromt": 1050, "tot": 1310},
@@ -74,11 +74,11 @@ class INTKPI(BaseType):
             "J001": {
                 "FPY": {
                     "limit": {
-                        "CE": {"qytlim": 1000, "FPY": 0.94},
-                        "TABLET": {"qytlim": 1000, "FPY": 0.89},
-                        "NB": {"qytlim": 1000, "FPY": 0.93},
-                        "TV": {"qytlim": 1000, "FPY": 0.90},
-                        "AA": {"qytlim": 1000, "FPY": 0.95}
+                        "CE": {"qytlim2": 1500, "qytlim": 500, "FPY": 0.94},
+                        "TABLET": {"qytlim2": 1500,"qytlim": 500, "FPY": 0.89},
+                        "NB": {"qytlim2": 1500,"qytlim": 500, "FPY": 0.93},
+                        "TV": {"qytlim2": 1500,"qytlim": 500, "FPY": 0.90},
+                        "AA": {"qytlim2": 1500,"qytlim": 500, "FPY": 0.95}
                     },
                     "numerator": {  # 分子
                         "PCBI": {"fromt": 1050, "tot": 1310},
@@ -121,11 +121,11 @@ class INTKPI(BaseType):
             "J003": {
                 "FPY": {
                     "limit": {
-                        "CE": {"qytlim": 1000, "FPY": 0.94},
-                        "TABLET": {"qytlim": 1000, "FPY": 0.89},
-                        "NB": {"qytlim": 1000, "FPY": 0.93},
-                        "TV": {"qytlim": 1000, "FPY": 0.90},
-                        "AA": {"qytlim": 1000, "FPY": 0.95}
+                        "CE": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.94},
+                        "TABLET": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.89},
+                        "NB": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.93},
+                        "TV": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.90},
+                        "AA": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95}
                     },
                     "numerator": {  # 分子
                         "PCBI": {"fromt": 1050, "tot": 1310},
@@ -728,18 +728,23 @@ class INTKPI(BaseType):
 
         for x in PRODFPYBaseData:
             targrtFPY = 0.90
-            targrtQTY = 1000
+            targrtQTY1 = 500
+            targrtQTY2 = 1500
             if x["APPLICATION"] in getLimitData.keys():
                 targrtFPY = getLimitData[x["APPLICATION"]]["FPY"]
-                targrtQTY = getLimitData[x["APPLICATION"]]["qytlim"]
+                targrtQTY1 = getLimitData[x["APPLICATION"]]["qytlim"]
+                targrtQTY2 = getLimitData[x["APPLICATION"]]["qytlim2"]
 
             if x["FPY"] >= targrtFPY:
                 GREEN_VALUE += 1                
             else:
-                if targrtQTY > x["AvegPASSQTY"]:
-                    YELLOW_VALUE += 1
-                else:                
-                    RED_VALUE += 1
+                if targrtQTY1 > x["AvegPASSQTY"]:
+                    GREEN_VALUE += 1
+                else: 
+                    if targrtQTY2 > x["AvegPASSQTY"]:
+                        YELLOW_VALUE += 1
+                    else:                
+                        RED_VALUE += 1  
 
         returnData = {
             "CLASS_TYPE": "FPY",
@@ -781,29 +786,36 @@ class INTKPI(BaseType):
 
         for x in d:
             targrtFPY = 0.90
-            targrtQTY = 1000
+            targrtQTY1 = 500
+            targrtQTY2 = 1500
             if x["APPLICATION"] in getLimitData.keys():
                 targrtFPY = getLimitData[x["APPLICATION"]]["FPY"]
-                targrtQTY = getLimitData[x["APPLICATION"]]["qytlim"]
+                targrtQTY1 = getLimitData[x["APPLICATION"]]["qytlim"]
+                targrtQTY2 = getLimitData[x["APPLICATION"]]["qytlim2"]
             
             QUADRANT = 0
 
             if x["FPY"] >= targrtFPY:
                 COLOR = "#06d6a0"
                 SYMBOL = "undefined"   
-                if targrtQTY > x["AvegPASSQTY"]:
+                if targrtQTY1 > x["AvegPASSQTY"]:
                     QUADRANT = 1
                 else:       
                     QUADRANT = 2
             else:
-                if targrtQTY > x["AvegPASSQTY"]:
-                    COLOR = "#ffd166"
+                if targrtQTY1 > x["AvegPASSQTY"]:
+                    COLOR = "#06d6a0"
                     SYMBOL = "undefined"
                     QUADRANT = 3
-                else:                
-                    COLOR = "#EF476F" 
-                    SYMBOL = "twinkle"  
-                    QUADRANT = 4 
+                else:
+                    if targrtQTY2 > x["AvegPASSQTY"]:
+                        COLOR = "#ffd166"
+                        SYMBOL = "undefined"
+                        QUADRANT = 4
+                    else:                
+                        COLOR = "#EF476F" 
+                        SYMBOL = "twinkle"  
+                        QUADRANT = 5  
                 
             DATASERIES.append({
                 "APPLICATION": x["APPLICATION"],

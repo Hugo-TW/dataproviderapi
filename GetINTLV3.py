@@ -27,11 +27,15 @@ class INTLV3(BaseType):
             "M011": {
                 "FPY": {
                     "limit": {
-                        "CE": {"qytlim": 1000, "FPY": 0.94},
-                        "TABLET": {"qytlim": 1000, "FPY": 0.89},
-                        "NB": {"qytlim": 1000, "FPY": 0.93},
-                        "TV": {"qytlim": 1000, "FPY": 0.90},
-                        "AA": {"qytlim": 1000, "FPY": 0.95}
+                        "CE": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.94},
+                        "TABLET": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.89},
+                        "NB": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.93},
+                        "TV": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.90},
+                        "AA": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95},
+                        "IAVM": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95},
+                        "AUTO": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95},
+                        "mLED": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95},
+                        "TFT Sensor": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95}
                     },
                     "numerator": {  # 分子
                         "PCBI": {"fromt": 1050, "tot": 1310},
@@ -74,11 +78,11 @@ class INTLV3(BaseType):
             "J001": {
                 "FPY": {
                     "limit": {
-                        "CE": {"qytlim": 1000, "FPY": 0.94},
-                        "TABLET": {"qytlim": 1000, "FPY": 0.89},
-                        "NB": {"qytlim": 1000, "FPY": 0.93},
-                        "TV": {"qytlim": 1000, "FPY": 0.90},
-                        "AA": {"qytlim": 1000, "FPY": 0.95}
+                        "CE": {"qytlim2": 1500, "qytlim": 500, "FPY": 0.94},
+                        "TABLET": {"qytlim2": 1500,"qytlim": 500, "FPY": 0.89},
+                        "NB": {"qytlim2": 1500,"qytlim": 500, "FPY": 0.93},
+                        "TV": {"qytlim2": 1500,"qytlim": 500, "FPY": 0.90},
+                        "AA": {"qytlim2": 1500,"qytlim": 500, "FPY": 0.95}
                     },
                     "numerator": {  # 分子
                         "PCBI": {"fromt": 1050, "tot": 1310},
@@ -121,11 +125,11 @@ class INTLV3(BaseType):
             "J003": {
                 "FPY": {
                     "limit": {
-                        "CE": {"qytlim": 1000, "FPY": 0.94},
-                        "TABLET": {"qytlim": 1000, "FPY": 0.89},
-                        "NB": {"qytlim": 1000, "FPY": 0.93},
-                        "TV": {"qytlim": 1000, "FPY": 0.90},
-                        "AA": {"qytlim": 1000, "FPY": 0.95}
+                        "CE": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.94},
+                        "TABLET": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.89},
+                        "NB": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.93},
+                        "TV": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.90},
+                        "AA": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95}
                     },
                     "numerator": {  # 分子
                         "PCBI": {"fromt": 1050, "tot": 1310},

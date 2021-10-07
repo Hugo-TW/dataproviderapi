@@ -21,11 +21,15 @@ class INTTALK(BaseType):
             "M011": {
                 "FPY": {
                     "limit": {
-                        "CE": {"qytlim": 1000, "FPY": 0.94},
-                        "TABLET": {"qytlim": 1000, "FPY": 0.89},
-                        "NB": {"qytlim": 1000, "FPY": 0.93},
-                        "TV": {"qytlim": 1000, "FPY": 0.90},
-                        "AA": {"qytlim": 1000, "FPY": 0.95}
+                        "CE": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.94},
+                        "TABLET": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.89},
+                        "NB": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.93},
+                        "TV": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.90},
+                        "AA": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95},
+                        "IAVM": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95},
+                        "AUTO": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95},
+                        "mLED": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95},
+                        "TFT Sensor": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95}
                     },
                     "numerator": {  # 分子
                         "PCBI": {"fromt": 1050, "tot": 1310},
@@ -39,7 +43,7 @@ class INTTALK(BaseType):
                         "LAM": [1355],
                         "AAFC": [1420],
                         "CKEN": [1600],
-                        "DKEN": [1600]
+                        "DKEN": [1700]
                     }
                 },
                 "M-SHIP": {
@@ -55,11 +59,11 @@ class INTTALK(BaseType):
                 },
                 "EFA": {
                     "limit": {
-                        "CE": {"qytlim": 1000, "target": 0.003},
-                        "TABLET": {"qytlim": 1000, "target": 0.003},
-                        "NB": {"qytlim": 1000, "target": 0.003},
-                        "TV": {"qytlim": 1000, "target": 0.003},
-                        "AA": {"qytlim": 1000, "target": 0.003}
+                        "CE": {"qytlim": 3000, "target": 0.003},
+                        "TABLET": {"qytlim": 3000, "target": 0.003},
+                        "NB": {"qytlim": 3000, "target": 0.003},
+                        "TV": {"qytlim": 3000, "target": 0.003},
+                        "AA": {"qytlim": 3000, "target": 0.003}
                     },
                     "numerator": {},
                     "denominator": {}
@@ -68,11 +72,11 @@ class INTTALK(BaseType):
             "J001": {
                 "FPY": {
                     "limit": {
-                        "CE": {"qytlim": 1000, "FPY": 0.94},
-                        "TABLET": {"qytlim": 1000, "FPY": 0.89},
-                        "NB": {"qytlim": 1000, "FPY": 0.93},
-                        "TV": {"qytlim": 1000, "FPY": 0.90},
-                        "AA": {"qytlim": 1000, "FPY": 0.95}
+                        "CE": {"qytlim2": 1500, "qytlim": 500, "FPY": 0.94},
+                        "TABLET": {"qytlim2": 1500,"qytlim": 500, "FPY": 0.89},
+                        "NB": {"qytlim2": 1500,"qytlim": 500, "FPY": 0.93},
+                        "TV": {"qytlim2": 1500,"qytlim": 500, "FPY": 0.90},
+                        "AA": {"qytlim2": 1500,"qytlim": 500, "FPY": 0.95}
                     },
                     "numerator": {  # 分子
                         "PCBI": {"fromt": 1050, "tot": 1310},
@@ -86,7 +90,7 @@ class INTTALK(BaseType):
                         "LAM": [1355],
                         "AAFC": [1420],
                         "CKEN": [1600],
-                        "DKEN": [1600]
+                        "DKEN": [1700]
                     }
                 },
                 "M-SHIP": {
@@ -102,11 +106,11 @@ class INTTALK(BaseType):
                 },
                 "EFA": {
                     "limit": {
-                        "CE": {"qytlim": 1000, "target": 0.003},
-                        "TABLET": {"qytlim": 1000, "target": 0.003},
-                        "NB": {"qytlim": 1000, "target": 0.003},
-                        "TV": {"qytlim": 1000, "target": 0.003},
-                        "AA": {"qytlim": 1000, "target": 0.003}
+                        "CE": {"qytlim": 3000, "target": 0.003},
+                        "TABLET": {"qytlim": 3000, "target": 0.003},
+                        "NB": {"qytlim": 3000, "target": 0.003},
+                        "TV": {"qytlim": 3000, "target": 0.003},
+                        "AA": {"qytlim": 3000, "target": 0.003}
                     },
                     "numerator": {},
                     "denominator": {}
@@ -115,11 +119,11 @@ class INTTALK(BaseType):
             "J003": {
                 "FPY": {
                     "limit": {
-                        "CE": {"qytlim": 1000, "FPY": 0.94},
-                        "TABLET": {"qytlim": 1000, "FPY": 0.89},
-                        "NB": {"qytlim": 1000, "FPY": 0.93},
-                        "TV": {"qytlim": 1000, "FPY": 0.90},
-                        "AA": {"qytlim": 1000, "FPY": 0.95}
+                        "CE": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.94},
+                        "TABLET": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.89},
+                        "NB": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.93},
+                        "TV": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.90},
+                        "AA": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95}
                     },
                     "numerator": {  # 分子
                         "PCBI": {"fromt": 1050, "tot": 1310},
@@ -133,7 +137,7 @@ class INTTALK(BaseType):
                         "LAM": [1355],
                         "AAFC": [1420],
                         "CKEN": [1600],
-                        "DKEN": [1600]
+                        "DKEN": [1700]
                     }
                 },
                 "M-SHIP": {
@@ -149,11 +153,11 @@ class INTTALK(BaseType):
                 },
                 "EFA": {
                     "limit": {
-                        "CE": {"qytlim": 1000, "target": 0.003},
-                        "TABLET": {"qytlim": 1000, "target": 0.003},
-                        "NB": {"qytlim": 1000, "target": 0.003},
-                        "TV": {"qytlim": 1000, "target": 0.003},
-                        "AA": {"qytlim": 1000, "target": 0.003}
+                        "CE": {"qytlim": 3000, "target": 0.003},
+                        "TABLET": {"qytlim": 3000, "target": 0.003},
+                        "NB": {"qytlim": 3000, "target": 0.003},
+                        "TV": {"qytlim": 3000, "target": 0.003},
+                        "AA": {"qytlim": 3000, "target": 0.003}
                     },
                     "numerator": {},
                     "denominator": {}
