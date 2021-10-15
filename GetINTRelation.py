@@ -1059,7 +1059,7 @@ class INTRelation(BaseType):
             magerData.append(oData)
 
         # symbolSize resize
-        if(PANEL_TOTAL_COUNT >= 25):
+        if(PANEL_TOTAL_COUNT >= 25 and magerData != []):
             magerData.sort(key=operator.itemgetter(
                 "symbolSize", "symbolSize"), reverse=True)
             maxSymbolSize = magerData[0]["symbolSize"]
