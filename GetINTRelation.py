@@ -465,18 +465,6 @@ class INTRelation(BaseType):
             if(len(data) != 0):
                 returnString = data[0][0]        
         return returnString
-     
-
-    def _oper2Desc(self, OPER):
-        sql = f"select OPER_DESC from INTMP_DB.OPER where OPER_ID_C = '{OPER}'"
-        # INT_ORACLEDB_PROD
-        self.getConnection(self.DBconfig)
-        data = self.Select(sql)
-        self.closeConnection()
-        returnString = None
-        if(len(data) != 0):
-            returnString = data[0][0]
-        return returnString
 
     def _Group_PANELID_List(self):
         PANELIDList = []
