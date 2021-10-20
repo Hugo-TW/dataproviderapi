@@ -396,7 +396,7 @@ class INTRelation(BaseType):
 
                 categories = self._categories()
 
-                C_DESC = self._code2Desc(tmpCHECKCODE)
+                C_DESC = self._code2Desc("REASONCODE",tmpCHECKCODE)
                 returnData = {
                     "RELATIONTYPE": tmpFuncType,
                     "COMPANY_CODE": tmpCOMPANY_CODE,
@@ -444,16 +444,28 @@ class INTRelation(BaseType):
         d = list(filter(lambda d: d["OPER"] != OPER, LIST))
         return d
 
-    def _code2Desc(self, C_CODE):
-        sql = f"select REASONCODE_DESC from INTMP_DB.REASONCODE where REASONCODE = '{C_CODE}'"
-        # INT_ORACLEDB_PROD
-        self.getConnection(self.DBconfig)
-        data = self.Select(sql)
-        self.closeConnection()
-        returnString = None
-        if(len(data) != 0):
-            returnString = data[0][0]
+    def _code2Desc(self, TYPE, C_CODE):
+        returnString = C_CODE
+        if TYPE == "REASONCODE":
+            sql = f"select REASONCODE_DESC from INTMP_DB.REASONCODE where REASONCODE = '{C_CODE}'"
+            # INT_ORACLEDB_PROD
+            self.getConnection(self.DBconfig)
+            data = self.Select(sql)
+            self.closeConnection()
+            returnString = None
+            if(len(data) != 0):
+                returnString = data[0][0]
+        elif TYPE == "MAT4":
+            sql = f"select MAT_DESC from INTMP_DB.MAT where MAT4 = '{C_CODE}'"
+            # INT_ORACLEDB_PROD
+            self.getConnection(self.DBconfig)
+            data = self.Select(sql)
+            self.closeConnection()
+            returnString = None
+            if(len(data) != 0):
+                returnString = data[0][0]        
         return returnString
+     
 
     def _oper2Desc(self, OPER):
         sql = f"select OPER_DESC from INTMP_DB.OPER where OPER_ID_C = '{OPER}'"
@@ -958,15 +970,17 @@ class INTRelation(BaseType):
             aRate = oo["PANELID_COUNT"] / PANEL_TOTAL_COUNT
             # bRate=>RSC權重
             mat4 = oo["MAT_ID"][0:4]
+            mat4_DESC = self._code2Desc("MAT4",mat4)
             bRate = weightData.get(mat4, 0)
             # (A*B)權重計算
             tRate = round(aRate * bRate, 4)
             SymbolSize = round(tRate*oo["PANELID_COUNT"])
             if aRate >= A_Limit and tRate >= T_Limit:
                 data = {
-                    "NAME": f'{oo["MAT_LOTID"]}_{mat4}',
+                    "NAME": f'{oo["MAT_LOTID"]}_{mat4_DESC}',
                     "OPER": oo["OPER"],
                     "MAT4": mat4,
+                    "MAT4_DESC": mat4_DESC,
                     "MAT_ID": oo["MAT_ID"],
                     "MAT_LOTID": oo["MAT_LOTID"],
                     "PANELID_COUNT": oo["PANELID_COUNT"],
