@@ -1131,6 +1131,7 @@ class INTKPI(BaseType):
                 PRODList.append(
                     {"PROD_NBR": x["PROD_NBR"], "APPLICATION": x["APPLICATION"]})
         for x in gradeData:
+            if "APPLICATION" not in x: x["APPLICATION"] = "ALL"
             if {"PROD_NBR": x["PROD_NBR"], "APPLICATION": x["APPLICATION"]} not in PRODList:
                 PRODList.append(
                     {"PROD_NBR": x["PROD_NBR"], "APPLICATION": x["APPLICATION"]})
