@@ -22,6 +22,200 @@ class INTRelation(BaseType):
         #INT_ORACLEDB_PROD / INT_ORACLEDB_TEST
         self.DBconfig = "INT_ORACLEDB_TEST"
         self.BASE_GROUPList = []
+        self.operSetData = {
+            "M011": {
+                "FPY": {
+                    "limit": {
+                        "CE": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.94},
+                        "TABLET": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.89},
+                        "NB": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.93},
+                        "TV": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.90},
+                        "AA": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95},
+                        "IAVM": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95},
+                        "AUTO": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95},
+                        "mLED": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95},
+                        "TFT Sensor": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95}
+                    },
+                    "numerator": {  # 分子
+                        "PCBI": {"fromt": 1050, "tot": 1310},
+                        "LAM": {"fromt": 1340, "tot": 1399},
+                        "AAFC": {"fromt": 1400, "tot": 1499},
+                        "CKEN": {"fromt": 1500, "tot": 1699},
+                        "DKEN": {"fromt": 1700, "tot": 1799}
+                    },
+                    "denominator": {  # 分母
+                        "PCBI": (1300, 1301),
+                        "LAM": (1355),
+                        "AAFC": (1419,1420),
+                        "CKEN": (1600),
+                        "DKEN": (1700)
+                    }
+                },
+                "M-SHIP": {
+                    "limit": {
+                        "CE": {"qytlim": 1000, "target": 0.97},
+                        "TABLET": {"qytlim": 1000, "target": 0.955},
+                        "NB": {"qytlim": 1000, "target": 0.96},
+                        "TV": {"qytlim": 1000, "target": 0.90},
+                        "AA": {"qytlim": 1000, "target": 0.95}
+                    },
+                    "numerator": {},
+                    "denominator": {}
+                },
+                "EFA": {
+                    "limit": {
+                        "CE": {"qytlim": 3000, "target": 0.003},
+                        "TABLET": {"qytlim": 3000, "target": 0.003},
+                        "NB": {"qytlim": 3000, "target": 0.003},
+                        "TV": {"qytlim": 3000, "target": 0.003},
+                        "AA": {"qytlim": 3000, "target": 0.003}
+                    },
+                    "numerator": {},
+                    "denominator": {}
+                }
+            },
+            "J001": {
+                "FPY": {
+                    "limit": {
+                        "CE": {"qytlim2": 1500, "qytlim": 500, "FPY": 0.94},
+                        "TABLET": {"qytlim2": 1500,"qytlim": 500, "FPY": 0.89},
+                        "NB": {"qytlim2": 1500,"qytlim": 500, "FPY": 0.93},
+                        "TV": {"qytlim2": 1500,"qytlim": 500, "FPY": 0.90},
+                        "AA": {"qytlim2": 1500,"qytlim": 500, "FPY": 0.95}
+                    },
+                    "numerator": {  # 分子
+                        "PCBI": {"fromt": 1050, "tot": 1310},
+                        "LAM": {"fromt": 1340, "tot": 1399},
+                        "AAFC": {"fromt": 1400, "tot": 1499},
+                        "CKEN": {"fromt": 1500, "tot": 1699},
+                        "DKEN": {"fromt": 1700, "tot": 1799}
+                    },
+                    "denominator": {  # 分母
+                        "PCBI": (1300, 1301),
+                        "LAM": (1355),
+                        "AAFC": (1419,1420),
+                        "CKEN": (1600),
+                        "DKEN": (1700)
+                    }
+                },
+                "M-SHIP": {
+                    "limit": {
+                        "CE": {"qytlim": 1000, "target": 0.97},
+                        "TABLET": {"qytlim": 1000, "target": 0.955},
+                        "NB": {"qytlim": 1000, "target": 0.96},
+                        "TV": {"qytlim": 1000, "target": 0.90},
+                        "AA": {"qytlim": 1000, "target": 0.95}
+                    },
+                    "numerator": {},
+                    "denominator": {}
+                },
+                "EFA": {
+                    "limit": {
+                        "CE": {"qytlim": 3000, "target": 0.003},
+                        "TABLET": {"qytlim": 3000, "target": 0.003},
+                        "NB": {"qytlim": 3000, "target": 0.003},
+                        "TV": {"qytlim": 3000, "target": 0.003},
+                        "AA": {"qytlim": 3000, "target": 0.003}
+                    },
+                    "numerator": {},
+                    "denominator": {}
+                }
+            },
+            "J003": {
+                "FPY": {
+                    "limit": {
+                        "CE": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.94},
+                        "TABLET": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.89},
+                        "NB": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.93},
+                        "TV": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.90},
+                        "AA": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95}
+                    },
+                    "numerator": {  # 分子
+                        "PCBI": {"fromt": 1050, "tot": 1310},
+                        "LAM": {"fromt": 1340, "tot": 1399},
+                        "AAFC": {"fromt": 1400, "tot": 1499},
+                        "CKEN": {"fromt": 1500, "tot": 1699},
+                        "DKEN": {"fromt": 1700, "tot": 1799}
+                    },
+                    "denominator": {  # 分母
+                        "PCBI": (1300, 1301),
+                        "LAM": (1355),
+                        "AAFC": (1419,1420),
+                        "CKEN": (1600),
+                        "DKEN": (1700)
+                    }
+                },
+                "M-SHIP": {
+                    "limit": {
+                        "CE": {"qytlim": 1000, "target": 0.97},
+                        "TABLET": {"qytlim": 1000, "target": 0.955},
+                        "NB": {"qytlim": 1000, "target": 0.96},
+                        "TV": {"qytlim": 1000, "target": 0.90},
+                        "AA": {"qytlim": 1000, "target": 0.95}
+                    },
+                    "numerator": {},
+                    "denominator": {}
+                },
+                "EFA": {
+                    "limit": {
+                        "CE": {"qytlim": 3000, "target": 0.003},
+                        "TABLET": {"qytlim": 3000, "target": 0.003},
+                        "NB": {"qytlim": 3000, "target": 0.003},
+                        "TV": {"qytlim": 3000, "target": 0.003},
+                        "AA": {"qytlim": 3000, "target": 0.003}
+                    },
+                    "numerator": {},
+                    "denominator": {}
+                }
+            },
+            "J004": {
+                "FPY": {
+                    "limit": {
+                        "CE": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.94},
+                        "TABLET": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.89},
+                        "NB": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.93},
+                        "TV": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.90},
+                        "AA": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95}
+                    },
+                    "numerator": {  # 分子
+                        "PCBI": {"fromt": 1050, "tot": 1310},
+                        "LAM": {"fromt": 1340, "tot": 1399},
+                        "AAFC": {"fromt": 1400, "tot": 1499},
+                        "CKEN": {"fromt": 1500, "tot": 1699},
+                        "DKEN": {"fromt": 1700, "tot": 1799}
+                    },
+                    "denominator": {  # 分母
+                        "PCBI": (1300, 1301),
+                        "LAM": (1355),
+                        "AAFC": (1419,1420),
+                        "CKEN": (1600),
+                        "DKEN": (1700)
+                    }
+                },
+                "M-SHIP": {
+                    "limit": {
+                        "CE": {"qytlim": 1000, "target": 0.97},
+                        "TABLET": {"qytlim": 1000, "target": 0.955},
+                        "NB": {"qytlim": 1000, "target": 0.96},
+                        "TV": {"qytlim": 1000, "target": 0.90},
+                        "AA": {"qytlim": 1000, "target": 0.95}
+                    },
+                    "numerator": {},
+                    "denominator": {}
+                },
+                "EFA": {
+                    "limit": {
+                        "CE": {"qytlim": 3000, "target": 0.003},
+                        "TABLET": {"qytlim": 3000, "target": 0.003},
+                        "NB": {"qytlim": 3000, "target": 0.003},
+                        "TV": {"qytlim": 3000, "target": 0.003},
+                        "AA": {"qytlim": 3000, "target": 0.003}
+                    },
+                    "numerator": {},
+                    "denominator": {}
+                }
+            }
+        }
 
     def getData(self):
         try:
@@ -173,6 +367,263 @@ class INTRelation(BaseType):
                 """
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
+            elif tmpFuncType == "DEFT_PROD":
+                # region 準備數據
+                # comm data: 權種數據
+                whereString = f" DEFTCODE = '{tmpCHECKCODE}' "
+                sql = "select DEFTCODE, COMPARECODE, WEIGHT from INTMP_DB.DEFT_WEIGHT " \
+                      f"where {whereString} " \
+                      "order by DEFTCODE, COMPARECODE "
+                self.getConnection(self.DBconfig)
+                commData = self.Select(sql)
+                self.closeConnection()
+                weightData = {}
+                if(len(commData) != 0):
+                    for da in commData:
+                        weightData[da[1]] = float(da[2])
+                del commData
+                gc.collect()
+
+                getFabData = self.operSetData[tmpFACTORY_ID]
+                numeratorData = getFabData["FPY"]["numerator"][tmpOPER]
+                fromt = numeratorData["fromt"]
+                to = numeratorData["tot"]
+                denominatorValue = getFabData["FPY"]["denominator"][tmpOPER]
+
+                # step0: 取得 與 defect / Reason 相關的 panel id
+                whereString = f"where PROD_NBR = '{tmpPROD_NBR}' and  DEFT = '{tmpCHECKCODE}' "\
+                    f" and TO_NUMBER(MAIN_OPER) in {denominatorValue} "\
+                    f" and MFGDATE = '{tmpACCT_DATE}' "
+                sql = "select PROD_NBR, DEFT, MFGDATE, MAIN_OPER, PANELID, RW_COUNT "\
+                      " from INTMP_DB.PANELHISDAILY_DEFT " \
+                      f"{whereString} " \
+                      "group by PROD_NBR, DEFT, MFGDATE, MAIN_OPER, PANELID, RW_COUNT " \
+                      "order by PANELID "
+                self.getConnection(self.DBconfig)
+                idData = self.Select(sql)
+                self.closeConnection()
+                panelData = []
+                if(len(idData) != 0):
+                    for da in idData:
+                        datadict = {
+                            "PROD_NBR": da[0],
+                            "DEFT_REASON": da[1],
+                            "MFGDATE": da[2],
+                            "MAIN_OPER": da[3],
+                            "PANELID": da[4],
+                            "RW_COUNT": da[5]
+                        }
+                        panelData.append(datadict)
+                del idData
+                gc.collect()
+
+                PANELID_Group = self._Group_PANELID_List(panelData)
+
+                PANELID_Group_SQL_LIST = ""
+                for x in PANELID_Group:
+                    PANELID_Group_SQL_LIST = PANELID_Group_SQL_LIST + f"'{x}',"
+                if PANELID_Group_SQL_LIST != "":
+                    PANELID_Group_SQL_LIST = PANELID_Group_SQL_LIST[:-1]
+
+                # step1: 取得 panel his
+                whereString = f"where PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and PANELID in ({PANELID_Group_SQL_LIST}) "
+                sql = f"with panel_his_daily as (select * from INTMP_DB.PANELHISDAILY {whereString} ) " \
+                      "select PROD_NBR, MFGDATE, PANELID, OPER, TRANSDT, OPERATOR, EQPID, RW_COUNT, " \
+                      "OUTPUT_FG from panel_his_daily order by PANELID, TRANSDT asc"
+
+                self.getConnection(self.DBconfig)
+                data1 = self.Select(sql)
+                self.closeConnection()
+                hisData = []
+                if(len(data1) != 0):
+                    for da in data1:
+                        d = datetime.datetime
+                        TIMECLUST_d = d.strptime(da[4], '%Y%m%d%H%M%S')
+                        TIMECLUST = d.strftime(TIMECLUST_d, '%Y%m%d%H')
+                        datadict = {
+                            "PROD_NBR": da[0],
+                            "MFGDATE": da[1],
+                            "PANELID": da[2],
+                            "OPER": da[3],
+                            "TRANSDT": da[4],
+                            "OPERATOR": da[5],
+                            "EQPID": da[6],
+                            "RW_COUNT": da[7],
+                            "OUTPUT_FG": da[8],
+                            "TIMECLUST": TIMECLUST
+                        }
+                        hisData.append(datadict)
+                del data1
+                gc.collect()
+
+                # step2: 取得panel use mat
+                whereString = f" PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and OPER = '1050' and PANELID in ({PANELID_Group_SQL_LIST}) "
+                sql = f"with panel_his_mat as (select * from INTMP_DB.PANELHISDAILY_MAT where {whereString}) " \
+                      "select PROD_NBR, MFGDATE, PANELID, OPER, MAT_ID, MAT_LOTID from panel_his_mat " \
+                      "order by MAT_ID, MAT_LOTID asc"
+
+                self.getConnection(self.DBconfig)
+                data2 = self.Select(sql)
+                self.closeConnection()
+                matData = []
+                if(len(data2) != 0):
+                    for da in data2:
+                        datadict = {
+                            "PROD_NBR": da[0],
+                            "MFGDATE": da[1],
+                            "PANELID": da[2],
+                            "OPER": da[3],
+                            "MAT_ID": da[4],
+                            "MAT_LOTID": da[5]
+                        }
+                        matData.append(datadict)
+                del data2
+                gc.collect()
+                # endregion
+
+                # temp list
+                # 分群
+                self.BASE_GROUPList = self._Group_OPERATOR_OPER_EQPID_TIMECLUST_PANELID_List(
+                    hisData)
+                PANEL_TOTAL_COUNT = len(PANELID_Group)
+
+                # 人
+                node_cal_OPERATOR_OPER = []
+                link_cal_OPERATOR_OPER = []
+                OPERATOR_OPER_PANELID_Group = self._Group_OPERATOR_OPER_PANELID_List()
+                OPERATOR_OPER_EQPID_PANELID_Group = self._Group_OPERATOR_OPER_EQPID_PANELID_List()
+                notInOPER1 = ["1050", "1100", "1200", "2110"]
+                OPERATOR_OPER_Count = self._Count_OPERATOR_OPER_List(
+                    notInOPER1, OPERATOR_OPER_PANELID_Group)
+                OPERATOR_OPER_EQPID_Count = self._Count_OPERATOR_OPER_EQPID_List(
+                    notInOPER1, OPERATOR_OPER_EQPID_PANELID_Group)
+                OPER_Count = self._Count_OPER_List(
+                    notInOPER1, OPERATOR_OPER_Count)
+                o_A_Limit = self._OPER_Limit(
+                    OPER_Count, PANEL_TOTAL_COUNT)
+                o_T_Limit = 0.3
+                node_cal_OPERATOR_OPER = self._calNode_OPERATOR_OPER(
+                    OPERATOR_OPER_Count, PANEL_TOTAL_COUNT, o_A_Limit, o_T_Limit, weightData)
+                link_cal_OPERATOR_OPER = self._calLink_OPERATOR_OPER(
+                    node_cal_OPERATOR_OPER, OPERATOR_OPER_EQPID_Count)
+
+                node_cal_OPERATOR_TIMECLUST = []
+                link_cal_OPERATOR_TIMECLUST = []
+                node_cal_EQPID_TIMECLUST = []
+                link_cal_EQPID_TIMECLUST = []
+                if PANEL_TOTAL_COUNT > 10:  # 沒大於10片 不計算分時
+                    # 人時
+                    OPERATOR_OPER_TIMECLUST_PANELID_Group = self._Group_OPERATOR_OPER_TIMECLUST_PANELID_List()
+                    notInOPER2 = ["1050", "1100", "1200", "2110"]
+                    OPERATOR_OPER_TIMECLUST_Count = self._Count_OPERATOR_OPER_TIMECLUST_List(
+                        notInOPER2, OPERATOR_OPER_TIMECLUST_PANELID_Group)
+                    node_cal_OPERATOR_TIMECLUST = self._calNode_OPERATOR_TIMECLUSTR(
+                        OPERATOR_OPER_TIMECLUST_Count, PANEL_TOTAL_COUNT)
+                    link_cal_OPERATOR_TIMECLUST = self._calLink_OPERATOR_TIMECLUSTR(
+                        node_cal_OPERATOR_TIMECLUST)
+                # 機時
+                    EQPID_OPER_TIMECLUST_PANELID_Group = self._Group_EQPID_OPER_TIMECLUST_PANELID_List()
+                    notInOPER3 = ["1050", "1100", "1200", "2110"]
+                    EQPID_OPER_TIMECLUST_Count = self._Count_EQPID_OPER_TIMECLUST_List(
+                        notInOPER3, EQPID_OPER_TIMECLUST_PANELID_Group)
+                    node_cal_EQPID_TIMECLUST = self._calNode_EQPID_TIMECLUSTR(
+                        EQPID_OPER_TIMECLUST_Count, PANEL_TOTAL_COUNT)
+                    link_cal_EQPID_TIMECLUST = self._calLink_EQPID_TIMECLUSTR(
+                        node_cal_EQPID_TIMECLUST)
+
+                # 機
+                node_cal_EQPID_OPER = []
+                link_cal_EQPID_OPER = []
+                EQPID_OPER_PANELID_Group = self._Group_EQPID_OPER_PANELID_List()
+                notInOPER4 = ["1050", "1100", "2110"]
+                EQPID_OPER_Count = self._Count_EQPID_OPER_List(
+                    notInOPER4, EQPID_OPER_PANELID_Group)
+                OPER_Count = self._Count_OPER_List(
+                    notInOPER4, EQPID_OPER_Count)
+                g_A_Limit = self._OPER_Limit(
+                    OPER_Count, PANEL_TOTAL_COUNT)
+                g_T_Limit = 0.3
+                node_cal_EQPID_OPER = self._calNode_EQPID_OPER(
+                    EQPID_OPER_Count, PANEL_TOTAL_COUNT, g_A_Limit, g_T_Limit, weightData)
+                link_cal_EQPID_OPER = self._calLink_EQPID_OPER(
+                    node_cal_EQPID_OPER)
+
+                # 站
+                node_cal_OPER_OPERATOR = []
+                link_cal_OPER_OPERATOR = []
+                notInOPER5 = ["1050", "1100", "2110"]
+                OPER_OPERATOR_Count = self._Count_OPERATOR_OPER_List(
+                    notInOPER5, OPERATOR_OPER_PANELID_Group)
+                OPER_Count = self._Count_OPER_List(
+                    notInOPER5, OPERATOR_OPER_Count)
+                node_cal_OPER_OPERATOR = self._calNode_OPER_OPERATOR(
+                    OPER_OPERATOR_Count, PANEL_TOTAL_COUNT, o_A_Limit, o_T_Limit, weightData)
+                link_cal_OPER_OPERATOR = self._calLink_OPER_OPERATOR(
+                    node_cal_OPER_OPERATOR)
+
+                # 料
+                node_cal_MAT_OPER = []
+                link_cal_MAT_OPER = []
+                MAT_OPER_PANELID_Group = self._Group_MAT_OPER_PANELID_List(
+                    matData)
+                MAT_OPER_Count = self._Count_MAT_OPER_List(
+                    MAT_OPER_PANELID_Group)
+                m_A_Limit = 0.6
+                m_T_Limit = 0.6
+                node_cal_MAT_OPER = self._calNode_MAT_OPER(
+                    MAT_OPER_Count, PANEL_TOTAL_COUNT, m_A_Limit, m_T_Limit, weightData)
+                link_cal_MAT_OPER = self._calLink_MAT_OPER(node_cal_MAT_OPER)
+
+                # 資料聚合
+                nodes = self._grouptNodes(
+                    PANEL_TOTAL_COUNT,
+                    node_cal_OPERATOR_OPER,
+                    node_cal_OPERATOR_TIMECLUST,
+                    node_cal_EQPID_TIMECLUST,
+                    node_cal_EQPID_OPER,
+                    node_cal_OPER_OPERATOR,
+                    node_cal_MAT_OPER
+                )
+
+                links = self._grouptLinks(
+                    nodes,
+                    link_cal_OPERATOR_OPER,
+                    link_cal_OPERATOR_TIMECLUST,
+                    link_cal_EQPID_TIMECLUST,
+                    link_cal_EQPID_OPER,
+                    link_cal_OPER_OPERATOR,
+                    link_cal_MAT_OPER
+                )
+
+                categories = self._categories()
+
+                C_DESC = self._code2Desc("REASONCODE",tmpCHECKCODE)
+                returnData = {
+                    "RELATIONTYPE": tmpFuncType,
+                    "COMPANY_CODE": tmpCOMPANY_CODE,
+                    "SITE": tmpSITE,
+                    "FACTORY_ID": tmpFACTORY_ID,
+                    "APPLICATION": tmpAPPLICATION,
+                    "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
+                    "PROD_NBR": tmpPROD_NBR,
+                    "OPER": tmpOPER,
+                    "C_CODE": tmpCHECKCODE,
+                    "C_DESCR": C_DESC if C_DESC != None else tmpCHECKCODE,
+                    "nodes": nodes,
+                    "links": links,
+                    "categories": categories
+                }
+                """
+                self.getRedisConnection()
+                if self.searchRedisKeys(redisKey):     
+                    self.setRedisData(redisKey, json.dumps(
+                        returnData, sort_keys=True, indent=2), expirSecond)
+                else:
+                    self.setRedisData(redisKey, json.dumps(
+                        returnData, sort_keys=True, indent=2), expirSecond)
+                """
+                return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+
             elif tmpFuncType == "REASON_PROD":
                 # region 準備數據
                 # comm data: 權種數據
@@ -216,7 +667,7 @@ class INTRelation(BaseType):
                 del idData
                 gc.collect()
 
-                PANELID_Group = self._Group_PANELID_ListbyReason(panelData)
+                PANELID_Group = self._Group_PANELID_List(panelData)
 
                 PANELID_Group_SQL_LIST = ""
                 for x in PANELID_Group:
@@ -473,7 +924,7 @@ class INTRelation(BaseType):
                 PANELIDList.append(x["PANELID"])
         return PANELIDList
 
-    def _Group_PANELID_ListbyReason(self, PANEL_List):
+    def _Group_PANELID_List(self, PANEL_List):
         PANELIDList = []
         for x in PANEL_List:
             if x["PANELID"] not in PANELIDList:
