@@ -692,7 +692,6 @@ class INTLV2(BaseType):
                     oData["APPLICATION"] = copy.deepcopy(p["APPLICATION"])
                 else:
                     oData["APPLICATION"] = None
-                oData["PROD_NBR"] = copy.deepcopy(p["PROD_NBR"])
                 oData["OPER"] = copy.deepcopy(p["OPER"])
                 oData["DFCT_CODE"] = copy.deepcopy(d["DFCT_CODE"])
                 oData["ERRC_DESCR"] = copy.deepcopy(d["ERRC_DESCR"])

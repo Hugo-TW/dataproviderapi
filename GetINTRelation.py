@@ -669,6 +669,8 @@ class INTRelation(BaseType):
                 gc.collect()
 
                 PANELID_Group = self._Group_PANELID_List(panelData)
+                #self.writeLog("panelData")
+                #self.writeLog(panelData)
 
                 PANELID_Group_SQL_LIST = ""
                 for x in PANELID_Group:
@@ -706,6 +708,8 @@ class INTRelation(BaseType):
                         hisData.append(datadict)
                 del data1
                 gc.collect()
+                #self.writeLog("hisData")
+                #self.writeLog(hisData)
 
                 # step2: 取得panel use mat
                 whereString = f" PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and OPER = '1050' and PANELID in ({PANELID_Group_SQL_LIST}) "
@@ -730,6 +734,8 @@ class INTRelation(BaseType):
                         matData.append(datadict)
                 del data2
                 gc.collect()
+                #self.writeLog("matData")
+                #self.writeLog(matData)
                 # endregion
 
                 # temp list
@@ -737,6 +743,8 @@ class INTRelation(BaseType):
                 self.BASE_GROUPList = self._Group_OPERATOR_OPER_EQPID_TIMECLUST_PANELID_List(
                     hisData)
                 PANEL_TOTAL_COUNT = len(PANELID_Group)
+                #self.writeLog("BASE_GROUPList")
+                #self.writeLog(self.BASE_GROUPList)
 
                 # 人
                 node_cal_OPERATOR_OPER = []
@@ -757,6 +765,9 @@ class INTRelation(BaseType):
                     OPERATOR_OPER_Count, PANEL_TOTAL_COUNT, o_A_Limit, o_T_Limit, weightData)
                 link_cal_OPERATOR_OPER = self._calLink_OPERATOR_OPER(
                     node_cal_OPERATOR_OPER, OPERATOR_OPER_EQPID_Count)
+                #self.writeLog("人")
+                #self.writeLog(node_cal_OPERATOR_OPER)
+                #self.writeLog(link_cal_OPERATOR_OPER)
 
                 node_cal_OPERATOR_TIMECLUST = []
                 link_cal_OPERATOR_TIMECLUST = []
@@ -772,6 +783,9 @@ class INTRelation(BaseType):
                         OPERATOR_OPER_TIMECLUST_Count, PANEL_TOTAL_COUNT)
                     link_cal_OPERATOR_TIMECLUST = self._calLink_OPERATOR_TIMECLUSTR(
                         node_cal_OPERATOR_TIMECLUST)
+                    #self.writeLog("人時")
+                    #self.writeLog(node_cal_OPERATOR_TIMECLUST)
+                    #self.writeLog(link_cal_OPERATOR_TIMECLUST)
                 # 機時
                     EQPID_OPER_TIMECLUST_PANELID_Group = self._Group_EQPID_OPER_TIMECLUST_PANELID_List()
                     notInOPER3 = ["1050", "1100", "1200", "2110"]
@@ -781,6 +795,9 @@ class INTRelation(BaseType):
                         EQPID_OPER_TIMECLUST_Count, PANEL_TOTAL_COUNT)
                     link_cal_EQPID_TIMECLUST = self._calLink_EQPID_TIMECLUSTR(
                         node_cal_EQPID_TIMECLUST)
+                    #self.writeLog("人機")
+                    #self.writeLog(node_cal_EQPID_TIMECLUST)
+                    #self.writeLog(link_cal_EQPID_TIMECLUST)
 
                 # 機
                 node_cal_EQPID_OPER = []
@@ -798,6 +815,9 @@ class INTRelation(BaseType):
                     EQPID_OPER_Count, PANEL_TOTAL_COUNT, g_A_Limit, g_T_Limit, weightData)
                 link_cal_EQPID_OPER = self._calLink_EQPID_OPER(
                     node_cal_EQPID_OPER)
+                #self.writeLog("機")
+                #self.writeLog(node_cal_EQPID_OPER)
+                #self.writeLog(link_cal_EQPID_OPER)
 
                 # 站
                 node_cal_OPER_OPERATOR = []
@@ -811,6 +831,9 @@ class INTRelation(BaseType):
                     OPER_OPERATOR_Count, PANEL_TOTAL_COUNT, o_A_Limit, o_T_Limit, weightData)
                 link_cal_OPER_OPERATOR = self._calLink_OPER_OPERATOR(
                     node_cal_OPER_OPERATOR)
+                #self.writeLog("站")
+                #self.writeLog(node_cal_OPER_OPERATOR)
+                #self.writeLog(link_cal_OPER_OPERATOR)
 
                 # 料
                 node_cal_MAT_OPER = []
@@ -824,6 +847,9 @@ class INTRelation(BaseType):
                 node_cal_MAT_OPER = self._calNode_MAT_OPER(
                     MAT_OPER_Count, PANEL_TOTAL_COUNT, m_A_Limit, m_T_Limit, weightData)
                 link_cal_MAT_OPER = self._calLink_MAT_OPER(node_cal_MAT_OPER)
+                #self.writeLog("料")
+                #self.writeLog(node_cal_MAT_OPER)
+                #self.writeLog(link_cal_MAT_OPER)
 
                 # 資料聚合
                 nodes = self._grouptNodes(

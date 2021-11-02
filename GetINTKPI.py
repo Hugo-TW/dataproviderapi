@@ -655,7 +655,6 @@ class INTKPI(BaseType):
                 oData["APPLICATION"] = copy.deepcopy(p["APPLICATION"])
             else:
                 oData["APPLICATION"] = None
-            oData["PROD_NBR"] = copy.deepcopy(p["PROD_NBR"])
             oData["OPER"] = copy.deepcopy(p["OPER"])
             oData["PassSUMQty"] = copy.deepcopy(p["PassSUMQty"])
             if d == []:

@@ -602,7 +602,6 @@ class INTLV3(BaseType):
 
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
-
             else:
                 return {'Result': 'Fail', 'Reason': 'Parametes[KPITYPE] not in Rule'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
@@ -650,7 +649,7 @@ class INTLV3(BaseType):
 
         #一季
         n1s_end = n2m_start - day_delta
-        n1s_start = n1s_end.replace(month= n1s_end.month-2).replace(day=1)
+        n1s_start = n1s_end.replace(month= n1s_end.month-2, day=1)
         
         returnData = {
             "n1d": d.strftime(n1d_sd,'%Y%m%d'),
@@ -724,7 +723,7 @@ class INTLV3(BaseType):
 
         #一季
         n1s_end = n2m_start - day_delta
-        n1s_start = n1s_end.replace(month= n1s_end.month-2).replace(day=1)
+        n1s_start = n1s_end.replace(month= n1s_end.month-2, day=1)
         
         returnData = {
             "n1d": d.strftime(n1d_sd,'%m%d'),
@@ -1403,7 +1402,6 @@ class INTLV3(BaseType):
                     oData["APPLICATION"] = copy.deepcopy(p["APPLICATION"])
                 else:
                     oData["APPLICATION"] = None
-                oData["PROD_NBR"] = copy.deepcopy(p["PROD_NBR"])
                 oData["OPER"] = copy.deepcopy(p["OPER"])
                 oData["DFCT_CODE"] = copy.deepcopy(d["DFCT_CODE"])
                 oData["ERRC_DESCR"] = copy.deepcopy(d["ERRC_DESCR"])
