@@ -255,12 +255,12 @@ class INTRelation(BaseType):
             if tmpFACTORY_ID not in ["J001"]:
                 return {'Result': 'NG', 'Reason': f'{tmpFACTORY_ID} not in FactoryID MAP'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
-            """
+            
             self.getRedisConnection()
             if self.searchRedisKeys(redisKey):
                 self.writeLog(f"Cache Data From Redis")
                 return json.loads(self.getRedisData(redisKey)), 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type', "Access-Control-Expose-Headers": "Expires,DataSource", "Expires": time.mktime((datetime.datetime.now() + datetime.timedelta(seconds=expirSecond)).timetuple()), "DataSource": "Redis"}
-            """
+            
             if tmpFuncType == "FPY_TEST":
                 nodes = [
                     {"id": "0", "name": "TA_20001704", "symbolSize": 22.5,
@@ -356,7 +356,6 @@ class INTRelation(BaseType):
                     "links": links,
                     "categories": categories
                 }
-                """
                 self.getRedisConnection()
                 if self.searchRedisKeys(redisKey):     
                     self.setRedisData(redisKey, json.dumps(
@@ -364,7 +363,6 @@ class INTRelation(BaseType):
                 else:
                     self.setRedisData(redisKey, json.dumps(
                         returnData, sort_keys=True, indent=2), expirSecond)
-                """
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
             elif tmpFuncType == "DEFT_PROD":
@@ -614,7 +612,6 @@ class INTRelation(BaseType):
                     "links": links,
                     "categories": categories
                 }
-                """
                 self.getRedisConnection()
                 if self.searchRedisKeys(redisKey):     
                     self.setRedisData(redisKey, json.dumps(
@@ -622,7 +619,6 @@ class INTRelation(BaseType):
                 else:
                     self.setRedisData(redisKey, json.dumps(
                         returnData, sort_keys=True, indent=2), expirSecond)
-                """
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
             elif tmpFuncType == "REASON_PROD":
@@ -890,7 +886,7 @@ class INTRelation(BaseType):
                     "links": links,
                     "categories": categories
                 }
-                """
+                
                 self.getRedisConnection()
                 if self.searchRedisKeys(redisKey):     
                     self.setRedisData(redisKey, json.dumps(
@@ -898,7 +894,7 @@ class INTRelation(BaseType):
                 else:
                     self.setRedisData(redisKey, json.dumps(
                         returnData, sort_keys=True, indent=2), expirSecond)
-                """
+
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
             else:
