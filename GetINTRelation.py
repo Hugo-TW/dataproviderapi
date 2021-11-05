@@ -1195,10 +1195,13 @@ class INTRelation(BaseType):
 
     def _OPER_Limit(self, OPER_List, PANEL_TOTAL_COUNT):
         # (PANEL_TOTAL_COUNT*70%)/(MAX(B2:N2)*35%)/PANEL_TOTAL_COUNT
-        OPER_List_MAX = max(OPER_List.values()) * 0.35
-        cal = (PANEL_TOTAL_COUNT * 0.7) / OPER_List_MAX / PANEL_TOTAL_COUNT
-        returnData = cal if cal < 0.5 else 0.5
-        return returnData
+        if len(OPER_List) != 0:
+            OPER_List_MAX = max(OPER_List.values()) * 0.35
+            cal = (PANEL_TOTAL_COUNT * 0.7) / OPER_List_MAX / PANEL_TOTAL_COUNT
+            returnData = cal if cal < 0.5 else 0.5
+            return returnData
+        else:
+            return 0
 
     def _calNode_OPERATOR_OPER(self, OPERATOR_OPER, PANEL_TOTAL_COUNT, A_Limit, T_Limit, weightData):
         DATASERIES = []
@@ -1276,7 +1279,7 @@ class INTRelation(BaseType):
         for x in DATASERIES:
             aRateList.append(f'{x.get("aRate")}')
         qq = sorted(aRateList, reverse=True)
-        top3 = float(qq[2])
+        top3 = float(qq[2]) if len(qq) > 0 else 0
         top3Filter = list(filter(lambda d: d["aRate"] >= top3, DATASERIES))
         returnData = list(filter(lambda d: d["aRate"] >= 0.36, top3Filter))
         return returnData
@@ -1325,7 +1328,7 @@ class INTRelation(BaseType):
         for x in DATASERIES:
             aRateList.append(f'{x.get("aRate")}')
         qq = sorted(aRateList, reverse=True)
-        top3 = float(qq[2])
+        top3 = float(qq[2]) if len(qq) > 0 else 0
         top3Filter = list(filter(lambda d: d["aRate"] >= top3, DATASERIES))
         returnData = list(filter(lambda d: d["aRate"] >= 0.36, top3Filter))
         return returnData
