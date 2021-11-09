@@ -25,8 +25,8 @@ spec:
 # Modify your requests and limits resource
         resources:
           requests:
-            cpu: 600m
-            memory: "800Mi"
+            cpu: 200m
+            memory: "200Mi"
           limits:
             cpu: 600m
             memory: "800Mi"
