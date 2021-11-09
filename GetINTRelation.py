@@ -406,7 +406,7 @@ class INTRelation(BaseType):
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
             elif tmpFuncType == "DEFT_PROD":
-                start = time.clock()
+                start = time.time()
                 # region 準備數據                
                 # comm data: 權種數據
                 whereString = f" DEFTCODE = '{tmpCHECKCODE}' "
@@ -519,21 +519,21 @@ class INTRelation(BaseType):
                         matData.append(datadict)
                 del data2
                 gc.collect()
-                end = time.clock()
-                print('getDBdata time elapsed: ' + str(round(end-start, 2)) + ' seconds')
+                end = time.time()
+                self.writeLog('getDBdata time elapsed: ' + str(round(end-start, 2)) + ' seconds')
                 # endregion
 
                 # temp list
                 # 分群
-                start = time.clock()
+                start = time.time()
                 self.BASE_GROUPList = self._Group_OPERATOR_OPER_EQPID_TIMECLUST_PANELID_List(
                     hisData)
                 PANEL_TOTAL_COUNT = len(PANELID_Group)
-                end = time.clock()
-                print('分群 time elapsed: ' + str(round(end-start, 2)) + ' seconds')
+                end = time.time()
+                self.writeLog('分群 time elapsed: ' + str(round(end-start, 2)) + ' seconds')
 
                 # 人
-                start = time.clock()
+                start = time.time()
                 node_cal_OPERATOR_OPER = []
                 link_cal_OPERATOR_OPER = []
                 OPERATOR_OPER_PANELID_Group = self._Group_OPERATOR_OPER_PANELID_List()
@@ -552,8 +552,8 @@ class INTRelation(BaseType):
                     OPERATOR_OPER_Count, PANEL_TOTAL_COUNT, o_A_Limit, o_T_Limit, weightData)
                 link_cal_OPERATOR_OPER = self._calLink_OPERATOR_OPER(
                     node_cal_OPERATOR_OPER, OPERATOR_OPER_EQPID_Count)
-                end = time.clock()
-                print('人 time elapsed: ' + str(round(end-start, 2)) + ' seconds')
+                end = time.time()
+                self.writeLog('人 time elapsed: ' + str(round(end-start, 2)) + ' seconds')
 
                 #分時
                 node_cal_OPERATOR_TIMECLUST = []
@@ -562,7 +562,7 @@ class INTRelation(BaseType):
                 link_cal_EQPID_TIMECLUST = []
                 if PANEL_TOTAL_COUNT > 10:  # 沒大於10片 不計算分時
                     # 人時
-                    start = time.clock()
+                    start = time.time()
                     OPERATOR_OPER_TIMECLUST_PANELID_Group = self._Group_OPERATOR_OPER_TIMECLUST_PANELID_List()
                     notInOPER2 = ["1050", "1100", "1200", "2110"]
                     OPERATOR_OPER_TIMECLUST_Count = self._Count_OPERATOR_OPER_TIMECLUST_List(
@@ -571,9 +571,9 @@ class INTRelation(BaseType):
                         OPERATOR_OPER_TIMECLUST_Count, PANEL_TOTAL_COUNT)
                     link_cal_OPERATOR_TIMECLUST = self._calLink_OPERATOR_TIMECLUSTR(
                         node_cal_OPERATOR_TIMECLUST)
-                    print('人時 time elapsed: ' + str(round(end-start, 2)) + ' seconds')
+                    self.writeLog('人時 time elapsed: ' + str(round(end-start, 2)) + ' seconds')
                     # 機時
-                    start = time.clock()
+                    start = time.time()
                     EQPID_OPER_TIMECLUST_PANELID_Group = self._Group_EQPID_OPER_TIMECLUST_PANELID_List()
                     notInOPER3 = ["1050", "1100", "1200", "2110"]
                     EQPID_OPER_TIMECLUST_Count = self._Count_EQPID_OPER_TIMECLUST_List(
@@ -582,11 +582,11 @@ class INTRelation(BaseType):
                         EQPID_OPER_TIMECLUST_Count, PANEL_TOTAL_COUNT)
                     link_cal_EQPID_TIMECLUST = self._calLink_EQPID_TIMECLUSTR(
                         node_cal_EQPID_TIMECLUST)
-                    end = time.clock()
-                    print('機時 time elapsed: ' + str(round(end-start, 2)) + ' seconds')
+                    end = time.time()
+                    self.writeLog('機時 time elapsed: ' + str(round(end-start, 2)) + ' seconds')
 
                 # 機
-                start = time.clock()
+                start = time.time()
                 node_cal_EQPID_OPER = []
                 link_cal_EQPID_OPER = []
                 EQPID_OPER_PANELID_Group = self._Group_EQPID_OPER_PANELID_List()
@@ -602,11 +602,11 @@ class INTRelation(BaseType):
                     EQPID_OPER_Count, PANEL_TOTAL_COUNT, g_A_Limit, g_T_Limit, weightData)
                 link_cal_EQPID_OPER = self._calLink_EQPID_OPER(
                     node_cal_EQPID_OPER)
-                end = time.clock()
-                print('機 time elapsed: ' + str(round(end-start, 2)) + ' seconds')
+                end = time.time()
+                self.writeLog('機 time elapsed: ' + str(round(end-start, 2)) + ' seconds')
 
                 # 站
-                start = time.clock()
+                start = time.time()
                 node_cal_OPER_OPERATOR = []
                 link_cal_OPER_OPERATOR = []
                 notInOPER5 = ["1050", "1100", "2110"]
@@ -618,11 +618,11 @@ class INTRelation(BaseType):
                     OPER_OPERATOR_Count, PANEL_TOTAL_COUNT, o_A_Limit, o_T_Limit, weightData)
                 link_cal_OPER_OPERATOR = self._calLink_OPER_OPERATOR(
                     node_cal_OPER_OPERATOR)
-                end = time.clock()
-                print('站 time elapsed: ' + str(round(end-start, 2)) + ' seconds')
+                end = time.time()
+                self.writeLog('站 time elapsed: ' + str(round(end-start, 2)) + ' seconds')
 
                 # 料
-                start = time.clock()
+                start = time.time()
                 node_cal_MAT_OPER = []
                 link_cal_MAT_OPER = []
                 MAT_OPER_PANELID_Group = self._Group_MAT_OPER_PANELID_List(
@@ -634,10 +634,10 @@ class INTRelation(BaseType):
                 node_cal_MAT_OPER = self._calNode_MAT_OPER(
                     MAT_OPER_Count, PANEL_TOTAL_COUNT, m_A_Limit, m_T_Limit, weightData)
                 link_cal_MAT_OPER = self._calLink_MAT_OPER(node_cal_MAT_OPER)
-                print('料 time elapsed: ' + str(round(end-start, 2)) + ' seconds')
+                self.writeLog('料 time elapsed: ' + str(round(end-start, 2)) + ' seconds')
 
                 # 資料聚合
-                start = time.clock()
+                start = time.time()
                 nodes = self._grouptNodes(
                     PANEL_TOTAL_COUNT,
                     node_cal_OPERATOR_OPER,
@@ -676,8 +676,8 @@ class INTRelation(BaseType):
                     "links": links,
                     "categories": categories
                 }
-                end = time.clock()
-                print('資料聚合 time elapsed: ' + str(round(end-start, 2)) + ' seconds')
+                end = time.time()
+                self.writeLog('資料聚合 time elapsed: ' + str(round(end-start, 2)) + ' seconds')
                 """
                 self.getRedisConnection()
                 if self.searchRedisKeys(redisKey):     
