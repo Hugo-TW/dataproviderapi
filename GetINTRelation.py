@@ -22,6 +22,9 @@ class INTRelation(BaseType):
         #INT_ORACLEDB_PROD / INT_ORACLEDB_TEST
         self.DBconfig = "INT_ORACLEDB_TEST"
         self.BASE_GROUPList = []
+        self.DEFTCODEData = []
+        self.REASONCODEData = []
+        self.MAT4Data = []
         self.operSetData = {
             "M011": {
                 "FPY": {
@@ -261,6 +264,41 @@ class INTRelation(BaseType):
                 self.writeLog(f"Cache Data From Redis")
                 return json.loads(self.getRedisData(redisKey)), 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type', "Access-Control-Expose-Headers": "Expires,DataSource", "Expires": time.mktime((datetime.datetime.now() + datetime.timedelta(seconds=expirSecond)).timetuple()), "DataSource": "Redis"}
             
+            # region 準備數據
+            # comm data: DEFTCODE
+            sql = "select DEFTCODE, DEFTCODE_DESC from INTMP_DB.DEFTCODE"
+            self.getConnection(self.DBconfig)
+            commData_DEFTCODE = self.Select(sql)
+            self.closeConnection()
+            self.DEFTCODEData = []
+            if(len(commData_DEFTCODE) != 0):
+                for da in commData_DEFTCODE:
+                    self.DEFTCODEData.append({"CODE": da[0],"DESC": da[1]})
+            del commData_DEFTCODE
+            gc.collect()
+            # comm data: REASONCODE數據
+            sql = "select REASONCODE, REASONCODE_DESC from INTMP_DB.REASONCODE"
+            self.getConnection(self.DBconfig)
+            commData_REASONCODE = self.Select(sql)
+            self.closeConnection()
+            self.REASONCODEData = []
+            if(len(commData_REASONCODE) != 0):
+                for da in commData_REASONCODE:
+                    self.REASONCODEData.append({"CODE": da[0],"DESC": da[1]})
+            del commData_REASONCODE
+            gc.collect()
+            # comm data: MAT4數據
+            sql = "select MAT4, MAT_DESC from INTMP_DB.MAT"
+            self.getConnection(self.DBconfig)
+            commData_MAT4 = self.Select(sql)
+            self.closeConnection()
+            self.MAT4Data = []
+            if(len(commData_MAT4) != 0):
+                for da in commData_MAT4:
+                    self.MAT4Data.append({"CODE": da[0],"DESC": da[1]})
+            del commData_MAT4
+            gc.collect()
+
             if tmpFuncType == "FPY_TEST":
                 nodes = [
                     {"id": "0", "name": "TA_20001704", "symbolSize": 22.5,
@@ -366,7 +404,8 @@ class INTRelation(BaseType):
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
             elif tmpFuncType == "DEFT_PROD":
-                # region 準備數據
+                start = time.clock()
+                # region 準備數據                
                 # comm data: 權種數據
                 whereString = f" DEFTCODE = '{tmpCHECKCODE}' "
                 sql = "select DEFTCODE, COMPARECODE, WEIGHT from INTMP_DB.DEFT_WEIGHT " \
@@ -478,15 +517,21 @@ class INTRelation(BaseType):
                         matData.append(datadict)
                 del data2
                 gc.collect()
+                end = time.clock()
+                print('getDBdata time elapsed: ' + str(round(end-start, 2)) + ' seconds')
                 # endregion
 
                 # temp list
                 # 分群
+                start = time.clock()
                 self.BASE_GROUPList = self._Group_OPERATOR_OPER_EQPID_TIMECLUST_PANELID_List(
                     hisData)
                 PANEL_TOTAL_COUNT = len(PANELID_Group)
+                end = time.clock()
+                print('分群 time elapsed: ' + str(round(end-start, 2)) + ' seconds')
 
                 # 人
+                start = time.clock()
                 node_cal_OPERATOR_OPER = []
                 link_cal_OPERATOR_OPER = []
                 OPERATOR_OPER_PANELID_Group = self._Group_OPERATOR_OPER_PANELID_List()
@@ -505,13 +550,17 @@ class INTRelation(BaseType):
                     OPERATOR_OPER_Count, PANEL_TOTAL_COUNT, o_A_Limit, o_T_Limit, weightData)
                 link_cal_OPERATOR_OPER = self._calLink_OPERATOR_OPER(
                     node_cal_OPERATOR_OPER, OPERATOR_OPER_EQPID_Count)
+                end = time.clock()
+                print('人 time elapsed: ' + str(round(end-start, 2)) + ' seconds')
 
+                #分時
                 node_cal_OPERATOR_TIMECLUST = []
                 link_cal_OPERATOR_TIMECLUST = []
                 node_cal_EQPID_TIMECLUST = []
                 link_cal_EQPID_TIMECLUST = []
                 if PANEL_TOTAL_COUNT > 10:  # 沒大於10片 不計算分時
                     # 人時
+                    start = time.clock()
                     OPERATOR_OPER_TIMECLUST_PANELID_Group = self._Group_OPERATOR_OPER_TIMECLUST_PANELID_List()
                     notInOPER2 = ["1050", "1100", "1200", "2110"]
                     OPERATOR_OPER_TIMECLUST_Count = self._Count_OPERATOR_OPER_TIMECLUST_List(
@@ -520,7 +569,9 @@ class INTRelation(BaseType):
                         OPERATOR_OPER_TIMECLUST_Count, PANEL_TOTAL_COUNT)
                     link_cal_OPERATOR_TIMECLUST = self._calLink_OPERATOR_TIMECLUSTR(
                         node_cal_OPERATOR_TIMECLUST)
-                # 機時
+                    print('人時 time elapsed: ' + str(round(end-start, 2)) + ' seconds')
+                    # 機時
+                    start = time.clock()
                     EQPID_OPER_TIMECLUST_PANELID_Group = self._Group_EQPID_OPER_TIMECLUST_PANELID_List()
                     notInOPER3 = ["1050", "1100", "1200", "2110"]
                     EQPID_OPER_TIMECLUST_Count = self._Count_EQPID_OPER_TIMECLUST_List(
@@ -529,8 +580,11 @@ class INTRelation(BaseType):
                         EQPID_OPER_TIMECLUST_Count, PANEL_TOTAL_COUNT)
                     link_cal_EQPID_TIMECLUST = self._calLink_EQPID_TIMECLUSTR(
                         node_cal_EQPID_TIMECLUST)
+                    end = time.clock()
+                    print('機時 time elapsed: ' + str(round(end-start, 2)) + ' seconds')
 
                 # 機
+                start = time.clock()
                 node_cal_EQPID_OPER = []
                 link_cal_EQPID_OPER = []
                 EQPID_OPER_PANELID_Group = self._Group_EQPID_OPER_PANELID_List()
@@ -546,8 +600,11 @@ class INTRelation(BaseType):
                     EQPID_OPER_Count, PANEL_TOTAL_COUNT, g_A_Limit, g_T_Limit, weightData)
                 link_cal_EQPID_OPER = self._calLink_EQPID_OPER(
                     node_cal_EQPID_OPER)
+                end = time.clock()
+                print('機 time elapsed: ' + str(round(end-start, 2)) + ' seconds')
 
                 # 站
+                start = time.clock()
                 node_cal_OPER_OPERATOR = []
                 link_cal_OPER_OPERATOR = []
                 notInOPER5 = ["1050", "1100", "2110"]
@@ -559,8 +616,11 @@ class INTRelation(BaseType):
                     OPER_OPERATOR_Count, PANEL_TOTAL_COUNT, o_A_Limit, o_T_Limit, weightData)
                 link_cal_OPER_OPERATOR = self._calLink_OPER_OPERATOR(
                     node_cal_OPER_OPERATOR)
+                end = time.clock()
+                print('站 time elapsed: ' + str(round(end-start, 2)) + ' seconds')
 
                 # 料
+                start = time.clock()
                 node_cal_MAT_OPER = []
                 link_cal_MAT_OPER = []
                 MAT_OPER_PANELID_Group = self._Group_MAT_OPER_PANELID_List(
@@ -572,8 +632,10 @@ class INTRelation(BaseType):
                 node_cal_MAT_OPER = self._calNode_MAT_OPER(
                     MAT_OPER_Count, PANEL_TOTAL_COUNT, m_A_Limit, m_T_Limit, weightData)
                 link_cal_MAT_OPER = self._calLink_MAT_OPER(node_cal_MAT_OPER)
+                print('料 time elapsed: ' + str(round(end-start, 2)) + ' seconds')
 
                 # 資料聚合
+                start = time.clock()
                 nodes = self._grouptNodes(
                     PANEL_TOTAL_COUNT,
                     node_cal_OPERATOR_OPER,
@@ -596,7 +658,7 @@ class INTRelation(BaseType):
 
                 categories = self._categories()
 
-                C_DESC = self._code2Desc("REASONCODE",tmpCHECKCODE)
+                C_DESC = self._code2Desc("DEFTCODE",tmpCHECKCODE)
                 returnData = {
                     "RELATIONTYPE": tmpFuncType,
                     "COMPANY_CODE": tmpCOMPANY_CODE,
@@ -612,6 +674,9 @@ class INTRelation(BaseType):
                     "links": links,
                     "categories": categories
                 }
+                end = time.clock()
+                print('資料聚合 time elapsed: ' + str(round(end-start, 2)) + ' seconds')
+
                 self.getRedisConnection()
                 if self.searchRedisKeys(redisKey):     
                     self.setRedisData(redisKey, json.dumps(
@@ -915,29 +980,21 @@ class INTRelation(BaseType):
             return {'Result': 'NG', 'Reason': f'{funcName} erro'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
     def _filterListbyOPER(self, LIST, OPER):
-        d = list(filter(lambda d: d["OPER"] != OPER, LIST))
+        d = [dd for dd in LIST if dd["OPER"] != OPER]
         return d
 
     def _code2Desc(self, TYPE, C_CODE):
         returnString = C_CODE
+        DataSet = []
         if TYPE == "REASONCODE":
-            sql = f"select REASONCODE_DESC from INTMP_DB.REASONCODE where REASONCODE = '{C_CODE}'"
-            # INT_ORACLEDB_PROD
-            self.getConnection(self.DBconfig)
-            data = self.Select(sql)
-            self.closeConnection()
-            returnString = None
-            if(len(data) != 0):
-                returnString = data[0][0]
+            DataSet = self.REASONCODEData
+        elif TYPE == "DEFTCODE":
+            DataSet = self.DEFTCODEData
         elif TYPE == "MAT4":
-            sql = f"select MAT_DESC from INTMP_DB.MAT where MAT4 = '{C_CODE}'"
-            # INT_ORACLEDB_PROD
-            self.getConnection(self.DBconfig)
-            data = self.Select(sql)
-            self.closeConnection()
-            returnString = None
-            if(len(data) != 0):
-                returnString = data[0][0]        
+            DataSet = self.MAT4Data
+        d = [dd for dd in DataSet if dd["CODE"] == C_CODE]
+        if d != []:
+            returnString = d[0]["DESC"]         
         return returnString
 
     def _Group_PANELID_List(self):
@@ -1065,8 +1122,7 @@ class INTRelation(BaseType):
         List = []
         for x in DATA:
             if x["OPER"] not in notInOPER:
-                d = list(filter(lambda d: d["OPERATOR"] == x["OPERATOR"] and
-                                d["OPER"] == x["OPER"] and d["TIMECLUST"] == x["TIMECLUST"], List))
+                d = [dd for dd in List if x["OPERATOR"] == dd["OPERATOR"] and x["OPER"] == dd["OPER"] and x["TIMECLUST"] == dd["TIMECLUST"]]
                 if d == []:
                     data = {
                         "OPERATOR": x["OPERATOR"],
@@ -1086,8 +1142,7 @@ class INTRelation(BaseType):
         List = []
         for x in DATA:
             if x["OPER"] not in notInOPER:
-                d = list(filter(lambda d: d["EQPID"] == x["EQPID"] and
-                                d["OPER"] == x["OPER"] and d["TIMECLUST"] == x["TIMECLUST"], List))
+                d = [dd for dd in List if x["EQPID"] == dd["EQPID"] and x["OPER"] == dd["OPER"] and x["TIMECLUST"] == dd["TIMECLUST"]]
                 if d == []:
                     data = {
                         "EQPID": x["EQPID"],
@@ -1107,8 +1162,7 @@ class INTRelation(BaseType):
         List = []
         for x in DATA:
             if x["OPER"] not in notInOPER:
-                d = list(filter(lambda d: d["OPERATOR"] == x["OPERATOR"] and
-                                d["OPER"] == x["OPER"] and d["EQPID"] == x["EQPID"], List))
+                d = [dd for dd in List if x["OPERATOR"] == dd["OPERATOR"] and x["OPER"] == dd["OPER"] and x["EQPID"] == dd["EQPID"]]
                 if d == []:
                     data = {
                         "OPERATOR": x["OPERATOR"],
@@ -1128,8 +1182,7 @@ class INTRelation(BaseType):
         List = []
         for x in DATA:
             if x["OPER"] not in notInOPER:
-                d = list(filter(
-                    lambda d: d["OPERATOR"] == x["OPERATOR"] and d["OPER"] == x["OPER"], List))
+                d = [dd for dd in List if x["OPERATOR"] == dd["OPERATOR"] and x["OPER"] == dd["OPER"]]               
                 if d == []:
                     data = {
                         "OPERATOR": x["OPERATOR"],
@@ -1147,8 +1200,7 @@ class INTRelation(BaseType):
         List = []
         for x in DATA:
             if x["OPER"] not in notInOPER:
-                d = list(
-                    filter(lambda d: d["EQPID"] == x["EQPID"] and d["OPER"] == x["OPER"], List))
+                d = [dd for dd in List if x["EQPID"] == dd["EQPID"] and x["OPER"] == dd["OPER"]]    
                 if d == []:
                     data = {
                         "EQPID": x["EQPID"],
@@ -1165,8 +1217,8 @@ class INTRelation(BaseType):
     def _Count_MAT_OPER_List(self, DATA):
         List = []
         for x in DATA:
-            d = list(filter(lambda d: d["OPER"] == x["OPER"] and d["MAT_ID"] == x["MAT_ID"]
-                            and d["MAT_LOTID"] == x["MAT_LOTID"], List))
+            d = [dd for dd in List if x["OPER"] == dd["OPER"] and \
+                 x["MAT_ID"] == dd["MAT_ID"] and x["MAT_LOTID"] == dd["MAT_LOTID"]]   
             if d == []:
                 data = {
                     "OPER": x["OPER"],
@@ -1237,8 +1289,8 @@ class INTRelation(BaseType):
     def _calLink_OPERATOR_OPER(self, node_cal_OPERATOR_OPER, OPERATOR_OPER_EQPID_Lis):
         DATASERIES = []
         for oo in node_cal_OPERATOR_OPER:
-            d = list(filter(lambda d: d["OPERATOR"] == oo["OPERATOR"]
-                     and d["OPER"] == oo["OPER"], OPERATOR_OPER_EQPID_Lis))
+            d = [dd for dd in OPERATOR_OPER_EQPID_Lis if oo["OPER"] == dd["OPER"] and \
+                 oo["OPERATOR"] == dd["OPERATOR"]]   
             if d != []:
                 for dd in d:
                     data = {
