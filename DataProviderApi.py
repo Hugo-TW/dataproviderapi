@@ -2069,6 +2069,112 @@ class getINTRelation(Resource):
         v = INTRelation(jsonData)
         return v.getData()
 
+intSDTemp = [
+    {
+      "model": {
+        "TYPE": "PROD",
+        "CODE": "2HE080IA1010S",
+        "APPLICATION": "TABLET"
+      },
+      "PASS": {
+        "filter": {
+          "LCM_OWNER": [
+            "LCM0",
+            "LCME",
+            "PROD",
+            "QTAP",
+            "RES0"
+          ],
+          "RW_COUNT": [
+            0,
+            1
+          ]
+        },
+        "operdata": [
+          {
+            "OPER": {
+              "NAME": "PCBI",
+              "RANGE": {
+                "fromt": 1300,
+                "tot": 1301
+              },
+              "EXCLUSION": []
+            },
+            "sumqty": 2
+          }
+        ]
+      },
+      "DEFT": {
+        "filter": {
+          "LCM_OWNER": [
+            "LCM0",
+            "LCME",
+            "PROD",
+            "QTAP",
+            "RES0"
+          ],
+          "RW_COUNT": [
+            0,
+            1
+          ]
+        },
+        "operdata": [
+          {
+            "OPER": {
+              "NAME": "PCBI",
+              "RANGE": {
+                "fromt": 1050,
+                "tot": 1301
+              },
+              "EXCLUSION": []
+            },
+            "sumdata": [
+              {
+                "code": "PCBC7",
+                "sumqty": 2
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+
+intSDETLNs = api.namespace('intSDETL', description = 'intSDETL')
+intSDETLML_local = api.model('intSDETLML_local', {
+    "COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+    "SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+    "FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'J001', example = 'J001'),
+})
+intSDETLML = api.model('intSDETL', {
+    'DATATYPE': fields.String( required = True, description = 'DATATYPE', default = 'FPY', example = 'FPY'),
+    'local': fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+    "CONDITION":fields.Nested(intSDETLML_local),
+    'ACCT_DATE': fields.String(required = True, description = 'ACCT_DATE', default = '20210715', example = '20210715'),
+    'modeldata' : fields.String(required = True, description = 'modeldata', default = 'modeldata', example = intSDTemp)
+    })
+@intSDETLNs.route('', methods = ['POST'])
+@intSDETLNs.response(200, 'Sucess')
+@intSDETLNs.response(201, 'Created Sucess')
+@intSDETLNs.response(204, 'No Content')
+@intSDETLNs.response(400, 'Bad Request')
+@intSDETLNs.response(401, 'Unauthorized')
+@intSDETLNs.response(403, 'Forbidden')
+@intSDETLNs.response(404, 'Not Found')
+@intSDETLNs.response(405, 'Method Not Allowed')
+@intSDETLNs.response(409, 'Conflict')
+@intSDETLNs.response(500, 'Internal Server Error')
+class intSDETL(Resource):
+    @intSDETLNs.doc('intSiteDataETL')
+    @intSDETLNs.expect(intSDETLML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        jsonData = BaseType.validateType(request.json)   
+        return f'try ok!! modeldata > 0 > model > CODE : {jsonData["modeldata"][0]["model"]["CODE"]}'
+
 if __name__ == '__main__':
     app.run(threaded=True, use_reloader=True, host='0.0.0.0', port=5001, debug=False)#use_reloader=True,
 
