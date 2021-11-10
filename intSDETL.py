@@ -63,6 +63,7 @@ class INTSDETL():
             _FACTORY_ID = DATA["local"]["FACTORY_ID"]
             _ACCT_DATE = DATA["ACCT_DATE"]
             _DATATYPE = DATA["DATATYPE"]
+            _DATA = f'{DATA}'
 
             insertData = []
             oData = (
@@ -70,7 +71,8 @@ class INTSDETL():
                     _SITE,
                     _FACTORY_ID, 
                     _ACCT_DATE,
-                    _DATATYPE
+                    _DATATYPE,
+                    _DATA
                 )
             insertData.append(oData)
             """
@@ -86,11 +88,12 @@ class INTSDETL():
                 and SITE = '{_SITE}' and FACTORY_ID = '{_FACTORY_ID}' and ACCT_DATE = '{_ACCT_DATE}' \
                 and DATATYPE = '{_DATATYPE}' "
             insertString = "insert into INTMP_DB.SDETLUPLOADLOG("\
-                "COMPANY_CODE,SITE,FACTORY_ID,ACCT_DATE,DATATYPE) "\
-                "values (:1, :2, :3, :4, :5)"
+                "COMPANY_CODE,SITE,FACTORY_ID,ACCT_DATE,DATATYPE, ORIGDATA) "\
+                "values (:1, :2, :3, :4, :5, utl_raw.cast_to_raw(:6))"
             self._getConnection(self.DBconfig)
             self._daoHelper.Delete(delString)
             self._daoHelper.InserMany(insertString,insertData)
+            #select utl_raw.cast_to_varchar2(dbms_lob.substr(ORIGDATA)) from sdetluploadlog
         except Exception as e:
             error_class = e.__class__.__name__ #取得錯誤類型
             detail = e.args[0] #取得詳細內容
