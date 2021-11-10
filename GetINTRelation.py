@@ -536,22 +536,47 @@ class INTRelation(BaseType):
                 start = time.time()
                 node_cal_OPERATOR_OPER = []
                 link_cal_OPERATOR_OPER = []
+                start1 = time.time()
                 OPERATOR_OPER_PANELID_Group = self._Group_OPERATOR_OPER_PANELID_List()
+                end1 = time.time()
+                self.writeLog('人1 time elapsed: ' + str(round(end1-start1, 2)) + ' seconds')
+                start1 = time.time()
                 OPERATOR_OPER_EQPID_PANELID_Group = self._Group_OPERATOR_OPER_EQPID_PANELID_List()
+                end1 = time.time()
+                self.writeLog('人2 time elapsed: ' + str(round(end1-start1, 2)) + ' seconds')
+                start1 = time.time()
                 notInOPER1 = ["1050", "1100", "1200", "2110"]
                 OPERATOR_OPER_Count = self._Count_OPERATOR_OPER_List(
                     notInOPER1, OPERATOR_OPER_PANELID_Group)
+                end1 = time.time()
+                self.writeLog('人3 time elapsed: ' + str(round(end1-start1, 2)) + ' seconds')
+                start1 = time.time()
                 OPERATOR_OPER_EQPID_Count = self._Count_OPERATOR_OPER_EQPID_List(
                     notInOPER1, OPERATOR_OPER_EQPID_PANELID_Group)
+                end1 = time.time()
+                self.writeLog('人4 time elapsed: ' + str(round(end1-start1, 2)) + ' seconds')
+                start1 = time.time()
                 OPER_Count = self._Count_OPER_List(
                     notInOPER1, OPERATOR_OPER_Count)
+                end1 = time.time()
+                self.writeLog('人5 time elapsed: ' + str(round(end1-start1, 2)) + ' seconds')
+                start1 = time.time()
                 o_A_Limit = self._OPER_Limit(
                     OPER_Count, PANEL_TOTAL_COUNT)
+                end1 = time.time()
+                self.writeLog('人6 time elapsed: ' + str(round(end1-start1, 2)) + ' seconds')
+                start1 = time.time()
                 o_T_Limit = 0.3
                 node_cal_OPERATOR_OPER = self._calNode_OPERATOR_OPER(
                     OPERATOR_OPER_Count, PANEL_TOTAL_COUNT, o_A_Limit, o_T_Limit, weightData)
+                end1 = time.time()
+                self.writeLog('人7 time elapsed: ' + str(round(end1-start1, 2)) + ' seconds')
+                start1 = time.time()
                 link_cal_OPERATOR_OPER = self._calLink_OPERATOR_OPER(
                     node_cal_OPERATOR_OPER, OPERATOR_OPER_EQPID_Count)
+                end1 = time.time()
+                self.writeLog('人8 time elapsed: ' + str(round(end1-start1, 2)) + ' seconds')
+                start1 = time.time()
                 end = time.time()
                 self.writeLog('人 time elapsed: ' + str(round(end-start, 2)) + ' seconds')
 
@@ -1094,7 +1119,7 @@ class INTRelation(BaseType):
                     "OPER": x["OPER"],
                     "PANELID": x["PANELID"]
                 }
-                List.append(data)
+                List.append(data)       
         return List
 
     def _Group_EQPID_OPER_PANELID_List(self):
