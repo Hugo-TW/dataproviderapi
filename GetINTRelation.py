@@ -454,6 +454,8 @@ class INTRelation(BaseType):
                         panelData.append(datadict)
                 del idData
                 gc.collect()
+                self.writeLog("panelData")
+                self.writeLog(panelData)
 
                 PANELID_Group = self._Group_PANELID_List(panelData)
 
@@ -493,6 +495,8 @@ class INTRelation(BaseType):
                         hisData.append(datadict)
                 del data1
                 gc.collect()
+                #self.writeLog("hisData")
+                #self.writeLog(hisData)
 
                 # step2: 取得panel use mat
                 whereString = f" PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and OPER = '1050' and PANELID in ({PANELID_Group_SQL_LIST}) "
@@ -517,6 +521,8 @@ class INTRelation(BaseType):
                         matData.append(datadict)
                 del data2
                 gc.collect()
+                #self.writeLog("matData")
+                #self.writeLog(matData)
                 end = time.time()
                 self.writeLog('getDBdata time elapsed: ' + str(round(end-start, 2)) + ' seconds')
                 # endregion
@@ -527,6 +533,8 @@ class INTRelation(BaseType):
                 self.BASE_GROUPList = self._Group_OPERATOR_OPER_EQPID_TIMECLUST_PANELID_List(
                     hisData)
                 PANEL_TOTAL_COUNT = len(PANELID_Group)
+                #self.writeLog("BASE_GROUPList")
+                #self.writeLog(self.BASE_GROUPList)
                 end = time.time()
                 self.writeLog('分群 time elapsed: ' + str(round(end-start, 2)) + ' seconds')
 
@@ -550,6 +558,9 @@ class INTRelation(BaseType):
                     OPERATOR_OPER_Count, PANEL_TOTAL_COUNT, o_A_Limit, o_T_Limit, weightData)
                 link_cal_OPERATOR_OPER = self._calLink_OPERATOR_OPER(
                     node_cal_OPERATOR_OPER, OPERATOR_OPER_EQPID_Count)
+                #self.writeLog("人")
+                #self.writeLog(node_cal_OPERATOR_OPER)
+                #self.writeLog(link_cal_OPERATOR_OPER)
                 end = time.time()
                 self.writeLog('人 time elapsed: ' + str(round(end-start, 2)) + ' seconds')
 
@@ -569,6 +580,10 @@ class INTRelation(BaseType):
                         OPERATOR_OPER_TIMECLUST_Count, PANEL_TOTAL_COUNT)
                     link_cal_OPERATOR_TIMECLUST = self._calLink_OPERATOR_TIMECLUSTR(
                         node_cal_OPERATOR_TIMECLUST)
+                    #self.writeLog("人時")
+                    #self.writeLog(node_cal_OPERATOR_TIMECLUST)
+                    #self.writeLog(link_cal_OPERATOR_TIMECLUST)
+                    end = time.time()
                     self.writeLog('人時 time elapsed: ' + str(round(end-start, 2)) + ' seconds')
                     # 機時
                     start = time.time()
@@ -579,7 +594,10 @@ class INTRelation(BaseType):
                     node_cal_EQPID_TIMECLUST = self._calNode_EQPID_TIMECLUSTR(
                         EQPID_OPER_TIMECLUST_Count, PANEL_TOTAL_COUNT)
                     link_cal_EQPID_TIMECLUST = self._calLink_EQPID_TIMECLUSTR(
-                        node_cal_EQPID_TIMECLUST)  
+                        node_cal_EQPID_TIMECLUST)
+                    #self.writeLog("機時")
+                    #self.writeLog(node_cal_EQPID_TIMECLUST)
+                    #self.writeLog(link_cal_EQPID_TIMECLUST)  
                     end = time.time()
                     self.writeLog('機時 time elapsed: ' + str(round(end-start, 2)) + ' seconds')
 
@@ -600,6 +618,9 @@ class INTRelation(BaseType):
                     EQPID_OPER_Count, PANEL_TOTAL_COUNT, g_A_Limit, g_T_Limit, weightData)
                 link_cal_EQPID_OPER = self._calLink_EQPID_OPER(
                     node_cal_EQPID_OPER)
+                #self.writeLog("機")
+                #self.writeLog(node_cal_EQPID_OPER)
+                #self.writeLog(link_cal_EQPID_OPER)  
                 end = time.time()
                 self.writeLog('機 time elapsed: ' + str(round(end-start, 2)) + ' seconds')
 
@@ -616,6 +637,9 @@ class INTRelation(BaseType):
                     OPER_OPERATOR_Count, PANEL_TOTAL_COUNT, o_A_Limit, o_T_Limit, weightData)
                 link_cal_OPER_OPERATOR = self._calLink_OPER_OPERATOR(
                     node_cal_OPER_OPERATOR)
+                #self.writeLog("站")
+                #self.writeLog(node_cal_OPER_OPERATOR)
+                #self.writeLog(link_cal_OPER_OPERATOR)  
                 end = time.time()
                 self.writeLog('站 time elapsed: ' + str(round(end-start, 2)) + ' seconds')
 
@@ -632,6 +656,10 @@ class INTRelation(BaseType):
                 node_cal_MAT_OPER = self._calNode_MAT_OPER(
                     MAT_OPER_Count, PANEL_TOTAL_COUNT, m_A_Limit, m_T_Limit, weightData)
                 link_cal_MAT_OPER = self._calLink_MAT_OPER(node_cal_MAT_OPER)
+                #self.writeLog("料")
+                #self.writeLog(node_cal_MAT_OPER)
+                #self.writeLog(link_cal_MAT_OPER)  
+                end = time.time()
                 self.writeLog('料 time elapsed: ' + str(round(end-start, 2)) + ' seconds')
 
                 # 資料聚合
