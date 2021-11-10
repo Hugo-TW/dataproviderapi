@@ -32,6 +32,7 @@ from GetEQOFRHrs import EQOFRHrs
 from GetEQOFRHrsDetails import EQOFRHrsDetails
 from GetFactoryOFRHrsDetail import OFRHrsDetail
 #---------------------------------------------
+from intSDETL import INTSDETL
 from GetINTRelation import INTRelation
 from GetINTTALK import INTTALK
 from GetINTLV3 import INTLV3
@@ -2148,8 +2149,7 @@ intSDETLML_local = api.model('intSDETLML_local', {
 })
 intSDETLML = api.model('intSDETL', {
     'DATATYPE': fields.String( required = True, description = 'DATATYPE', default = 'FPY', example = 'FPY'),
-    'local': fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
-    "CONDITION":fields.Nested(intSDETLML_local),
+    "local":fields.Nested(intSDETLML_local),
     'ACCT_DATE': fields.String(required = True, description = 'ACCT_DATE', default = '20210715', example = '20210715'),
     'modeldata' : fields.String(required = True, description = 'modeldata', default = 'modeldata', example = intSDTemp)
     })
@@ -2172,8 +2172,12 @@ class intSDETL(Resource):
             abort(400)
         elif not request.json:
             return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        DBconfig = "INT_ORACLEDB_TEST"
         jsonData = BaseType.validateType(request.json)   
-        return f'try ok!! modeldata > 0 > model > CODE : {jsonData["modeldata"][0]["model"]["CODE"]}'
+        ins = INTSDETL(DBconfig, jsonData)
+        return ins.SetData()
+        
+        #return f'try ok!! modeldata > 0 > model > CODE : {jsonData["modeldata"][0]["model"]["CODE"]}'
 
 if __name__ == '__main__':
     app.run(threaded=True, use_reloader=True, host='0.0.0.0', port=5001, debug=False)#use_reloader=True,
