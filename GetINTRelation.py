@@ -572,27 +572,14 @@ class INTRelation(BaseType):
                     self.writeLog('人時 time elapsed: ' + str(round(end-start, 2)) + ' seconds')
                     # 機時
                     start = time.time()
-                    start1 = time.time()
-                    EQPID_OPER_TIMECLUST_PANELID_Group = self._Group_EQPID_OPER_TIMECLUST_PANELID_List()                                    
-                    end1 = time.time()
-                    self.writeLog('機時1 time elapsed: ' + str(round(end1-start1, 2)) + ' seconds')
-                    start1 = time.time()
+                    EQPID_OPER_TIMECLUST_PANELID_Group = self._Group_EQPID_OPER_TIMECLUST_PANELID_List() 
                     notInOPER3 = ["1050", "1100", "1200", "2110"]
                     EQPID_OPER_TIMECLUST_Count = self._Count_EQPID_OPER_TIMECLUST_List(
-                        notInOPER3, EQPID_OPER_TIMECLUST_PANELID_Group)                                    
-                    end1 = time.time()
-                    self.writeLog('機時2 time elapsed: ' + str(round(end1-start1, 2)) + ' seconds')
-                    start1 = time.time()
+                        notInOPER3, EQPID_OPER_TIMECLUST_PANELID_Group)  
                     node_cal_EQPID_TIMECLUST = self._calNode_EQPID_TIMECLUSTR(
-                        EQPID_OPER_TIMECLUST_Count, PANEL_TOTAL_COUNT)                                        
-                    end1 = time.time()
-                    self.writeLog('機時3 time elapsed: ' + str(round(end1-start1, 2)) + ' seconds')
-                    start1 = time.time()
+                        EQPID_OPER_TIMECLUST_Count, PANEL_TOTAL_COUNT)
                     link_cal_EQPID_TIMECLUST = self._calLink_EQPID_TIMECLUSTR(
-                        node_cal_EQPID_TIMECLUST)                                    
-                    end1 = time.time()
-                    self.writeLog('機時4 time elapsed: ' + str(round(end1-start1, 2)) + ' seconds')
-                    start1 = time.time()
+                        node_cal_EQPID_TIMECLUST)  
                     end = time.time()
                     self.writeLog('機時 time elapsed: ' + str(round(end-start, 2)) + ' seconds')
 
