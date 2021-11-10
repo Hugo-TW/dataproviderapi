@@ -11,8 +11,6 @@ from re import X
 from BaseType import BaseType
 from Dao import DaoHelper, ReadConfig
 from decimal import Decimal, ROUND_HALF_UP
-
-
 class INTRelation(BaseType):
     def __init__(self, jsonData):
         super().__init__()
@@ -536,47 +534,22 @@ class INTRelation(BaseType):
                 start = time.time()
                 node_cal_OPERATOR_OPER = []
                 link_cal_OPERATOR_OPER = []
-                start1 = time.time()
                 OPERATOR_OPER_PANELID_Group = self._Group_OPERATOR_OPER_PANELID_List()
-                end1 = time.time()
-                self.writeLog('人1 time elapsed: ' + str(round(end1-start1, 2)) + ' seconds')
-                start1 = time.time()
                 OPERATOR_OPER_EQPID_PANELID_Group = self._Group_OPERATOR_OPER_EQPID_PANELID_List()
-                end1 = time.time()
-                self.writeLog('人2 time elapsed: ' + str(round(end1-start1, 2)) + ' seconds')
-                start1 = time.time()
                 notInOPER1 = ["1050", "1100", "1200", "2110"]
                 OPERATOR_OPER_Count = self._Count_OPERATOR_OPER_List(
                     notInOPER1, OPERATOR_OPER_PANELID_Group)
-                end1 = time.time()
-                self.writeLog('人3 time elapsed: ' + str(round(end1-start1, 2)) + ' seconds')
-                start1 = time.time()
                 OPERATOR_OPER_EQPID_Count = self._Count_OPERATOR_OPER_EQPID_List(
                     notInOPER1, OPERATOR_OPER_EQPID_PANELID_Group)
-                end1 = time.time()
-                self.writeLog('人4 time elapsed: ' + str(round(end1-start1, 2)) + ' seconds')
-                start1 = time.time()
                 OPER_Count = self._Count_OPER_List(
                     notInOPER1, OPERATOR_OPER_Count)
-                end1 = time.time()
-                self.writeLog('人5 time elapsed: ' + str(round(end1-start1, 2)) + ' seconds')
-                start1 = time.time()
                 o_A_Limit = self._OPER_Limit(
                     OPER_Count, PANEL_TOTAL_COUNT)
-                end1 = time.time()
-                self.writeLog('人6 time elapsed: ' + str(round(end1-start1, 2)) + ' seconds')
-                start1 = time.time()
                 o_T_Limit = 0.3
                 node_cal_OPERATOR_OPER = self._calNode_OPERATOR_OPER(
                     OPERATOR_OPER_Count, PANEL_TOTAL_COUNT, o_A_Limit, o_T_Limit, weightData)
-                end1 = time.time()
-                self.writeLog('人7 time elapsed: ' + str(round(end1-start1, 2)) + ' seconds')
-                start1 = time.time()
                 link_cal_OPERATOR_OPER = self._calLink_OPERATOR_OPER(
                     node_cal_OPERATOR_OPER, OPERATOR_OPER_EQPID_Count)
-                end1 = time.time()
-                self.writeLog('人8 time elapsed: ' + str(round(end1-start1, 2)) + ' seconds')
-                start1 = time.time()
                 end = time.time()
                 self.writeLog('人 time elapsed: ' + str(round(end-start, 2)) + ' seconds')
 
@@ -599,14 +572,27 @@ class INTRelation(BaseType):
                     self.writeLog('人時 time elapsed: ' + str(round(end-start, 2)) + ' seconds')
                     # 機時
                     start = time.time()
-                    EQPID_OPER_TIMECLUST_PANELID_Group = self._Group_EQPID_OPER_TIMECLUST_PANELID_List()
+                    start1 = time.time()
+                    EQPID_OPER_TIMECLUST_PANELID_Group = self._Group_EQPID_OPER_TIMECLUST_PANELID_List()                                    
+                    end1 = time.time()
+                    self.writeLog('機時1 time elapsed: ' + str(round(end1-start1, 2)) + ' seconds')
+                    start1 = time.time()
                     notInOPER3 = ["1050", "1100", "1200", "2110"]
                     EQPID_OPER_TIMECLUST_Count = self._Count_EQPID_OPER_TIMECLUST_List(
-                        notInOPER3, EQPID_OPER_TIMECLUST_PANELID_Group)
+                        notInOPER3, EQPID_OPER_TIMECLUST_PANELID_Group)                                    
+                    end1 = time.time()
+                    self.writeLog('機時2 time elapsed: ' + str(round(end1-start1, 2)) + ' seconds')
+                    start1 = time.time()
                     node_cal_EQPID_TIMECLUST = self._calNode_EQPID_TIMECLUSTR(
-                        EQPID_OPER_TIMECLUST_Count, PANEL_TOTAL_COUNT)
+                        EQPID_OPER_TIMECLUST_Count, PANEL_TOTAL_COUNT)                                        
+                    end1 = time.time()
+                    self.writeLog('機時3 time elapsed: ' + str(round(end1-start1, 2)) + ' seconds')
+                    start1 = time.time()
                     link_cal_EQPID_TIMECLUST = self._calLink_EQPID_TIMECLUSTR(
-                        node_cal_EQPID_TIMECLUST)
+                        node_cal_EQPID_TIMECLUST)                                    
+                    end1 = time.time()
+                    self.writeLog('機時4 time elapsed: ' + str(round(end1-start1, 2)) + ' seconds')
+                    start1 = time.time()
                     end = time.time()
                     self.writeLog('機時 time elapsed: ' + str(round(end-start, 2)) + ' seconds')
 
@@ -1040,110 +1026,48 @@ class INTRelation(BaseType):
         return PANELIDList
 
     def _Group_OPERATOR_OPER_EQPID_TIMECLUST_PANELID_List(self, DATA):
-        List = []
-        for x in DATA:
-            if {"OPERATOR": x["OPERATOR"], "OPER": x["OPER"],
-                    "EQPID": x["EQPID"], "TIMECLUST": x["TIMECLUST"], "PANELID": x["PANELID"]} not in List:
-                data = {
-                    "OPERATOR": x["OPERATOR"],
-                    "OPER": x["OPER"],
-                    "EQPID": x["EQPID"],
-                    "TIMECLUST": x["TIMECLUST"],
-                    "PANELID": x["PANELID"]
-                }
-                List.append(data)
+        List = list({str(v['OPERATOR'])+':'+str(v['OPER'])+','+str(v['EQPID'])+','+str(v['TIMECLUST'])+','+str(v['PANELID']):
+             {"OPERATOR": v["OPERATOR"],"OPER": v["OPER"], "EQPID": v["EQPID"],"TIMECLUST": v["TIMECLUST"],"PANELID": v["PANELID"]} 
+             for v in DATA}.values())
         return List
 
     def _Group_MAT_OPER_PANELID_List(self, DATA):
-        List = []
-        for x in DATA:
-            if {"OPER": x["OPER"], "MAT_ID": x["MAT_ID"], "MAT_LOTID": x["MAT_LOTID"],
-                    "PANELID": x["PANELID"]} not in List:
-                data = {
-                    "OPER": x["OPER"],
-                    "MAT_ID": x["MAT_ID"],
-                    "MAT_LOTID": x["MAT_LOTID"],
-                    "PANELID": x["PANELID"]
-                }
-                List.append(data)
+        List = list({str(v['OPER'])+':'+str(v['MAT_ID'])+','+str(v['MAT_LOTID'])+','+str(v['PANELID']):
+             {"OPER": v["OPER"],"MAT_ID": v["MAT_ID"], "MAT_LOTID": v["MAT_LOTID"],"PANELID": v["PANELID"]} 
+             for v in DATA}.values())
         return List
 
     def _Group_OPERATOR_OPER_TIMECLUST_PANELID_List(self):
-        List = []
-        for x in self.BASE_GROUPList:
-            if {"OPERATOR": x["OPERATOR"], "OPER": x["OPER"],
-                    "TIMECLUST": x["TIMECLUST"], "PANELID": x["PANELID"]} not in List:
-                data = {
-                    "OPERATOR": x["OPERATOR"],
-                    "OPER": x["OPER"],
-                    "TIMECLUST": x["TIMECLUST"],
-                    "PANELID": x["PANELID"]
-                }
-                List.append(data)
+        List = list({str(v['OPERATOR'])+':'+str(v['OPER'])+','+str(v['TIMECLUST'])+','+str(v['PANELID']):
+             {"OPERATOR": v["OPERATOR"],"OPER": v["OPER"], "TIMECLUST": v["TIMECLUST"],"PANELID": v["PANELID"]} 
+             for v in self.BASE_GROUPList}.values())
         return List
 
     def _Group_EQPID_OPER_TIMECLUST_PANELID_List(self):
-        List = []
-        for x in self.BASE_GROUPList:
-            if {"EQPID": x["EQPID"], "OPER": x["OPER"],
-                    "TIMECLUST": x["TIMECLUST"], "PANELID": x["PANELID"]} not in List:
-                data = {
-                    "EQPID": x["EQPID"],
-                    "OPER": x["OPER"],
-                    "TIMECLUST": x["TIMECLUST"],
-                    "PANELID": x["PANELID"]
-                }
-                List.append(data)
+        List = list({str(v['EQPID'])+':'+str(v['OPER'])+','+str(v['TIMECLUST'])+','+str(v['PANELID']):
+             {"EQPID": v["EQPID"],"OPER": v["OPER"], "TIMECLUST": v["TIMECLUST"],"PANELID": v["PANELID"]} 
+             for v in self.BASE_GROUPList}.values())
         return List
 
     def _Group_OPERATOR_OPER_EQPID_PANELID_List(self):
-        List = []
-        for x in self.BASE_GROUPList:
-            if {"OPERATOR": x["OPERATOR"], "OPER": x["OPER"],
-                    "EQPID": x["EQPID"], "PANELID": x["PANELID"]} not in List:
-                data = {
-                    "OPERATOR": x["OPERATOR"],
-                    "OPER": x["OPER"],
-                    "EQPID": x["EQPID"],
-                    "PANELID": x["PANELID"]
-                }
-                List.append(data)
+        List = list({str(v['OPERATOR'])+':'+str(v['OPER'])+','+str(v['EQPID'])+','+str(v['PANELID']):
+             {"OPERATOR": v["OPERATOR"],"OPER": v["OPER"], "EQPID": v["EQPID"],"PANELID": v["PANELID"]} 
+             for v in self.BASE_GROUPList}.values())
         return List
 
     def _Group_OPERATOR_OPER_PANELID_List(self):
-        List = []
-        for x in self.BASE_GROUPList:
-            if {"OPERATOR": x["OPERATOR"], "OPER": x["OPER"], "PANELID": x["PANELID"]} not in List:
-                data = {
-                    "OPERATOR": x["OPERATOR"],
-                    "OPER": x["OPER"],
-                    "PANELID": x["PANELID"]
-                }
-                List.append(data)       
+        List = list({str(v['OPERATOR'])+':'+str(v['OPER'])+','+str(v['PANELID']): {"OPERATOR": v["OPERATOR"],
+                    "OPER": v["OPER"], "PANELID": v["PANELID"]} for v in self.BASE_GROUPList}.values())
         return List
 
     def _Group_EQPID_OPER_PANELID_List(self):
-        List = []
-        for x in self.BASE_GROUPList:
-            if {"EQPID": x["EQPID"], "OPER": x["OPER"], "PANELID": x["PANELID"]} not in List:
-                data = {
-                    "EQPID": x["EQPID"],
-                    "OPER": x["OPER"],
-                    "PANELID": x["PANELID"]
-                }
-                List.append(data)
+        List = list({str(v['EQPID'])+':'+str(v['OPER'])+','+str(v['PANELID']): {"EQPID": v["EQPID"],
+                    "OPER": v["OPER"], "PANELID": v["PANELID"]} for v in self.BASE_GROUPList}.values())
         return List
 
     def _Group_OPERATOR_OPER_EQPID_List(self):
-        List = []
-        for x in self.BASE_GROUPList:
-            if {"OPERATOR": x["OPERATOR"], "OPER": x["OPER"], "EQPID": x["EQPID"]} not in List:
-                data = {
-                    "OPERATOR": x["OPERATOR"],
-                    "OPER": x["OPER"],
-                    "EQPID": x["EQPID"]
-                }
-                List.append(data)
+        List = list({str(v['OPERATOR'])+':'+str(v['OPER'])+','+str(v['EQPID']): {"OPERATOR": v["OPERATOR"],
+                    "OPER": v["OPER"], "EQPID": v["EQPID"]} for v in self.BASE_GROUPList}.values())
         return List
 
     def _Count_OPERATOR_OPER_TIMECLUST_List(self, notInOPER, DATA):
