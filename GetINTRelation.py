@@ -428,7 +428,7 @@ class INTRelation(BaseType):
                 denominatorValue = getFabData["FPY"]["denominator"][tmpOPER]
 
                 # step0: 取得 與 defect / Reason 相關的 panel id
-                whereString = f"where PROD_NBR = '{tmpPROD_NBR}' and  DEFT = '{tmpCHECKCODE}' and RW_COUNT >= 1 "\
+                whereString = f"where PROD_NBR = '{tmpPROD_NBR}' and  DEFT = '{tmpCHECKCODE}' and RW_COUNT <= 1 "\
                     f" and TO_NUMBER(MAIN_OPER) >= {fromt} "\
                     f" and TO_NUMBER(MAIN_OPER) <= {to} "\
                     f" and MFGDATE = '{tmpACCT_DATE}' "
