@@ -10,28 +10,29 @@ import copy
 from BaseType import BaseType
 import decimal
 
+
 class INTKPI(BaseType):
     def __init__(self, jsonData):
         super().__init__()
         self.writeLog(
             f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
         self.jsonData = jsonData
-        #M011 => MOD1
-        #J001 => MOD2
-        #J003 => MOD3
+        # M011 => MOD1
+        # J001 => MOD2
+        # J003 => MOD3
         self.operSetData = {
             "M011": {
                 "FPY": {
                     "limit": {
-                        "CE": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.94},
-                        "TABLET": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.89},
-                        "NB": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.93},
-                        "TV": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.90},
-                        "AA": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95},
-                        "IAVM": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95},
-                        "AUTO": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95},
-                        "mLED": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95},
-                        "TFT Sensor": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95}
+                        "CE": {"qytlim2": 1500, "qytlim": 1000, "FPY": 0.94},
+                        "TABLET": {"qytlim2": 1500, "qytlim": 1000, "FPY": 0.89},
+                        "NB": {"qytlim2": 1500, "qytlim": 1000, "FPY": 0.93},
+                        "TV": {"qytlim2": 1500, "qytlim": 1000, "FPY": 0.90},
+                        "AA": {"qytlim2": 1500, "qytlim": 1000, "FPY": 0.95},
+                        "IAVM": {"qytlim2": 1500, "qytlim": 1000, "FPY": 0.95},
+                        "AUTO": {"qytlim2": 1500, "qytlim": 1000, "FPY": 0.95},
+                        "mLED": {"qytlim2": 1500, "qytlim": 1000, "FPY": 0.95},
+                        "TFT Sensor": {"qytlim2": 1500, "qytlim": 1000, "FPY": 0.95}
                     },
                     "numerator": {  # 分子
                         "PCBI": {"fromt": 1050, "tot": 1310},
@@ -75,10 +76,10 @@ class INTKPI(BaseType):
                 "FPY": {
                     "limit": {
                         "CE": {"qytlim2": 1500, "qytlim": 500, "FPY": 0.94},
-                        "TABLET": {"qytlim2": 1500,"qytlim": 500, "FPY": 0.89},
-                        "NB": {"qytlim2": 1500,"qytlim": 500, "FPY": 0.93},
-                        "TV": {"qytlim2": 1500,"qytlim": 500, "FPY": 0.90},
-                        "AA": {"qytlim2": 1500,"qytlim": 500, "FPY": 0.95}
+                        "TABLET": {"qytlim2": 1500, "qytlim": 500, "FPY": 0.89},
+                        "NB": {"qytlim2": 1500, "qytlim": 500, "FPY": 0.93},
+                        "TV": {"qytlim2": 1500, "qytlim": 500, "FPY": 0.90},
+                        "AA": {"qytlim2": 1500, "qytlim": 500, "FPY": 0.95}
                     },
                     "numerator": {  # 分子
                         "PCBI": {"fromt": 1050, "tot": 1310},
@@ -121,11 +122,11 @@ class INTKPI(BaseType):
             "J003": {
                 "FPY": {
                     "limit": {
-                        "CE": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.94},
-                        "TABLET": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.89},
-                        "NB": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.93},
-                        "TV": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.90},
-                        "AA": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95}
+                        "CE": {"qytlim2": 1500, "qytlim": 1000, "FPY": 0.94},
+                        "TABLET": {"qytlim2": 1500, "qytlim": 1000, "FPY": 0.89},
+                        "NB": {"qytlim2": 1500, "qytlim": 1000, "FPY": 0.93},
+                        "TV": {"qytlim2": 1500, "qytlim": 1000, "FPY": 0.90},
+                        "AA": {"qytlim2": 1500, "qytlim": 1000, "FPY": 0.95}
                     },
                     "numerator": {  # 分子
                         "PCBI": {"fromt": 1050, "tot": 1310},
@@ -168,11 +169,11 @@ class INTKPI(BaseType):
             "J004": {
                 "FPY": {
                     "limit": {
-                        "CE": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.94},
-                        "TABLET": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.89},
-                        "NB": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.93},
-                        "TV": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.90},
-                        "AA": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95}
+                        "CE": {"qytlim2": 1500, "qytlim": 1000, "FPY": 0.94},
+                        "TABLET": {"qytlim2": 1500, "qytlim": 1000, "FPY": 0.89},
+                        "NB": {"qytlim2": 1500, "qytlim": 1000, "FPY": 0.93},
+                        "TV": {"qytlim2": 1500, "qytlim": 1000, "FPY": 0.90},
+                        "AA": {"qytlim2": 1500, "qytlim": 1000, "FPY": 0.95}
                     },
                     "numerator": {  # 分子
                         "PCBI": {"fromt": 1050, "tot": 1310},
@@ -231,7 +232,7 @@ class INTKPI(BaseType):
             tmpKPITYPE = self.jsonData["KPITYPE"]
             tmpACCT_DATE = self.jsonData["ACCT_DATE"]
 
-            #redisKey
+            # redisKey
             tmp.append(className)
             tmp.append(tmpCOMPANY_CODE)
             tmp.append(tmpSITE)
@@ -242,7 +243,6 @@ class INTKPI(BaseType):
             redisKey = bottomLine.join(tmp)
             expirTimeKey = tmpFACTORY_ID + '_PASS'
 
-    
             if tmpFACTORY_ID not in self.operSetData.keys():
                 return {'Result': 'NG', 'Reason': f'{tmpFACTORY_ID} not in FactoryID MAP'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
@@ -251,9 +251,9 @@ class INTKPI(BaseType):
             if self.searchRedisKeys(redisKey):
                 self.writeLog(f"Cache Data From Redis")
                 return json.loads(self.getRedisData(redisKey)), 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type', "Access-Control-Expose-Headers": "Expires,DataSource", "Expires": time.mktime((datetime.datetime.now() + datetime.timedelta(seconds=self.getKeyExpirTime(expirTimeKey))).timetuple()), "DataSource": "Redis"}
-            
-            #一階 FPY KPI API
-            if tmpKPITYPE == "FPY":                
+
+            # 一階 FPY KPI API
+            if tmpKPITYPE == "FPY":
                 expirTimeKey = tmpFACTORY_ID + '_PASS'
 
                 PCBIData = self._getFPYData("PCBI")
@@ -287,7 +287,7 @@ class INTKPI(BaseType):
 
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
-            #二階 FPY 泡泡圖 API
+            # 二階 FPY 泡泡圖 API
             elif tmpKPITYPE == "PRODFPY":
                 expirTimeKey = tmpFACTORY_ID + '_PASS'
                 # Check Redis Data
@@ -326,7 +326,7 @@ class INTKPI(BaseType):
                         returnData, sort_keys=True, indent=2), 60)
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
-            # 一階 MSHIP KPI API    
+            # 一階 MSHIP KPI API
             elif tmpKPITYPE == "MSHIP":
                 expirTimeKey = tmpFACTORY_ID + '_SCRP'
                 MSHIPData = self._getMSHIPData()
@@ -342,7 +342,7 @@ class INTKPI(BaseType):
                         returnData, sort_keys=True, indent=2), 60)
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
-            #二階 MSHIP 泡泡圖 API
+            # 二階 MSHIP 泡泡圖 API
             elif tmpKPITYPE == "PRODMSHIP":
                 expirTimeKey = tmpFACTORY_ID + '_SCRP'
                 # Check Redis Data
@@ -364,7 +364,7 @@ class INTKPI(BaseType):
                     self.setRedisData(redisKey, json.dumps(
                         returnData, sort_keys=True, indent=2), 60)
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
-            
+
             # 一階 EFA KPI API
             elif tmpKPITYPE == "EFA":
                 expirTimeKey = tmpFACTORY_ID + '_PASS'
@@ -398,7 +398,7 @@ class INTKPI(BaseType):
                         returnData, sort_keys=True, indent=2), 60)
 
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
-           
+
             else:
                 return {'Result': 'Fail', 'Reason': 'Parametes[KPITYPE] not in Rule'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
@@ -429,7 +429,7 @@ class INTKPI(BaseType):
         passAggregate = []
         deftAggregate = []
 
-        #pass
+        # pass
         passMatch1 = {
             "$match": {
                 "COMPANY_CODE": tmpCOMPANY_CODE,
@@ -512,7 +512,7 @@ class INTKPI(BaseType):
             }
         }
 
-        #deft
+        # deft
         deftMatch1 = {
             "$match": {
                 "COMPANY_CODE": tmpCOMPANY_CODE,
@@ -522,8 +522,9 @@ class INTKPI(BaseType):
                 "LCM_OWNER": {"$in": ["LCM0", "LCME", "PROD", "QTAP", "RES0"]},
                 "$expr": {
                     "$and": [
-                        {"$gte": [{"$toInt": "$MAIN_WC"},numeratorData["fromt"]]},
-                        {"$lte": [{"$toInt": "$MAIN_WC"},numeratorData["tot"]]}
+                        {"$gte": [{"$toInt": "$MAIN_WC"},
+                                  numeratorData["fromt"]]},
+                        {"$lte": [{"$toInt": "$MAIN_WC"}, numeratorData["tot"]]}
                     ]
                 },
                 "RW_COUNT": {"$lte": "1"}
@@ -602,8 +603,10 @@ class INTKPI(BaseType):
             passMatch1["$match"]["APPLICATION"] = tmpAPPLICATION
             deftMatch1["$match"]["APPLICATION"] = tmpAPPLICATION
 
-        passAggregate.extend([passMatch1, passGroup1, passProject1, passGroup2, passProject2, passSort])
-        deftAggregate.extend([deftMatch1, deftGroup1, deftProject1, deftGroup2, deftProject2, deftSort])
+        passAggregate.extend(
+            [passMatch1, passGroup1, passProject1, passGroup2, passProject2, passSort])
+        deftAggregate.extend(
+            [deftMatch1, deftGroup1, deftProject1, deftGroup2, deftProject2, deftSort])
 
         try:
             self.getMongoConnection()
@@ -782,15 +785,15 @@ class INTKPI(BaseType):
                 targrtQTY2 = getLimitData[x["APPLICATION"]]["qytlim2"]
 
             if x["FPY"] >= targrtFPY:
-                GREEN_VALUE += 1                
+                GREEN_VALUE += 1
             else:
                 if targrtQTY1 > x["AvegPASSQTY"]:
                     GREEN_VALUE += 1
-                else: 
+                else:
                     if targrtQTY2 > x["AvegPASSQTY"]:
                         YELLOW_VALUE += 1
-                    else:                
-                        RED_VALUE += 1  
+                    else:
+                        RED_VALUE += 1
 
         returnData = {
             "CLASS_TYPE": "FPY",
@@ -823,12 +826,12 @@ class INTKPI(BaseType):
             else:
                 xLimit = 1000
                 yLimit = 90
-        
+
         # red ef476f
-        #yellow ffd166
-        #green 06d6a0
-        #blue 118AB2
-        #midGreen 073b4c
+        # yellow ffd166
+        # green 06d6a0
+        # blue 118AB2
+        # midGreen 073b4c
 
         for x in d:
             targrtFPY = 0.90
@@ -838,15 +841,15 @@ class INTKPI(BaseType):
                 targrtFPY = getLimitData[x["APPLICATION"]]["FPY"]
                 targrtQTY1 = getLimitData[x["APPLICATION"]]["qytlim"]
                 targrtQTY2 = getLimitData[x["APPLICATION"]]["qytlim2"]
-            
+
             QUADRANT = 0
 
             if x["FPY"] >= targrtFPY:
                 COLOR = "#06d6a0"
-                SYMBOL = "undefined"   
+                SYMBOL = "undefined"
                 if targrtQTY1 > x["AvegPASSQTY"]:
                     QUADRANT = 1
-                else:       
+                else:
                     QUADRANT = 2
             else:
                 if targrtQTY1 > x["AvegPASSQTY"]:
@@ -858,11 +861,11 @@ class INTKPI(BaseType):
                         COLOR = "#ffd166"
                         SYMBOL = "undefined"
                         QUADRANT = 4
-                    else:                
-                        COLOR = "#EF476F" 
-                        SYMBOL = "twinkle"  
-                        QUADRANT = 5  
-                
+                    else:
+                        COLOR = "#EF476F"
+                        SYMBOL = "twinkle"
+                        QUADRANT = 5
+
             DATASERIES.append({
                 "APPLICATION": x["APPLICATION"],
                 "PROD_NBR": x["PROD_NBR"],
@@ -872,11 +875,11 @@ class INTKPI(BaseType):
                 "SYMBOL": SYMBOL,
                 "QUADRANT": QUADRANT
             })
-        #因為使用 operator.itemgetter 方法 排序順序要反過來執行
-        #不同欄位key 排序方式不同時 需要 3 - 2 - 1  反順序去寫code
-        DATASERIES.sort(key = operator.itemgetter("QTY"), reverse = True) 
-        DATASERIES.sort(key = operator.itemgetter("YIELD"), reverse = False)        
-        DATASERIES.sort(key = operator.itemgetter("QUADRANT"), reverse = True)
+        # 因為使用 operator.itemgetter 方法 排序順序要反過來執行
+        # 不同欄位key 排序方式不同時 需要 3 - 2 - 1  反順序去寫code
+        DATASERIES.sort(key=operator.itemgetter("QTY"), reverse=True)
+        DATASERIES.sort(key=operator.itemgetter("YIELD"), reverse=False)
+        DATASERIES.sort(key=operator.itemgetter("QUADRANT"), reverse=True)
 
         length = len(DATASERIES)
         rank = 1
@@ -1123,14 +1126,15 @@ class INTKPI(BaseType):
         for grade in MSHIPData["gradeData"]:
             gradeData.append(grade)
 
-        #PRODList
+        # PRODList
         PRODList = []
         for x in shipData:
             if {"PROD_NBR": x["PROD_NBR"], "APPLICATION": x["APPLICATION"]} not in PRODList:
                 PRODList.append(
                     {"PROD_NBR": x["PROD_NBR"], "APPLICATION": x["APPLICATION"]})
         for x in gradeData:
-            if "APPLICATION" not in x: x["APPLICATION"] = "ALL"
+            if "APPLICATION" not in x:
+                x["APPLICATION"] = "ALL"
             if {"PROD_NBR": x["PROD_NBR"], "APPLICATION": x["APPLICATION"]} not in PRODList:
                 PRODList.append(
                     {"PROD_NBR": x["PROD_NBR"], "APPLICATION": x["APPLICATION"]})
@@ -1181,7 +1185,8 @@ class INTKPI(BaseType):
                     oData["TOTAL_YIELD"] = 1 - \
                         round(oData["DOWNGRADE_SUMQTY"] /
                               oData["TOTAL_SUMQTY"], 4)
-                oData["MSHIP"] = round(oData["GRADW_YIELD"] * oData["TOTAL_YIELD"], 4) if oData["TOTAL_YIELD"] != 0 else 0
+                oData["MSHIP"] = round(
+                    oData["GRADW_YIELD"] * oData["TOTAL_YIELD"], 4) if oData["TOTAL_YIELD"] != 0 else 0
                 if oData["MSHIP"] > 0:
                     mshipData.append(copy.deepcopy(oData))
                 oData = {}
@@ -1203,11 +1208,11 @@ class INTKPI(BaseType):
                 targrtQTY = getLimitData[x["APPLICATION"]]["qytlim"]
 
             if x["MSHIP"] >= targrt:
-                GREEN_VALUE += 1             
+                GREEN_VALUE += 1
             else:
                 if targrtQTY > x["TOTAL_SUMQTY"]:
                     YELLOW_VALUE += 1
-                else:                
+                else:
                     RED_VALUE += 1
 
         returnData = {
@@ -1237,16 +1242,16 @@ class INTKPI(BaseType):
                      == tmpAPPLICATION, PRODMSHIPBaseData))
             if tmpAPPLICATION in getLimitData.keys():
                 yLimit = getLimitData[tmpAPPLICATION]["target"]
-                xLimit = getLimitData[tmpAPPLICATION]["qytlim"]        
+                xLimit = getLimitData[tmpAPPLICATION]["qytlim"]
             else:
                 xLimit = 1000
                 yLimit = 90
-            
+
         # red ef476f
-        #yellow ffd166
-        #green 06d6a0
-        #blue 118AB2
-        #midGreen 073b4c
+        # yellow ffd166
+        # green 06d6a0
+        # blue 118AB2
+        # midGreen 073b4c
 
         for x in d:
             targrt = 0.90
@@ -1254,26 +1259,26 @@ class INTKPI(BaseType):
             if x["APPLICATION"] in getLimitData.keys():
                 targrt = getLimitData[x["APPLICATION"]]["target"]
                 targrtQTY = getLimitData[x["APPLICATION"]]["qytlim"]
-            
+
             QUADRANT = 0
 
             if x["MSHIP"] >= targrt:
                 COLOR = "#06d6a0"
-                SYMBOL = "undefined"   
+                SYMBOL = "undefined"
                 if targrtQTY > x["SHIP_SUMQTY"]:
                     QUADRANT = 1
-                else:       
+                else:
                     QUADRANT = 2
             else:
                 if targrtQTY > x["SHIP_SUMQTY"]:
                     COLOR = "#ffd166"
                     SYMBOL = "undefined"
                     QUADRANT = 3
-                else:                
-                    COLOR = "#EF476F" 
-                    SYMBOL = "twinkle"  
-                    QUADRANT = 4 
-                
+                else:
+                    COLOR = "#EF476F"
+                    SYMBOL = "twinkle"
+                    QUADRANT = 4
+
             DATASERIES.append({
                 "APPLICATION": x["APPLICATION"],
                 "PROD_NBR": x["PROD_NBR"],
@@ -1283,11 +1288,11 @@ class INTKPI(BaseType):
                 "SYMBOL": SYMBOL,
                 "QUADRANT": QUADRANT
             })
-        #因為使用 operator.itemgetter 方法 排序順序要反過來執行
-        #不同欄位key 排序方式不同時 需要 3 - 2 - 1  反順序去寫code
-        DATASERIES.sort(key = operator.itemgetter("QTY"), reverse = True) 
-        DATASERIES.sort(key = operator.itemgetter("YIELD"), reverse = False)        
-        DATASERIES.sort(key = operator.itemgetter("QUADRANT"), reverse = True)
+        # 因為使用 operator.itemgetter 方法 排序順序要反過來執行
+        # 不同欄位key 排序方式不同時 需要 3 - 2 - 1  反順序去寫code
+        DATASERIES.sort(key=operator.itemgetter("QTY"), reverse=True)
+        DATASERIES.sort(key=operator.itemgetter("YIELD"), reverse=False)
+        DATASERIES.sort(key=operator.itemgetter("QUADRANT"), reverse=True)
 
         length = len(DATASERIES)
         rank = 1
@@ -1317,7 +1322,7 @@ class INTKPI(BaseType):
         passAggregate = []
         deftAggregate = []
 
-        #pass
+        # pass
         passMatch1 = {
             "$match": {
                 "COMPANY_CODE": tmpCOMPANY_CODE,
@@ -1368,7 +1373,7 @@ class INTKPI(BaseType):
             }
         }
 
-        #deft
+        # deft
         deftMatch1 = {
             "$match": {
                 "COMPANY_CODE": tmpCOMPANY_CODE,
@@ -1378,39 +1383,39 @@ class INTKPI(BaseType):
                 "MAIN_WC": {"$in": OPERList}
             }
         }
-        deftlookup1 ={
-                "$lookup": {
-                    "from": "deftCodeView",
-                    "as": "deftCodeList",
-                    "let": {
+        deftlookup1 = {
+            "$lookup": {
+                "from": "deftCodeView",
+                "as": "deftCodeList",
+                "let": {
                         "dfctCode": "$DFCT_CODE"
+                },
+                "pipeline": [
+                    {
+                        "$match": {
+                            "$expr": {
+                                "$and": [
+                                    {
+                                        "$eq": [
+                                            "$$dfctCode",
+                                            "$DEFECT_CODE"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
                     },
-                    "pipeline": [
-                                {
-                                    "$match": {
-                                        "$expr": {
-                                            "$and": [
-                                                {
-                                                    "$eq": [
-                                                        "$$dfctCode",
-                                                        "$DEFECT_CODE"
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    }
-                                },
-                                {
-                                    "$project": {
-                                        "DEFECT_CODE": 1
-                                    }
-                                }
-                            ]
-                }
+                    {
+                        "$project": {
+                            "DEFECT_CODE": 1
+                        }
+                    }
+                ]
             }
+        }
         deftunwind1 = {
-                "$unwind": "$deftCodeList"
-            }
+            "$unwind": "$deftCodeList"
+        }
 
         deftGroup1 = {
             "$group": {
@@ -1460,8 +1465,9 @@ class INTKPI(BaseType):
             deftMatch1["$match"]["APPLICATION"] = tmpAPPLICATION
 
         passAggregate.extend([passMatch1, passGroup1, passProject1, passSort])
-        deftAggregate.extend([deftMatch1, deftlookup1, deftunwind1, deftGroup1, deftProject1, deftSort])
-       
+        deftAggregate.extend(
+            [deftMatch1, deftlookup1, deftunwind1, deftGroup1, deftProject1, deftSort])
+
         try:
             self.getMongoConnection()
             self.setMongoDb("IAMP")
@@ -1499,9 +1505,9 @@ class INTKPI(BaseType):
         data = []
         oData = {}
         for p in passData:
-            d = list(filter(lambda d: d["PROD_NBR"]== p["PROD_NBR"]
-                and d["MAIN_WC"]== p["MAIN_WC"], deftData))
-            if d == []:            
+            d = list(filter(lambda d: d["PROD_NBR"] == p["PROD_NBR"]
+                            and d["MAIN_WC"] == p["MAIN_WC"], deftData))
+            if d == []:
                 oData["COMPANY_CODE"] = copy.deepcopy(p["COMPANY_CODE"])
                 oData["SITE"] = copy.deepcopy(p["SITE"])
                 oData["FACTORY_ID"] = copy.deepcopy(p["FACTORY_ID"])
@@ -1517,7 +1523,7 @@ class INTKPI(BaseType):
                 oData["DFCT_CODE"] = ""
                 oData["DEFT_QTY"] = 0.00
                 oData["DEFECT_RATE"] = 0.00
-                data.append(copy.deepcopy(oData))                
+                data.append(copy.deepcopy(oData))
                 oData = {}
             else:
                 for dd in d:
@@ -1550,7 +1556,7 @@ class INTKPI(BaseType):
             if {"PROD_NBR": x["PROD_NBR"], "APPLICATION": x["APPLICATION"]} not in PRODList:
                 PRODList.append(
                     {"PROD_NBR": x["PROD_NBR"], "APPLICATION": x["APPLICATION"]})
-        
+
         GREEN_VALUE = 0
         YELLOW_VALUE = 0
         RED_VALUE = 0
@@ -1560,15 +1566,18 @@ class INTKPI(BaseType):
         REDL = []
 
         for prod in PRODList:
-            d1 = list(filter(lambda d: d["PROD_NBR"] == prod["PROD_NBR"], EFAData))
+            d1 = list(filter(lambda d: d["PROD_NBR"]
+                      == prod["PROD_NBR"], EFAData))
             targrt = 0.003
             targrtQTY = 3000
             if prod["APPLICATION"] in getLimitData.keys():
                 targrt = getLimitData[prod["APPLICATION"]]["target"]
-                targrtQTY = getLimitData[prod["APPLICATION"]]["qytlim"]           
-            
-            checkTargrt = list(filter(lambda d: d["DEFECT_RATE"] >= targrt, d1))
-            checkQTY = list(filter(lambda d: d["PASS_QTY"] >= targrtQTY, checkTargrt))
+                targrtQTY = getLimitData[prod["APPLICATION"]]["qytlim"]
+
+            checkTargrt = list(
+                filter(lambda d: d["DEFECT_RATE"] >= targrt, d1))
+            checkQTY = list(
+                filter(lambda d: d["PASS_QTY"] >= targrtQTY, checkTargrt))
 
             if len(checkTargrt) != 0:
                 if len(checkQTY) != 0:
@@ -1578,9 +1587,8 @@ class INTKPI(BaseType):
                     YELLOW_VALUE += 1
                     YELLOWL.append(prod)
             else:
-                GREEN_VALUE += 1  
+                GREEN_VALUE += 1
                 GREENL.append(prod)
-                
 
         returnData = {
             "CLASS_TYPE": "EFA",
@@ -1590,5 +1598,3 @@ class INTKPI(BaseType):
         }
 
         return returnData
-
-
