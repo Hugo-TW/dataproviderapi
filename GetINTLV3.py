@@ -268,7 +268,7 @@ class INTLV3(BaseType):
 
             if tmpKPITYPE == "FPYLV3LINE":                
                 expirTimeKey = tmpFACTORY_ID + '_PASS'
-                dataRange =  self._dataRange(tmpACCT_DATE)
+                dataRange =  self._dataRangeMin(tmpACCT_DATE)
 
                 n1d_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n1d"], dataRange["n1d_array"], 11)
                 n2d_DATA = self._getFPYLV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n2d"], dataRange["n2d_array"], 10)
@@ -312,7 +312,7 @@ class INTLV3(BaseType):
             elif tmpKPITYPE == "EFALV3LINE":                
                 expirTimeKey = tmpFACTORY_ID + '_REASON'
 
-                dataRange =  self._dataRange(tmpACCT_DATE)
+                dataRange =  self._dataRangeMin(tmpACCT_DATE)
 
                 n1d_DATA = self._getEFALV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n1d"], dataRange["n1d_array"], 11)
                 n2d_DATA = self._getEFALV3DATA(tmpOPER, tmpPROD_NBR, tmpCHECKCODE, dataRange["n2d"], dataRange["n2d_array"], 10)
@@ -355,7 +355,7 @@ class INTLV3(BaseType):
             elif tmpKPITYPE == "FPYLV2LINE":                
                 expirTimeKey = tmpFACTORY_ID + '_PASS'
 
-                dataRange =  self._dataRange(tmpACCT_DATE)
+                dataRange =  self._dataRangeMin(tmpACCT_DATE)
 
                 n1d_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n1d"], dataRange["n1d_array"], 11)
                 n2d_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n2d"], dataRange["n2d_array"], 10)
@@ -421,7 +421,7 @@ class INTLV3(BaseType):
             elif tmpKPITYPE == "FPYLV2LINEALL":
                 expirTimeKey = tmpFACTORY_ID + '_PASS'
 
-                dataRange =  self._dataRange(tmpACCT_DATE)
+                dataRange =  self._dataRangeMin(tmpACCT_DATE)
 
                 n1d_DATA = self._getFPYLV2LINEDataALL(tmpOPER, tmpPROD_NBR, dataRange["n1d"], dataRange["n1d_array"], 11)
                 n2d_DATA = self._getFPYLV2LINEDataALL(tmpOPER, tmpPROD_NBR, dataRange["n2d"], dataRange["n2d_array"], 10)
@@ -2918,23 +2918,7 @@ class INTLV3(BaseType):
         FPY = round(PCBIFPY * LAMFPY * AAFCFPY * CKENFPY * DKENFPY, 4)
 
         if d1 == [] and d2 == [] and d3 == [] and d4 == [] and d5 == []:
-            test = {
-                    "XVALUE": DATARANGEID,
-                    "YVALUE": 0,
-                    "RANK": 0,
-                    "DATARANGE": DATARANGE, 
-                    "PROD_NBR": PROD_NBR,
-                    "PCBIFPY": 0,
-                    "LAMFPY": 0,
-                    "AAFCFPY": 0,
-                    "CKENFPY": 0,
-                    "DKENFPY": 0,
-                    "FPY": 0,
-                    "AvegPASSQTY": 0,
-                    "DEFTSUMQTY": 0,
-                    "PASSSUMQTY": 0
-                }
-            PRODData.append(test)
+            return PRODData 
         else:
             PRODData.append({
                 "XVALUE": DATARANGEID,
@@ -2950,6 +2934,5 @@ class INTLV3(BaseType):
                 "FPY": FPY,
                 "AvegPASSQTY": round(PASSQTYSUM / PASSOPER, 0),
                 "DEFTSUMQTY": DEFTQTYSUM
-            })        
-
+            })      
         return PRODData 
