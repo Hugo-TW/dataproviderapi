@@ -607,6 +607,36 @@ class INTLV3(BaseType):
 
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
+            elif tmpKPITYPE == "MSHIPLINEALL":
+                expirTimeKey = tmpFACTORY_ID + '_SCRP'
+
+                dataRange =  self._dataRangeMin(tmpACCT_DATE)
+                DATASERIES = []
+                MSHIPLINE = self._getMSHIPLINEData(tmpPROD_NBR, dataRange)
+
+                returnData = {                    
+                    "KPITYPE": tmpKPITYPE,
+                    "COMPANY_CODE": tmpCOMPANY_CODE,
+                    "SITE": tmpSITE,
+                    "FACTORY_ID": tmpFACTORY_ID,
+                    "APPLICATION": tmpAPPLICATION,  
+                    "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
+                    "PROD_NBR": tmpPROD_NBR,                                      
+                    "OPER": "ALL",
+                    "DATASERIES": DATASERIES,
+                    "MSHIPLINE": MSHIPLINE
+                }
+
+                self.getRedisConnection()
+                if self.searchRedisKeys(redisKey):     
+                    self.setRedisData(redisKey, json.dumps(
+                        returnData, sort_keys=True, indent=2), self.getKeyExpirTime(expirTimeKey))
+                else:
+                    self.setRedisData(redisKey, json.dumps(
+                        returnData, sort_keys=True, indent=2), 60)  
+
+                return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+
             else:
                 return {'Result': 'Fail', 'Reason': 'Parametes[KPITYPE] not in Rule'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
@@ -2936,3 +2966,340 @@ class INTLV3(BaseType):
                 "DEFTSUMQTY": DEFTQTYSUM
             })      
         return PRODData 
+
+    def _getMSHIPLINEData(self, PROD_NBR, dataRange):
+        try:
+            n1d_DATA = self._getMSHIPLINEDatabyDateRange(PROD_NBR, dataRange["n1d"], dataRange["n1d_array"], 11)            
+            n2d_DATA = self._getMSHIPLINEDatabyDateRange(PROD_NBR, dataRange["n2d"], dataRange["n2d_array"], 10)
+            n3d_DATA = self._getMSHIPLINEDatabyDateRange(PROD_NBR, dataRange["n3d"], dataRange["n3d_array"], 9)
+            n4d_DATA = self._getMSHIPLINEDatabyDateRange(PROD_NBR, dataRange["n4d"], dataRange["n4d_array"], 8)
+            n5d_DATA = self._getMSHIPLINEDatabyDateRange(PROD_NBR, dataRange["n5d"], dataRange["n5d_array"], 7)
+            n6d_DATA = self._getMSHIPLINEDatabyDateRange(PROD_NBR, dataRange["n6d"], dataRange["n6d_array"], 6)
+            n1w_DATA = self._getMSHIPLINEDatabyDateRange(PROD_NBR, dataRange["n1w"], dataRange["n1w_array"], 5)
+            n2w_DATA = self._getMSHIPLINEDatabyDateRange(PROD_NBR, dataRange["n2w"], dataRange["n2w_array"], 4)
+            n3w_DATA = self._getMSHIPLINEDatabyDateRange(PROD_NBR, dataRange["n3w"], dataRange["n3w_array"], 3)
+            n1m_DATA = self._getMSHIPLINEDatabyDateRange(PROD_NBR, dataRange["n1m"], dataRange["n1m_array"], 2)
+            n2m_DATA = self._getMSHIPLINEDatabyDateRange(PROD_NBR, dataRange["n2m"], dataRange["n2m_array"], 1)
+            n1s_DATA = self._getMSHIPLINEDatabyDateRange(PROD_NBR, dataRange["n1s"], dataRange["n1s_array"], 0)
+
+            returnData =  DATASERIES = self._grouptFPYLV2LINE(n1d_DATA,n2d_DATA,n3d_DATA,n4d_DATA,n5d_DATA,
+                n6d_DATA,n1w_DATA,n2w_DATA,n3w_DATA,n1m_DATA,n2m_DATA,n1s_DATA)
+            
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+    def _getMSHIPLINEDatabyDateRange(self, PROD_NBR, DATARANGE, ACCT_DATE_ARRAY, DATARANGEID):
+        try:
+            PCBIData = self._getFPYLINEDatabyOPER("PCBI", PROD_NBR, ACCT_DATE_ARRAY)
+            PCBIResult = self._groupFPYLINEDatabyOPER(
+                    PCBIData["dData"], PCBIData["pData"])
+
+            MSHIPData = self._getMSHIPData(PROD_NBR, ACCT_DATE_ARRAY)
+            groupMSHIPDAT = self._groupMSHIPData(PROD_NBR, MSHIPData)
+
+            returnData = []
+            if groupMSHIPDAT == [] :
+                    return returnData 
+            else:
+                returnData.append({
+                    "XVALUE": DATARANGEID,
+                    "YVALUE": groupMSHIPDAT["MSHIP"],
+                    "RANK": 0,
+                    "DATARANGE": DATARANGE, 
+                    "PROD_NBR": PROD_NBR,
+                    "TOBESCRAP_SUMQTY": groupMSHIPDAT["TOBESCRAP_SUMQTY"],
+                    "SHIP_SUMQTY": groupMSHIPDAT["SHIP_SUMQTY"],
+                    "TOTAL_YIELD": groupMSHIPDAT["TOTAL_YIELD"],
+                    "DOWNGRADE_SUMQTY": groupMSHIPDAT["DOWNGRADE_SUMQTY"],
+                    "TOTAL_SUMQTY": groupMSHIPDAT["TOTAL_SUMQTY"],
+                    "GRADW_YIELD": groupMSHIPDAT["GRADW_YIELD"],
+                    "MSHIP": groupMSHIPDAT["MSHIP"]
+                })                  
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+    def _getMSHIPData(self, PROD_NBR, ACCT_DATE_ARRAY):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
+
+        scrapAggregate = []
+        shipAggregate = []
+        gradeAggregate = []
+
+        # scrap
+        scrapMatch = {
+            "$match": {
+                "COMPANY_CODE": tmpCOMPANY_CODE,
+                "SITE": tmpSITE,
+                "FACTORY_ID": tmpFACTORY_ID,                
+                "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
+                "LCM_OWNER": {"$in": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                "PROD_NBR": PROD_NBR
+            }
+        }
+        scrapGroup = {
+            "$group": {
+                "_id": {
+                    "COMPANY_CODE": "$COMPANY_CODE",
+                    "SITE": "$SITE",
+                    "FACTORY_ID": "$FACTORY_ID",
+                    "APPLICATION": "$APPLICATION",
+                    "PROD_NBR": "$PROD_NBR"
+                },
+                "TOBESCRAP_QTY": {
+                    "$sum": {"$toInt": "$TOBESCRAP_QTY"}
+                }
+            }
+        }
+        scrapProject = {
+            "$project": {
+                "_id": 0,
+                "COMPANY_CODE": "$_id.COMPANY_CODE",
+                "SITE": "$_id.SITE",
+                "FACTORY_ID": "$_id.FACTORY_ID",
+                "APPLICATION": "$_id.APPLICATION",
+                "PROD_NBR": "$_id.PROD_NBR",
+                "TOBESCRAP_SUMQTY": "$TOBESCRAP_QTY"
+            }
+        }
+        scrapSort = {
+            "$sort": {
+                "COMPANY_CODE": 1,
+                "SITE": 1,
+                "FACTORY_ID": 1,
+                "APPLICATION": 1,
+                "PROD_NBR": 1
+            }
+        }
+
+        # ship
+        shipMatch = {
+            "$match": {
+                "COMPANY_CODE": tmpCOMPANY_CODE,
+                "SITE": tmpSITE,
+                "FACTORY_ID": tmpFACTORY_ID,                
+                "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
+                "TRANS_TYPE": "SHIP",
+                "LCM_OWNER": {"$in": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                "PROD_NBR": PROD_NBR
+            }
+        }
+        shipGroup = {
+            "$group": {
+                "_id": {
+                    "COMPANY_CODE": "$COMPANY_CODE",
+                    "SITE": "$SITE",
+                    "FACTORY_ID": "$FACTORY_ID",
+                    "APPLICATION": "$APPLICATION",
+                    "PROD_NBR": "$PROD_NBR"
+                },
+                "SHIPSUM": {
+                    "$sum": {"$toInt": "$QTY"}
+                }
+            }
+        }
+        shipProject = {
+            "$project": {
+                "_id": 0,
+                "COMPANY_CODE": "$_id.COMPANY_CODE",
+                "SITE": "$_id.SITE",
+                "FACTORY_ID": "$_id.FACTORY_ID",
+                "APPLICATION": "$_id.APPLICATION",
+                "PROD_NBR": "$_id.PROD_NBR",
+                "SHIP_SUMQTY": "$SHIPSUM"
+            }
+        }
+        shipSort = {
+            "$sort": {
+                "COMPANY_CODE": 1,
+                "SITE": 1,
+                "FACTORY_ID": 1,
+                "APPLICATION": 1,
+                "ACCT_DATE": 1,
+                "PROD_NBR": 1
+            }
+        }
+
+        # grade
+        gradeMatch = {
+            "$match": {
+                "COMPANY_CODE": tmpCOMPANY_CODE,
+                "FACTORY_ID": tmpFACTORY_ID,
+                "SITE": tmpSITE,                
+                "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
+                "MAIN_WC": {"$in": ["1600"]},
+                "LCM_OWNER": {"$in": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                "PROD_NBR": PROD_NBR
+            }
+        }
+        gradeGroup = {
+            "$group": {
+                "_id": {
+                    "COMPANY_CODE": "$COMPANY_CODE",
+                    "SITE": "$SITE",
+                    "FACTORY_ID": "$FACTORY_ID",
+                    "APPLICATION": "$APPLICATION",
+                    "PROD_NBR": "$PROD_NBR"
+                },
+                "DOWNGRADE_SUMQTY": {
+                    "$sum": {
+                        "$cond": [
+                            {
+                                "$eq": ["$IS_DOWNGRADE", "Y"]
+                            },
+                            {
+                                "$toInt": "$QTY"
+                            },
+                            {
+                                "$toInt": 0
+                            }
+                        ]
+                    }
+                },
+                "TOTAL_SUMQTY": {
+                    "$sum": {"$toInt": "$QTY"}
+                }
+            }
+        }
+        gradeProject = {
+            "$project": {
+                "_id": 0,
+                "COMPANY_CODE": "$_id.COMPANY_CODE",
+                "SITE": "$_id.SITE",
+                "FACTORY_ID": "$_id.FACTORY_ID",
+                "APPLICATION": "$_id.APPLICATION",
+                "PROD_NBR": "$_id.PROD_NBR",
+                "DOWNGRADE_SUMQTY": "$DOWNGRADE_SUMQTY",
+                "TOTAL_SUMQTY": "$TOTAL_SUMQTY"
+            }
+        }
+        gradeSort = {
+            "$sort": {
+                "COMPANY_CODE": 1,
+                "SITE": 1,
+                "FACTORY_ID": 1,
+                "APPLICATION": 1,
+                "PROD_NBR": 1
+            }
+        }
+
+        if tmpAPPLICATION != "ALL":
+            scrapMatch["$match"]["APPLICATION"] = tmpAPPLICATION
+            shipMatch["$match"]["APPLICATION"] = tmpAPPLICATION
+            gradeMatch["$match"]["APPLICATION"] = tmpAPPLICATION
+
+        scrapAggregate.extend(
+            [scrapMatch, scrapGroup, scrapProject, scrapSort])
+        shipAggregate.extend([shipMatch, shipGroup, shipProject, shipSort])
+        gradeAggregate.extend(
+            [gradeMatch, gradeGroup, gradeProject, gradeSort])
+
+        try:
+            self.getMongoConnection()
+            self.setMongoDb("IAMP")
+            self.setMongoCollection("scrapHisAndCurrent")
+            scrapData = self.aggregate(scrapAggregate)
+            self.setMongoCollection("passHisAndCurrent")
+            shipData = self.aggregate(shipAggregate)
+            self.setMongoCollection("passHisAndCurrent")
+            gradeData = self.aggregate(gradeAggregate)
+            self.closeMongoConncetion()
+            returnData = {
+                "scrapData": scrapData,
+                "shipData": shipData,
+                "gradeData": gradeData
+            }
+            return returnData
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+    def _groupMSHIPData(self, PROD_NBR, MSHIPData):
+        scrapData = []
+        for scrap in MSHIPData["scrapData"]:
+            scrapData.append(scrap)
+        shipData = []
+        for ship in MSHIPData["shipData"]:
+            shipData.append(ship)
+        gradeData = []
+        for grade in MSHIPData["gradeData"]:
+            gradeData.append(grade)
+
+        oData = {}
+        _scrapdata = list(
+            filter(lambda d: d["PROD_NBR"] == PROD_NBR, scrapData))
+        _shipData = list(
+            filter(lambda d: d["PROD_NBR"] == PROD_NBR, shipData))
+        _gradeData = list(
+            filter(lambda d: d["PROD_NBR"] == PROD_NBR, gradeData))
+        if _shipData != [] and _gradeData != []:
+            oData["COMPANY_CODE"] = copy.deepcopy(
+                _shipData[0]["COMPANY_CODE"])
+            oData["SITE"] = copy.deepcopy(_shipData[0]["SITE"])
+            oData["FACTORY_ID"] = copy.deepcopy(_shipData[0]["FACTORY_ID"])
+            if "APPLICATION" in _shipData[0].keys():
+                oData["APPLICATION"] = copy.deepcopy(
+                    _shipData[0]["APPLICATION"])
+            else:
+                oData["APPLICATION"] = None
+            oData["PROD_NBR"] = copy.deepcopy(_shipData[0]["PROD_NBR"])
+            if _scrapdata == []:
+                oData["TOBESCRAP_SUMQTY"] = 0
+            else:
+                oData["TOBESCRAP_SUMQTY"] = copy.deepcopy(
+                    _scrapdata[0]["TOBESCRAP_SUMQTY"])
+            oData["SHIP_SUMQTY"] = copy.deepcopy(
+                _shipData[0]["SHIP_SUMQTY"])
+            if oData["TOBESCRAP_SUMQTY"] == 0:
+                oData["GRADW_YIELD"] = 1
+            else:
+                oData["GRADW_YIELD"] = 1 - \
+                    round(oData["TOBESCRAP_SUMQTY"] /
+                            oData["SHIP_SUMQTY"], 4)
+            oData["DOWNGRADE_SUMQTY"] = copy.deepcopy(
+                _gradeData[0]["DOWNGRADE_SUMQTY"])
+            oData["TOTAL_SUMQTY"] = copy.deepcopy(
+                _gradeData[0]["TOTAL_SUMQTY"])
+
+            if oData["DOWNGRADE_SUMQTY"] == 0:
+                oData["TOTAL_YIELD"] = 1
+            else:
+                oData["TOTAL_YIELD"] = 1 - \
+                    round(oData["DOWNGRADE_SUMQTY"] /
+                            oData["TOTAL_SUMQTY"], 4)
+            oData["MSHIP"] = round(
+                oData["GRADW_YIELD"] * oData["TOTAL_YIELD"], 4) if oData["TOTAL_YIELD"] != 0 else 0          
+        return oData
+
