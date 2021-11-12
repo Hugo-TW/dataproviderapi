@@ -611,7 +611,7 @@ class INTLV3(BaseType):
                 expirTimeKey = tmpFACTORY_ID + '_SCRP'
 
                 dataRange =  self._dataRangeMin(tmpACCT_DATE)
-                DATASERIES = []
+                DATASERIES = self._getMSHIPSCRAPData(tmpPROD_NBR, dataRange)
                 MSHIPLINE = self._getMSHIPLINEData(tmpPROD_NBR, dataRange)
 
                 returnData = {                    
@@ -3001,10 +3001,6 @@ class INTLV3(BaseType):
 
     def _getMSHIPLINEDatabyDateRange(self, PROD_NBR, DATARANGE, ACCT_DATE_ARRAY, DATARANGEID):
         try:
-            PCBIData = self._getFPYLINEDatabyOPER("PCBI", PROD_NBR, ACCT_DATE_ARRAY)
-            PCBIResult = self._groupFPYLINEDatabyOPER(
-                    PCBIData["dData"], PCBIData["pData"])
-
             MSHIPData = self._getMSHIPData(PROD_NBR, ACCT_DATE_ARRAY)
             groupMSHIPDAT = self._groupMSHIPData(PROD_NBR, MSHIPData)
 
@@ -3302,4 +3298,175 @@ class INTLV3(BaseType):
             oData["MSHIP"] = round(
                 oData["GRADW_YIELD"] * oData["TOTAL_YIELD"], 6)        
         return oData
+
+    def _getMSHIPSCRAPData(self, PROD_NBR, dataRange):
+        try:
+            n1d_DATA = self._getMSHIPSCRAPDatabyDateRange(PROD_NBR, dataRange["n1d"], dataRange["n1d_array"], 11)            
+            n2d_DATA = self._getMSHIPSCRAPDatabyDateRange(PROD_NBR, dataRange["n2d"], dataRange["n2d_array"], 10)
+            n3d_DATA = self._getMSHIPSCRAPDatabyDateRange(PROD_NBR, dataRange["n3d"], dataRange["n3d_array"], 9)
+            n4d_DATA = self._getMSHIPSCRAPDatabyDateRange(PROD_NBR, dataRange["n4d"], dataRange["n4d_array"], 8)
+            n5d_DATA = self._getMSHIPSCRAPDatabyDateRange(PROD_NBR, dataRange["n5d"], dataRange["n5d_array"], 7)
+            n6d_DATA = self._getMSHIPSCRAPDatabyDateRange(PROD_NBR, dataRange["n6d"], dataRange["n6d_array"], 6)
+            n1w_DATA = self._getMSHIPSCRAPDatabyDateRange(PROD_NBR, dataRange["n1w"], dataRange["n1w_array"], 5)
+            n2w_DATA = self._getMSHIPSCRAPDatabyDateRange(PROD_NBR, dataRange["n2w"], dataRange["n2w_array"], 4)
+            n3w_DATA = self._getMSHIPSCRAPDatabyDateRange(PROD_NBR, dataRange["n3w"], dataRange["n3w_array"], 3)
+            n1m_DATA = self._getMSHIPSCRAPDatabyDateRange(PROD_NBR, dataRange["n1m"], dataRange["n1m_array"], 2)
+            n2m_DATA = self._getMSHIPSCRAPDatabyDateRange(PROD_NBR, dataRange["n2m"], dataRange["n2m_array"], 1)
+            n1s_DATA = self._getMSHIPSCRAPDatabyDateRange(PROD_NBR, dataRange["n1s"], dataRange["n1s_array"], 0)
+
+            returnData =  DATASERIES = self._grouptFPYLV2LINE(n1d_DATA,n2d_DATA,n3d_DATA,n4d_DATA,n5d_DATA,
+                n6d_DATA,n1w_DATA,n2w_DATA,n3w_DATA,n1m_DATA,n2m_DATA,n1s_DATA)
+            
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+    
+    def _getMSHIPSCRAPDatabyDateRange(self, PROD_NBR, DATARANGE, ACCT_DATE_ARRAY, DATARANGEID):
+        try:
+            formerfabData = self._getMSHIPSCRAPDataformDB("formerfab",PROD_NBR,DATARANGE, ACCT_DATE_ARRAY, DATARANGEID)
+            fabData = self._getMSHIPSCRAPDataformDB("fab",PROD_NBR, DATARANGE, ACCT_DATE_ARRAY, DATARANGEID)
+            incomingData = self._getMSHIPSCRAPDataformDB("incoming",PROD_NBR, DATARANGE, ACCT_DATE_ARRAY, DATARANGEID)
+
+            returnData = []
+            for d in formerfabData["scrapData"]:   
+                returnData.append(d)
+            for d in fabData["scrapData"]:   
+                returnData.append(d)
+            for d in incomingData["scrapData"]:   
+                returnData.append(d)
+                            
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+    def _getMSHIPSCRAPDataformDB(self,type,PROD_NBR, DATARANGE, ACCT_DATE_ARRAY, DATARANGEID):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
+
+        """
+        (1)  前廠責：USL、TX LCD、FABX
+        (2)  廠責：MFG、INT、EQP、ER 
+        (3)  來料責：SQE
+        """
+        mshipDATA = {
+            "formerfab":{"in":"usl|lcd|fab","name": "前廠責"},
+            "fab":{"in":"mfg|int|eqp|er","name": "廠責"},
+            "incoming":{"in":"sqe","name": "SQE來料責"},
+        }
+        getFabData = mshipDATA[type]   
+
+        scrapAggregate = []
+
+        # scrap
+        scrapMatch = {
+            "$match": {
+                "COMPANY_CODE": tmpCOMPANY_CODE,
+                "SITE": tmpSITE,
+                "FACTORY_ID": tmpFACTORY_ID,     
+                "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
+                "LCM_OWNER": {"$in": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                'RESP_OWNER': {'$regex': getFabData["in"], '$options': 'i' },
+                "PROD_NBR": PROD_NBR
+            }
+        }        
+        scrapGroup = {
+            "$group": {
+                "_id": {
+                    "COMPANY_CODE": "$COMPANY_CODE",
+                    "SITE": "$SITE",
+                    "FACTORY_ID": "$FACTORY_ID",
+                    "APPLICATION": "$APPLICATION",
+                    "PROD_NBR": "$PROD_NBR"
+                },
+                "TOBESCRAP_QTY": {
+                    "$sum": {"$toInt": "$TOBESCRAP_QTY"}
+                }
+            }
+        }
+        scrapProject = {
+            "$project": {
+                "_id": 0,
+                "COMPANY_CODE": "$_id.COMPANY_CODE",
+                "SITE": "$_id.SITE",
+                "FACTORY_ID": "$_id.FACTORY_ID",
+                "APPLICATION": "$_id.APPLICATION",
+                "PROD_NBR": "$_id.PROD_NBR",
+                "TOBESCRAP_SUMQTY": "$TOBESCRAP_QTY",
+                "YVALUE": "$TOBESCRAP_QTY"
+            }
+        }
+        scrapAdd = {
+            "$addFields": {
+                "XVALUE": DATARANGEID,
+                "RANK": 0,
+                "DATARANGE": DATARANGE, 
+                "RESP_OWNER": getFabData["name"],
+                "RESP_OWNER_E": type
+            }
+        }
+        scrapSort = {
+            "$sort": {
+                "COMPANY_CODE": 1,
+                "SITE": 1,
+                "FACTORY_ID": 1,
+                "APPLICATION": 1,
+                "PROD_NBR": 1
+            }
+        }
+
+        if tmpAPPLICATION != "ALL":
+            scrapMatch["$match"]["APPLICATION"] = tmpAPPLICATION
+
+        scrapAggregate.extend(
+            [scrapMatch, scrapGroup, scrapProject, scrapAdd, scrapSort])
+
+        try:
+            self.getMongoConnection()
+            self.setMongoDb("IAMP")
+            self.setMongoCollection("scrapHisAndCurrent")
+            scrapData = self.aggregate(scrapAggregate)
+            self.closeMongoConncetion()
+
+            returnData = {
+                "scrapData": scrapData,
+            }
+
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+
+
 
