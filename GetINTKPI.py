@@ -1169,9 +1169,9 @@ class INTKPI(BaseType):
                 oData["SHIP_SUMQTY"] = copy.deepcopy(
                     _shipData[0]["SHIP_SUMQTY"])
                 if oData["TOBESCRAP_SUMQTY"] == 0:
-                    oData["GRADW_YIELD"] = 1
+                    oData["TOTAL_YIELD"] = 1
                 else:
-                    oData["GRADW_YIELD"] = 1 - \
+                    oData["TOTAL_YIELD"] = 1 - \
                         round(oData["TOBESCRAP_SUMQTY"] /
                               oData["SHIP_SUMQTY"], 4)
                 oData["DOWNGRADE_SUMQTY"] = copy.deepcopy(
@@ -1180,13 +1180,13 @@ class INTKPI(BaseType):
                     _gradeData[0]["TOTAL_SUMQTY"])
 
                 if oData["DOWNGRADE_SUMQTY"] == 0:
-                    oData["TOTAL_YIELD"] = 1
+                    oData["GRADW_YIELD"] = 1
                 else:
-                    oData["TOTAL_YIELD"] = 1 - \
+                    oData["GRADW_YIELD"] = 1 - \
                         round(oData["DOWNGRADE_SUMQTY"] /
                               oData["TOTAL_SUMQTY"], 4)
                 oData["MSHIP"] = round(
-                    oData["GRADW_YIELD"] * oData["TOTAL_YIELD"], 4) if oData["TOTAL_YIELD"] != 0 else 0
+                    oData["GRADW_YIELD"] * oData["TOTAL_YIELD"], 4) 
                 if oData["MSHIP"] > 0:
                     mshipData.append(copy.deepcopy(oData))
                 oData = {}
