@@ -2176,9 +2176,6 @@ class intSDETL(Resource):
         jsonData = BaseType.validateType(request.json)   
         ins = INTSDETL(DBconfig, jsonData)
         return ins.SetData()
-        
-        #return f'try ok!! modeldata > 0 > model > CODE : {jsonData["modeldata"][0]["model"]["CODE"]}'
-
 if __name__ == '__main__':
     app.run(threaded=True, use_reloader=True, host='0.0.0.0', port=5001, debug=False)#use_reloader=True,
 

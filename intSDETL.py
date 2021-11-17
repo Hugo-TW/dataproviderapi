@@ -23,36 +23,13 @@ class INTSDETL():
         try:
             self.writeLog(
                 f'{self.__class__.__name__} {sys._getframe().f_code.co_name} Start')
-
             className = f"{self.__class__.__name__}"           
             tmpDATATYPE = self.jsonData["DATATYPE"]
 
             #一階 FPY KPI API
-            if tmpDATATYPE == "FPY" :   
-                self._insertData(self.jsonData)      
-                
-                returnData= {
-                        "status": "success",
-                        "data": {
-                        },
-                        "message": ""
-                    }  
-
-                return returnData, 201, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
-
-            elif tmpDATATYPE == "MSHIP" :   
-                self._insertData(self.jsonData)      
-                
-                returnData= {
-                        "status": "success",
-                        "data": {
-                        },
-                        "message": ""
-                    }  
-
-                return returnData, 201, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
-
-
+            if tmpDATATYPE == "FPY" or tmpDATATYPE == "MSHIP":                   
+                returnData= self._insertData(self.jsonData) 
+                return returnData, returnData["status_code"], {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
             else:
                 return {'status': 'Fail','message': f'DATATYPE:{tmpDATATYPE} not Sup'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
@@ -76,8 +53,7 @@ class INTSDETL():
             _FACTORY_ID = DATA["local"]["FACTORY_ID"]
             _ACCT_DATE = DATA["ACCT_DATE"]
             _DATATYPE = DATA["DATATYPE"]
-            _DATA = f'{DATA}'
-
+            _DATA = f'{DATA}'.encode()
             insertData = []
             oData = (
                     _COMPANY_CODE,
@@ -102,11 +78,25 @@ class INTSDETL():
                 and DATATYPE = '{_DATATYPE}' "
             insertString = "insert into INTMP_DB.SDETLUPLOADLOG("\
                 "COMPANY_CODE,SITE,FACTORY_ID,ACCT_DATE,DATATYPE, ORIGDATA) "\
-                "values (:1, :2, :3, :4, :5, utl_raw.cast_to_raw(:6))"
+                "values (:1, :2, :3, :4, :5, :6)"
             self._getConnection(self.DBconfig)
             self._daoHelper.Delete(delString)
             self._daoHelper.InserMany(insertString,insertData)
-            #select utl_raw.cast_to_varchar2(dbms_lob.substr(ORIGDATA)) from sdetluploadlog
+            #SELECT JSON_SERIALIZE(ORIGDATA) AS data FROM sdetluploadlog
+            selString = f"Select * from INTMP_DB.SDETLUPLOADLOG where COMPANY_CODE = '{_COMPANY_CODE}' \
+                and SITE = '{_SITE}' and FACTORY_ID = '{_FACTORY_ID}' and ACCT_DATE = '{_ACCT_DATE}' \
+                and DATATYPE = '{_DATATYPE}' "
+            data = self._daoHelper.Select(selString)
+            cc = data[0][5]
+            check = eval(cc.read().decode())            
+            returnData = {
+                        "status_code": 201,
+                        "status": "success",
+                        "data": f'成功上傳 {len(check["modeldata"])} 筆 modeldata',
+                        "message": ""
+                    }  
+            return returnData
+
         except Exception as e:
             error_class = e.__class__.__name__ #取得錯誤類型
             detail = e.args[0] #取得詳細內容
@@ -116,7 +106,9 @@ class INTSDETL():
             lineNum = lastCallStack[1] #取得發生的行號
             funcName = lastCallStack[2] #取得發生的函數名稱
             self.writeError("File:[{0}] , Line:{1} , in {2} : [{3}] {4}".format(fileName, lineNum, funcName, error_class, detail))
-    
+            returnData = {"status_code": 400,'status': 'error', 'message': f'{funcName} error'}
+            return returnData
+
     """Oracle DB"""
     def _getConnection( self, identity ):
         """連接資料庫
