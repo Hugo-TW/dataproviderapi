@@ -326,6 +326,46 @@ class INTKPI(BaseType):
                         returnData, sort_keys=True, indent=2), 60)
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
+            # 二階 FPY 泡泡圖 API
+            elif tmpKPITYPE == "PRODFPYList":
+                expirTimeKey = tmpFACTORY_ID + '_PASS'
+                # Check Redis Data
+                self.getRedisConnection()
+                if self.searchRedisKeys(redisKey):
+                    self.writeLog(f"Cache Data From Redis")
+                    return json.loads(self.getRedisData(redisKey)), 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type', "Access-Control-Expose-Headers": "Expires,DataSource", "Expires": time.mktime((datetime.datetime.now() + datetime.timedelta(seconds=self.getKeyExpirTime(expirTimeKey))).timetuple()), "DataSource": "Redis"}
+
+                PCBIData = self._getFPYData("PCBI")
+                PCBIResult = self._groupPassDeftByPRODandOPER(
+                    PCBIData["dData"], PCBIData["pData"])
+                LAMData = self._getFPYData("LAM")
+                LAMResult = self._groupPassDeftByPRODandOPER(
+                    LAMData["dData"], LAMData["pData"])
+                AAFCData = self._getFPYData("AAFC")
+                AAFCResult = self._groupPassDeftByPRODandOPER(
+                    AAFCData["dData"], AAFCData["pData"])
+                CKENData = self._getFPYData("CKEN")
+                CKENResult = self._groupPassDeftByPRODandOPER(
+                    CKENData["dData"], CKENData["pData"])
+                DKENData = self._getFPYData("DKEN")
+                DKENResult = self._groupPassDeftByPRODandOPER(
+                    DKENData["dData"], DKENData["pData"])
+
+                PRODFPYBaseData = self._groupPRODFPYBaseData(
+                    PCBIResult, LAMResult, AAFCResult, CKENResult, DKENResult)
+                returnData = self._calPRODFPYListData(PRODFPYBaseData)
+
+                # 存到 redis 暫存
+                self.getRedisConnection()
+                if self.searchRedisKeys(redisKey):
+                    self.setRedisData(redisKey, json.dumps(
+                        returnData, sort_keys=True, indent=2), self.getKeyExpirTime(expirTimeKey))
+                else:
+                    self.setRedisData(redisKey, json.dumps(
+                        returnData, sort_keys=True, indent=2), 60)
+                return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+
+
             # 一階 MSHIP KPI API
             elif tmpKPITYPE == "MSHIP":
                 expirTimeKey = tmpFACTORY_ID + '_SCRP'
@@ -703,6 +743,7 @@ class INTKPI(BaseType):
 
         PRODData = []
         PASSQTYSUM = 0
+        DEFTQTYSUM = 0
         PASSOPER = 0
         for prod in PRODList:
             d1 = list(filter(lambda d: d["PROD_NBR"]
@@ -712,6 +753,7 @@ class INTKPI(BaseType):
             else:
                 PCBIFPY = copy.deepcopy(d1[0]["FPY_RATE"])
                 PASSQTYSUM += d1[0]["PassSUMQty"]
+                DEFTQTYSUM += d1[0]["DeftSUMQty"]
                 PASSOPER += 1
 
             d2 = list(filter(lambda d: d["PROD_NBR"] == prod["PROD_NBR"], LAM))
@@ -720,6 +762,7 @@ class INTKPI(BaseType):
             else:
                 LAMFPY = copy.deepcopy(d2[0]["FPY_RATE"])
                 PASSQTYSUM += d2[0]["PassSUMQty"]
+                DEFTQTYSUM += d2[0]["DeftSUMQty"]
                 PASSOPER += 1
 
             d3 = list(filter(lambda d: d["PROD_NBR"]
@@ -729,6 +772,7 @@ class INTKPI(BaseType):
             else:
                 AAFCFPY = copy.deepcopy(d3[0]["FPY_RATE"])
                 PASSQTYSUM += d3[0]["PassSUMQty"]
+                DEFTQTYSUM += d3[0]["DeftSUMQty"]
                 PASSOPER += 1
 
             d4 = list(filter(lambda d: d["PROD_NBR"]
@@ -738,6 +782,7 @@ class INTKPI(BaseType):
             else:
                 CKENFPY = copy.deepcopy(d4[0]["FPY_RATE"])
                 PASSQTYSUM += d4[0]["PassSUMQty"]
+                DEFTQTYSUM += d4[0]["DeftSUMQty"]
                 PASSOPER += 1
 
             d5 = list(filter(lambda d: d["PROD_NBR"]
@@ -747,6 +792,7 @@ class INTKPI(BaseType):
             else:
                 DKENFPY = copy.deepcopy(d5[0]["FPY_RATE"])
                 PASSQTYSUM += d5[0]["PassSUMQty"]
+                DEFTQTYSUM += d5[0]["DeftSUMQty"]
                 PASSOPER += 1
 
             FPY = round(PCBIFPY * LAMFPY * AAFCFPY * CKENFPY * DKENFPY, 4)
@@ -760,7 +806,8 @@ class INTKPI(BaseType):
                 "CKENFPY": CKENFPY,
                 "DKENFPY": DKENFPY,
                 "FPY": FPY,
-                "AvegPASSQTY": round(PASSQTYSUM / PASSOPER, 0)
+                "AvegPASSQTY": round(PASSQTYSUM / PASSOPER, 0),
+                "DEFTSUM" : DEFTQTYSUM
             })
             PASSQTYSUM = 0
             PASSOPER = 0
@@ -800,6 +847,108 @@ class INTKPI(BaseType):
             "GREEN_VALUE": GREEN_VALUE,
             "YELLOW_VALUE": YELLOW_VALUE,
             "RED_VALUE": RED_VALUE
+        }
+
+        return returnData
+
+    def _calPRODFPYListData(self, PRODFPYBaseData):
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
+        getLimitData = self.operSetData[tmpFACTORY_ID]["FPY"]["limit"]
+
+        COLOR = "#118AB2"
+        SYMBOL = "undefined"
+
+        DATASERIES = []
+        if tmpAPPLICATION == "ALL":
+            d = PRODFPYBaseData
+            xLimit = 500
+            yLimit = 90
+        else:
+            d = list(filter(lambda d: d["APPLICATION"]
+                     == tmpAPPLICATION, PRODFPYBaseData))
+            if tmpAPPLICATION in getLimitData.keys():
+                xLimit = getLimitData[tmpAPPLICATION]["qytlim"]
+                yLimit = getLimitData[tmpAPPLICATION]["FPY"] * 100
+            else:
+                xLimit = 1000
+                yLimit = 90
+
+        # red ef476f
+        # yellow ffd166
+        # green 06d6a0
+        # blue 118AB2
+        # midGreen 073b4c
+
+        for x in d:
+            targrtFPY = 0.90
+            targrtQTY1 = 500
+            targrtQTY2 = 1500
+            if x["APPLICATION"] in getLimitData.keys():
+                targrtFPY = getLimitData[x["APPLICATION"]]["FPY"]
+                targrtQTY1 = getLimitData[x["APPLICATION"]]["qytlim"]
+                targrtQTY2 = getLimitData[x["APPLICATION"]]["qytlim2"]
+
+            QUADRANT = 0
+
+            if x["FPY"] >= targrtFPY:
+                COLOR = "#06d6a0"
+                SYMBOL = "undefined"
+                if targrtQTY1 > x["AvegPASSQTY"]:
+                    QUADRANT = 1
+                else:
+                    QUADRANT = 2
+            else:
+                if targrtQTY1 > x["AvegPASSQTY"]:
+                    COLOR = "#06d6a0"
+                    SYMBOL = "undefined"
+                    QUADRANT = 3
+                else:
+                    if targrtQTY2 > x["AvegPASSQTY"]:
+                        COLOR = "#ffd166"
+                        SYMBOL = "undefined"
+                        QUADRANT = 4
+                    else:
+                        COLOR = "#EF476F"
+                        SYMBOL = "twinkle"
+                        QUADRANT = 5
+
+            DATASERIES.append({
+                "APPLICATION": x["APPLICATION"],
+                "PROD_NBR": x["PROD_NBR"],
+                "YIELD": x["FPY"],
+                "PASSSUM": x["AvegPASSQTY"],
+                "DEFTSUM": x["DEFTSUM"],
+                "COLOR": COLOR,
+                "SYMBOL": SYMBOL,
+                "QUADRANT": QUADRANT
+            })
+        # 因為使用 operator.itemgetter 方法 排序順序要反過來執行
+        # 不同欄位key 排序方式不同時 需要 3 - 2 - 1  反順序去寫code
+        DATASERIES.sort(key=operator.itemgetter("PASSSUM"), reverse=True)
+        DATASERIES.sort(key=operator.itemgetter("YIELD"), reverse=False)
+        DATASERIES.sort(key=operator.itemgetter("QUADRANT"), reverse=True)
+
+        length = len(DATASERIES)
+        rank = 1
+        for x in range(length):
+            DATASERIES[x]["RANK"] = rank
+            rank += 1
+
+        selectlistData = []
+        for x in DATASERIES:
+            _pass = f'{round(int(x["PASSSUM"])/1000,1)}k' if int(x["PASSSUM"]) > 99 else f'{int(x["PASSSUM"])}'
+            selectlistData.append(
+                {
+                    "value": x["PROD_NBR"],
+                    "text": f'({x["RANK"]}){x["PROD_NBR"]}-FPY:{round(x["YIELD"],4)*100}%-'\
+                        f'Pass:{_pass}'
+                }
+            )
+
+        returnData = {
+            "TITLE": "快選機種",
+            "SELECTLIST": selectlistData
         }
 
         return returnData
