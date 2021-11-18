@@ -3005,7 +3005,7 @@ class INTLV3(BaseType):
             groupMSHIPDAT = self._groupMSHIPData(PROD_NBR, MSHIPData)
 
             returnData = []
-            if groupMSHIPDAT == [] :
+            if len(groupMSHIPDAT) == 0 :
                     return returnData 
             else:
                 returnData.append({
