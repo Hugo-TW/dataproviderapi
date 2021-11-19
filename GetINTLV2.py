@@ -213,6 +213,7 @@ class INTLV2(BaseType):
                 }
             }
         }
+        self.__indentity = "INT_ORACLEDB_TEST"
 
     def getData(self):
         try:
@@ -243,10 +244,10 @@ class INTLV2(BaseType):
             tmp.append(tmpACCT_DATE)
             tmp.append(tmpPROD_NBR)
             redisKey = bottomLine.join(tmp)
-
+            """
             if tmpFACTORY_ID not in self.operSetData.keys():
                 return {'Result': 'NG', 'Reason': f'{tmpFACTORY_ID} not in FactoryID MAP'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
-
+            """
             # Check Redis Data
             self.getRedisConnection()
             if self.searchRedisKeys(redisKey):
@@ -362,7 +363,111 @@ class INTLV2(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return {'Result': 'NG', 'Reason': f'{funcName} erro'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
-    def _getFPYLV2PIEData(self, OPER, PROD_NBR):
+    def _getFPYLV2PIEDataFromOracle(self, OPER, PROD_NBR):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpKPITYPE = self.jsonData["KPITYPE"]
+        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
+
+        applicatiionWhere = ""
+        if tmpAPPLICATION != "ALL":
+            applicatiionWhere = f"AND dmo.application = '{tmpAPPLICATION}' "        
+        try:
+            self.getConnection(self.__indentity)
+            passString = f"SELECT \
+                            dlo.company_code   AS company_code, \
+                            dlo.site_code      AS site, \
+                            dlo.factory_code   AS factory_id, \
+                            dmo.code           AS prod_nbr, \
+                            fpa.mfgdate        AS acct_date, \
+                            dmo.application    AS APPLICATION, \
+                            dop.name           AS OPER, \
+                            SUM(fpa.sumqty) AS PASSSUMQTY \
+                        FROM \
+                            INTMP_DB.fact_fpy_pass_sum fpa \
+                            LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = fpa.local_id \
+                            LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = fpa.model_id \
+                            LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = fpa.oper_id \
+                        WHERE \
+                            dlo.company_code = '{tmpCOMPANY_CODE}' \
+                            AND dlo.site_code = '{tmpSITE}' \
+                            AND dlo.factory_code = '{tmpFACTORY_ID}' \
+                            AND dop.name = '{OPER}' \
+                            AND fpa.mfgdate = '{tmpACCT_DATE}' \
+                            {applicatiionWhere} \
+                        GROUP BY \
+                            dlo.company_code, \
+                            dlo.site_code, \
+                            dlo.factory_code, \
+                            dmo.code, \
+                            fpa.mfgdate, \
+                            dmo.application, \
+                            dop.name \
+                        HAVING SUM(fpa.sumqty) > 0 "
+            description , data = self.SelectAndDescription(passString)            
+            pData = self._zipDescriptionAndData(description, data)  
+            deftString = f"SELECT \
+                            dlo.company_code   AS company_code, \
+                            dlo.site_code      AS site, \
+                            dlo.factory_code   AS factory_id, \
+                            dmo.code           AS prod_nbr, \
+                            fdf.mfgdate        AS acct_date, \
+                            dmo.application    AS APPLICATION, \
+                            dop.name           AS OPER, \
+                            ddf.DEFTCODE as DFCT_CODE, \
+                            ddf.DEFTCODE_DESC as ERRC_DESCR, \
+                            SUM(fdf.sumqty) AS DEFTSUMQTY \
+                        FROM \
+                            INTMP_DB.fact_fpy_deft_sum fdf \
+                            LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = fdf.local_id \
+                            LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = fdf.model_id \
+                            LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = fdf.oper_id \
+                            LEFT JOIN INTMP_DB.dime_deftcode ddf ON ddf.DEFTCODE= fdf.DEFTCODE \
+                        WHERE \
+                            dlo.company_code =  '{tmpCOMPANY_CODE}' \
+                            AND dlo.site_code = '{tmpSITE}' \
+                            AND dlo.factory_code = '{tmpFACTORY_ID}' \
+                            AND dop.name ='{OPER}' \
+                            AND fdf.mfgdate = '{tmpACCT_DATE}' \
+                            {applicatiionWhere} \
+                        GROUP BY \
+                            dlo.company_code, \
+                            dlo.site_code, \
+                            dlo.factory_code, \
+                            dmo.code, \
+                            fdf.mfgdate, \
+                            dmo.application, \
+                            dop.name, \
+                            ddf.DEFTCODE, \
+                            ddf.DEFTCODE_DESC \
+                        HAVING SUM(fdf.sumqty) > 0 "
+            description , data = self.SelectAndDescription(deftString)            
+            dData = self._zipDescriptionAndData(description, data)  
+            self.closeConnection()
+
+            returnData = {
+                "pData": pData,
+                "dData": dData
+            }
+
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+
+    def _getFPYLV2PIEDataFromMongo(self, OPER, PROD_NBR):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
@@ -429,7 +534,7 @@ class INTLV2(BaseType):
                     "ACCT_DATE": "$ACCT_DATE",
                     "APPLICATION": "$APPLICATION"
                 },
-                "PassSUMQty": {
+                "PASSSUMQTY": {
                     "$sum": {"$toInt": "$PASS_QTY"}
                 }
             }
@@ -443,7 +548,7 @@ class INTLV2(BaseType):
                 "PROD_NBR": "$_id.PROD_NBR",
                 "ACCT_DATE": "$_id.ACCT_DATE",
                 "APPLICATION": "$_id.APPLICATION",
-                "PassSUMQty": "$PassSUMQty"
+                "PASSSUMQTY": "$PASSSUMQTY"
             }
         }
         passAdd = {
@@ -526,7 +631,7 @@ class INTLV2(BaseType):
                     "DFCT_CODE" : "$DFCT_CODE",
                     "ERRC_DESCR" : "$ERRC_DESCR"
                 },
-                "DeftSUMQty": {
+                "DEFTSUMQTY": {
                     "$sum": {"$toInt": "$DEFT_QTY"}
                 }
             }
@@ -542,7 +647,7 @@ class INTLV2(BaseType):
                 "APPLICATION": "$_id.APPLICATION",
                 "DFCT_CODE" : "$_id.DFCT_CODE",
                 "ERRC_DESCR" : "$_id.ERRC_DESCR",
-                "DeftSUMQty": "$DeftSUMQty"
+                "DEFTSUMQTY": "$DEFTSUMQTY"
             }
         }
         deftAdd = {
@@ -594,6 +699,37 @@ class INTLV2(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
+    def _getFPYLV2PIEData(self, OPER, PROD_NBR):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpKPITYPE = self.jsonData["KPITYPE"]
+        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
+        try:
+            data = {}
+            if tmpSITE == "TN":
+                data = self._getFPYLV2PIEDataFromMongo(OPER,PROD_NBR)
+            elif tmpSITE == "NGB":
+                data = self._getFPYLV2PIEDataFromOracle(OPER,PROD_NBR)
+            returnData = {
+                "pData": data["pData"],
+                "dData": data["dData"]
+            }
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
     def _groupFPYLV2PIEOPER(self, dData): 
         deftData = []            
         for d in dData:       
@@ -602,7 +738,7 @@ class INTLV2(BaseType):
         if deftData != []:  
             deftSUM = 0
             for p in deftData:            
-                deftSUM += p["DeftSUMQty"]
+                deftSUM += p["DEFTSUMQTY"]
             p = deftData[0]
             data = {
                 "COMPANY_CODE": p["COMPANY_CODE"],
@@ -612,7 +748,7 @@ class INTLV2(BaseType):
                 "ACCT_DATE": datetime.datetime.strptime(p["ACCT_DATE"], '%Y%m%d').strftime('%Y-%m-%d'),
                 "APPLICATION": p["APPLICATION"] if "APPLICATION" in p.keys() else None,
                 "OPER": p["OPER"],
-                "DeftSUMQty" : deftSUM
+                "DEFTSUMQTY" : deftSUM
             }
             return data
         else: 
@@ -627,13 +763,13 @@ class INTLV2(BaseType):
         tmpACCT_DATE = self.jsonData["ACCT_DATE"]
         tmpPROD_NBR = self.jsonData["PROD_NBR"]
 
-        TotalDeftSUMQty = 0
+        TotalDEFTSUMQTY = 0
         tempData = []
         tempData.extend([PCBI,LAM,AAFC,CKEN,DKEN])
         for x in tempData:
             if x != None:
                 tmpAPPLICATION = x["APPLICATION"]
-                TotalDeftSUMQty += x["DeftSUMQty"]
+                TotalDEFTSUMQTY += x["DEFTSUMQTY"]
         
         colorMap = {
             "PCBI": {"colorName": "red", "HEX":"#ef476f"},
@@ -648,11 +784,11 @@ class INTLV2(BaseType):
             if x != None:
                 DATASERIES.append({
                     "OPER": x["OPER"],
-                    "VALUE": round(x["DeftSUMQty"] / TotalDeftSUMQty , 2) if TotalDeftSUMQty !=0 else 0,
+                    "VALUE": round(x["DEFTSUMQTY"] / TotalDEFTSUMQTY , 2) if TotalDEFTSUMQTY !=0 else 0,
                     "COLOR": colorMap[x["OPER"]]["HEX"] if x["OPER"] in colorMap.keys() else None,
                     "SELECT": None,
                     "SLICED": None,
-                    "DeftSUMQty": x["DeftSUMQty"],
+                    "DEFTSUMQTY": x["DEFTSUMQTY"],
                     "PROD_NBR": tmpPROD_NBR
                 })
 
@@ -695,22 +831,22 @@ class INTLV2(BaseType):
                 oData["OPER"] = copy.deepcopy(p["OPER"])
                 oData["DFCT_CODE"] = copy.deepcopy(d["DFCT_CODE"])
                 oData["ERRC_DESCR"] = copy.deepcopy(d["ERRC_DESCR"])
-                oData["PassSUMQty"] = copy.deepcopy(p["PassSUMQty"])
+                oData["PASSSUMQTY"] = copy.deepcopy(p["PASSSUMQTY"])
                 if d == []:
-                    oData["DeftSUMQty"] = 0
+                    oData["DEFTSUMQTY"] = 0
                 else:
-                    oData["DeftSUMQty"] = copy.deepcopy(d["DeftSUMQty"])
-                if oData["DeftSUMQty"] == 0:
+                    oData["DEFTSUMQTY"] = copy.deepcopy(d["DEFTSUMQTY"])
+                if oData["DEFTSUMQTY"] == 0:
                     oData["DEFECT_RATE"] = 0
                 else:
-                    if(oData["PassSUMQty"] != 0):
-                        ds = Decimal(oData["DeftSUMQty"])
-                        ps = Decimal(oData["PassSUMQty"])
+                    if(oData["PASSSUMQTY"] != 0):
+                        ds = Decimal(oData["DEFTSUMQTY"])
+                        ps = Decimal(oData["PASSSUMQTY"])
                         oData["DEFECT_RATE"] =  self._DecimaltoFloat((ds / ps).quantize(Decimal('.00000000'), ROUND_HALF_UP))
                     else:
                         oData["DEFECT_RATE"] = 1
                 oData["FPY_RATE"] = round(1 - oData["DEFECT_RATE"], 4)
-                if oData["DeftSUMQty"] < oData["PassSUMQty"] and oData["FPY_RATE"] > 0:
+                if oData["DEFTSUMQTY"] < oData["PASSSUMQTY"] and oData["FPY_RATE"] > 0:
                     data.append(copy.deepcopy(oData))
                 oData = {}
         return data
@@ -751,14 +887,14 @@ class INTLV2(BaseType):
                         "DFCT_CODE" : cDFct,
                         "ERRC_DESCR" : cERRC,                        
                         "PROD_NBR": tmpPROD_NBR,
-                        "DeftSUM": x["DeftSUMQty"],
-                        "PassSUM": x["PassSUMQty"],
+                        "DeftSUM": x["DEFTSUMQTY"],
+                        "PassSUM": x["PASSSUMQTY"],
                         "DEFECT_RATE": x["DEFECT_RATE"]*100
                     })
             else:
                 for cx in DATASERIES:
                     if cx["OPER"] == x["OPER"] and cx["DFCT_CODE"] == cDFct :                       
-                       cx["DeftSUM"] += x["DeftSUMQty"]
+                       cx["DeftSUM"] += x["DEFTSUMQTY"]
                        ds = Decimal(cx["DeftSUM"])
                        ps = Decimal(cx["PassSUM"])
                        dr =  self._DecimaltoFloat((ds / ps).quantize(Decimal('.00000000'), ROUND_HALF_UP))
@@ -978,4 +1114,28 @@ class INTLV2(BaseType):
     def _DecimaltoFloat(self, obj):
         if isinstance(obj, Decimal):
             return float(obj)
+
+    def _zipDescriptionAndData(self, description, data):
+        """ 取得 description和data壓縮後資料
+            description :row column description 
+            data : row data 
+            回傳 [{key:value}]
+        """
+        try:
+            col_names = [row[0] for row in description]
+            dictdatan = [dict(zip(col_names, da)) for da in data]
+            return dictdatan
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError("File:[{0}] , Line:{1} , in {2} : [{3}] {4}".format(
+                fileName, lineNum, funcName, error_class, detail))
+            return None
+
+
 
