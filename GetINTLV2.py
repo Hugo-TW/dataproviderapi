@@ -396,6 +396,7 @@ class INTLV2(BaseType):
                             AND dlo.factory_code = '{tmpFACTORY_ID}' \
                             AND dop.name = '{OPER}' \
                             AND fpa.mfgdate = '{tmpACCT_DATE}' \
+                            AND dmo.code = '{PROD_NBR}' \
                             {applicatiionWhere} \
                         GROUP BY \
                             dlo.company_code, \
@@ -431,6 +432,7 @@ class INTLV2(BaseType):
                             AND dlo.factory_code = '{tmpFACTORY_ID}' \
                             AND dop.name ='{OPER}' \
                             AND fdf.mfgdate = '{tmpACCT_DATE}' \
+                            AND dmo.code = '{PROD_NBR}' \
                             {applicatiionWhere} \
                         GROUP BY \
                             dlo.company_code, \
