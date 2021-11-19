@@ -839,7 +839,7 @@ class INTLV3(BaseType):
                                 dmo.application    AS APPLICATION, \
                                 dmo.code           AS prod_nbr, \
                                 dop.name           AS OPER, \
-                                '{DATARANGENAME}' AS DATARANGENAME, \
+                                '{DATARANGENAME}' AS DATARANGE, \
                                 '{TYPE}' AS XVALUE, \
                                 SUM(fpa.sumqty) AS PASSSUMQTY \
                             FROM \
@@ -865,7 +865,7 @@ class INTLV3(BaseType):
                                 dmo.application    AS APPLICATION, \
                                 dmo.code           AS prod_nbr, \
                                 dop.name           AS OPER, \
-                                '{DATARANGENAME}' AS DATARANGENAME, \
+                                '{DATARANGENAME}' AS DATARANGE, \
                                 '{TYPE}' AS XVALUE, \
                                 SUM(fdf.sumqty) AS DEFTSUMQTY \
                             FROM \
@@ -891,7 +891,7 @@ class INTLV3(BaseType):
                             pa.APPLICATION, \
                             pa.prod_nbr, \
                             pa.OPER, \
-                            pa.DATARANGENAME, \
+                            pa.DATARANGE, \
                             pa.XVALUE, \
                             nvl(df.DEFTSUMQTY,0) as DEFTQTY, \
                             pa.PASSSUMQTY as PASSQTY, \
@@ -900,7 +900,7 @@ class INTLV3(BaseType):
                             on df.APPLICATION = pa.APPLICATION \
                             and df.prod_nbr = pa.prod_nbr \
                             and df.OPER = pa.OPER \
-                            and df.DATARANGENAME = pa.DATARANGENAME \
+                            and df.DATARANGE = pa.DATARANGE \
                             and df.XVALUE = pa.XVALUE"
             description , data = self.SelectAndDescription(fpyString)            
             rData = self._zipDescriptionAndData(description, data)  
