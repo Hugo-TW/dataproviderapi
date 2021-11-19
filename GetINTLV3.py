@@ -301,7 +301,7 @@ class INTLV3(BaseType):
                     "PROD_NBR": tmpPROD_NBR,
                     "OPER": tmpOPER,
                     "DFCT_CODE": tmpCHECKCODE,
-                    "ERRC_DESCR": ERRC_DESCR,
+                    "ERRC_DESCR": ERRC_DESCR.strip(),
                     "DATASERIES": magerData
                 }
 
@@ -841,7 +841,7 @@ class INTLV3(BaseType):
                                 dop.name           AS OPER, \
                                 '{DATARANGENAME}' AS DATARANGENAME, \
                                 '{TYPE}' AS XVALUE, \
-                                SUM(fpa.sumqty) AS passsumqty \
+                                SUM(fpa.sumqty) AS PASSSUMQTY \
                             FROM \
                                 INTMP_DB.fact_fpy_pass_sum fpa \
                                 LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = fpa.local_id \
@@ -867,7 +867,7 @@ class INTLV3(BaseType):
                                 dop.name           AS OPER, \
                                 '{DATARANGENAME}' AS DATARANGENAME, \
                                 '{TYPE}' AS XVALUE, \
-                                SUM(fdf.sumqty) AS deftsumqty \
+                                SUM(fdf.sumqty) AS DEFTSUMQTY \
                             FROM \
                                 INTMP_DB.fact_fpy_deft_sum fdf \
                                 LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = fdf.local_id \
@@ -893,9 +893,9 @@ class INTLV3(BaseType):
                             pa.OPER, \
                             pa.DATARANGENAME, \
                             pa.XVALUE, \
-                            df.deftsumqty, \
-                            pa.passsumqty, \
-                            trunc(df.deftsumqty/pa.passsumqty,6) as DEFECT_YIELD \
+                            df.DEFTSUMQTY, \
+                            pa.PASSSUMQTY, \
+                            trunc(df.DEFTSUMQTY/pa.PASSSUMQTY,6) as DEFECT_YIELD \
                             from pass pa left join deft df \
                             on df.APPLICATION = pa.APPLICATION \
                             and df.prod_nbr = pa.prod_nbr \
@@ -1423,7 +1423,7 @@ class INTLV3(BaseType):
                     "PROD_NBR": "$PROD_NBR",
                     "APPLICATION": "$APPLICATION"
                 },
-                "PassSUMQty": {
+                "PASSSUMQTY": {
                     "$sum": {"$toInt": "$PASS_QTY"}
                 }
             }
@@ -1436,7 +1436,7 @@ class INTLV3(BaseType):
                 "FACTORY_ID": "$_id.FACTORY_ID",
                 "PROD_NBR": "$_id.PROD_NBR",
                 "APPLICATION": "$_id.APPLICATION",
-                "PassSUMQty": "$PassSUMQty"
+                "PASSSUMQTY": "$PASSSUMQTY"
             }
         }
         passAdd = {
@@ -1577,12 +1577,12 @@ class INTLV3(BaseType):
                 oData["OPER"] = copy.deepcopy(p["OPER"])
                 oData["DFCT_CODE"] = copy.deepcopy(d["DFCT_CODE"])
                 oData["ERRC_DESCR"] = copy.deepcopy(d["ERRC_DESCR"])
-                oData["PassSUMQty"] = copy.deepcopy(p["PassSUMQty"])
+                oData["PASSSUMQTY"] = copy.deepcopy(p["PASSSUMQTY"])
                 if d == []:
-                    oData["DeftSUMQty"] = 0
+                    oData["DEFTSUMQTY"] = 0
                 else:
-                    oData["DeftSUMQty"] = copy.deepcopy(d["DEFT_QTY"])
-                if oData["DeftSUMQty"] < oData["PassSUMQty"]:
+                    oData["DEFTSUMQTY"] = copy.deepcopy(d["DEFT_QTY"])
+                if oData["DEFTSUMQTY"] < oData["PASSSUMQTY"]:
                     data.append(copy.deepcopy(oData))
                 oData = {}
         return data
@@ -1596,9 +1596,9 @@ class INTLV3(BaseType):
         allDFCTCount = {}
         for x in tempData:  
             if x["DFCT_CODE"] in allDFCTCount.keys():
-                allDFCTCount[x["DFCT_CODE"]] += x["DeftSUMQty"]
+                allDFCTCount[x["DFCT_CODE"]] += x["DEFTSUMQTY"]
             else:
-                allDFCTCount[x["DFCT_CODE"]] = x["DeftSUMQty"]
+                allDFCTCount[x["DFCT_CODE"]] = x["DEFTSUMQTY"]
         top10 = dict(sorted(allDFCTCount.items(),key=lambda item:item[1],reverse=True) [:10])
                
         DATASERIES = []
@@ -1634,8 +1634,8 @@ class INTLV3(BaseType):
 
                 d = list(filter(lambda d: d["DFCT_CODE"] == cDFct and d["XVALUE"] == x["XVALUE"] , DATASERIES))
                 if d == []:
-                    ds = Decimal(x["DeftSUMQty"])
-                    ps = Decimal(x["PassSUMQty"])
+                    ds = Decimal(x["DEFTSUMQTY"])
+                    ps = Decimal(x["PASSSUMQTY"])
                     dr =  self._DecimaltoFloat((ds / ps).quantize(Decimal('.00000000'), ROUND_HALF_UP))
                     test = {
                             "OPER": x["OPER"],
@@ -1646,8 +1646,8 @@ class INTLV3(BaseType):
                             "DFCT_CODE" : cDFct,
                             "ERRC_DESCR" : cERRC,                        
                             "PROD_NBR": tmpPROD_NBR,
-                            "DeftSUM": x["DeftSUMQty"],
-                            "PassSUM": x["PassSUMQty"],
+                            "DeftSUM": x["DEFTSUMQTY"],
+                            "PassSUM": x["PASSSUMQTY"],
                             "DEFECT_RATE": dr*100
                         }
                     DATASERIES.append(test)
@@ -1655,7 +1655,7 @@ class INTLV3(BaseType):
                 else:
                     for cx in DATASERIES:
                         if cx["OPER"] == x["OPER"] and cx["DFCT_CODE"] == cDFct :                        
-                            cx["DeftSUM"] += x["DeftSUMQty"]
+                            cx["DeftSUM"] += x["DEFTSUMQTY"]
                             ds = Decimal(cx["DeftSUM"])
                             ps = Decimal(cx["PassSUM"])
                             dr =  self._DecimaltoFloat((ds / ps).quantize(Decimal('.00000000'), ROUND_HALF_UP))
@@ -1814,7 +1814,7 @@ class INTLV3(BaseType):
                     "PROD_NBR": "$PROD_NBR",
                     "APPLICATION": "$APPLICATION"
                 },
-                "PassSUMQty": {
+                "PASSSUMQTY": {
                     "$sum": {"$toInt": "$PASS_QTY"}
                 }
             }
@@ -1827,7 +1827,7 @@ class INTLV3(BaseType):
                 "FACTORY_ID": "$_id.FACTORY_ID",
                 "PROD_NBR": "$_id.PROD_NBR",
                 "APPLICATION": "$_id.APPLICATION",
-                "PassSUMQty": "$PassSUMQty"
+                "PASSSUMQTY": "$PASSSUMQTY"
             }
         }
         passAdd = {
@@ -1991,8 +1991,8 @@ class INTLV3(BaseType):
         PASSQTYSUM = 0
         PASSOPER = 0
         for x in tempPassData:
-            if x["PassSUMQty"] > 0:
-                PASSQTYSUM += x["PassSUMQty"]
+            if x["PASSSUMQTY"] > 0:
+                PASSQTYSUM += x["PASSSUMQTY"]
                 PASSOPER += 1
 
         if PASSOPER != 0:
@@ -2003,7 +2003,7 @@ class INTLV3(BaseType):
                 "FACTORY_ID": tempPassData[0]["FACTORY_ID"],
                 "PROD_NBR": tempPassData[0]["PROD_NBR"],
                 "APPLICATION": tempPassData[0]["APPLICATION"],
-                "PassSUMQty": AVGPASS,
+                "PASSSUMQTY": AVGPASS,
                 "OPER": "ALL"
             })
 
@@ -2029,12 +2029,12 @@ class INTLV3(BaseType):
                 oData["OPER"] = copy.deepcopy(p["OPER"])
                 oData["DFCT_CODE"] = copy.deepcopy(d["DFCT_CODE"])
                 oData["ERRC_DESCR"] = copy.deepcopy(d["ERRC_DESCR"])
-                oData["PassSUMQty"] = copy.deepcopy(p["PassSUMQty"])
+                oData["PASSSUMQTY"] = copy.deepcopy(p["PASSSUMQTY"])
                 if d == []:
-                    oData["DeftSUMQty"] = 0
+                    oData["DEFTSUMQTY"] = 0
                 else:
-                    oData["DeftSUMQty"] = copy.deepcopy(d["DEFT_QTY"])
-                if oData["DeftSUMQty"] < oData["PassSUMQty"]:
+                    oData["DEFTSUMQTY"] = copy.deepcopy(d["DEFT_QTY"])
+                if oData["DEFTSUMQTY"] < oData["PASSSUMQTY"]:
                     data.append(copy.deepcopy(oData))
                 oData = {}
         return data
@@ -2839,7 +2839,7 @@ class INTLV3(BaseType):
                     "PROD_NBR": "$PROD_NBR",
                     "APPLICATION": "$APPLICATION"
                 },
-                "PassSUMQty": {
+                "PASSSUMQTY": {
                     "$sum": {"$toInt": "$PASS_QTY"}
                 }
             }
@@ -2853,7 +2853,7 @@ class INTLV3(BaseType):
                 "PROD_NBR": "$_id.PROD_NBR",
                 "APPLICATION": "$_id.APPLICATION",
                 "OPER": OPER,
-                "PassSUMQty": "$PassSUMQty"
+                "PASSSUMQTY": "$PASSSUMQTY"
             }
         }
         passSort = {
@@ -2922,7 +2922,7 @@ class INTLV3(BaseType):
                     "PROD_NBR": "$PROD_NBR",
                     "APPLICATION": "$APPLICATION"
                 },
-                "DeftSUMQty": {
+                "DEFTSUMQTY": {
                     "$sum": {"$toInt": "$DEFT_QTY"}
                 }
             }
@@ -2936,7 +2936,7 @@ class INTLV3(BaseType):
                 "PROD_NBR": "$_id.PROD_NBR",
                 "APPLICATION": "$_id.APPLICATION",
                 "OPER": OPER,
-                "DeftSUMQty": "$DeftSUMQty"
+                "DEFTSUMQTY": "$DEFTSUMQTY"
             }
         }
         deftSort = {
@@ -3008,21 +3008,21 @@ class INTLV3(BaseType):
             else:
                 oData["APPLICATION"] = None
             oData["OPER"] = copy.deepcopy(p["OPER"])
-            oData["PassSUMQty"] = copy.deepcopy(p["PassSUMQty"])
+            oData["PASSSUMQTY"] = copy.deepcopy(p["PASSSUMQTY"])
             if d == []:
-                oData["DeftSUMQty"] = 0
+                oData["DEFTSUMQTY"] = 0
             else:
-                oData["DeftSUMQty"] = copy.deepcopy(d[0]["DeftSUMQty"])
-            if oData["DeftSUMQty"] == 0:
+                oData["DEFTSUMQTY"] = copy.deepcopy(d[0]["DEFTSUMQTY"])
+            if oData["DEFTSUMQTY"] == 0:
                 oData["DEFECT_RATE"] = 0
             else:
-                if(oData["PassSUMQty"] != 0):
+                if(oData["PASSSUMQTY"] != 0):
                     oData["DEFECT_RATE"] = round(
-                        oData["DeftSUMQty"] / oData["PassSUMQty"], 4)
+                        oData["DEFTSUMQTY"] / oData["PASSSUMQTY"], 4)
                 else:
                     oData["DEFECT_RATE"] = 1
             oData["FPY_RATE"] = round(1 - oData["DEFECT_RATE"], 4)
-            if oData["DeftSUMQty"] < oData["PassSUMQty"] and oData["FPY_RATE"] > 0:
+            if oData["DEFTSUMQTY"] < oData["PASSSUMQTY"] and oData["FPY_RATE"] > 0:
                 data.append(copy.deepcopy(oData))
             oData = {}
         return data
@@ -3039,8 +3039,8 @@ class INTLV3(BaseType):
             PCBIFPY = 1
         else:
             PCBIFPY = copy.deepcopy(d1[0]["FPY_RATE"])
-            PASSQTYSUM += d1[0]["PassSUMQty"]            
-            DEFTQTYSUM += d1[0]["DeftSUMQty"]
+            PASSQTYSUM += d1[0]["PASSSUMQTY"]            
+            DEFTQTYSUM += d1[0]["DEFTSUMQTY"]
             PASSOPER += 1            
         
         d2 = list(filter(lambda d: d["PROD_NBR"] == PROD_NBR, LAM))
@@ -3048,8 +3048,8 @@ class INTLV3(BaseType):
             LAMFPY = 1
         else:
             LAMFPY = copy.deepcopy(d2[0]["FPY_RATE"])
-            PASSQTYSUM += d2[0]["PassSUMQty"]
-            DEFTQTYSUM += d2[0]["DeftSUMQty"]
+            PASSQTYSUM += d2[0]["PASSSUMQTY"]
+            DEFTQTYSUM += d2[0]["DEFTSUMQTY"]
             PASSOPER += 1
 
         d3 = list(filter(lambda d: d["PROD_NBR"]
@@ -3058,8 +3058,8 @@ class INTLV3(BaseType):
             AAFCFPY = 1
         else:
             AAFCFPY = copy.deepcopy(d3[0]["FPY_RATE"])
-            PASSQTYSUM += d3[0]["PassSUMQty"]
-            DEFTQTYSUM += d3[0]["DeftSUMQty"]
+            PASSQTYSUM += d3[0]["PASSSUMQTY"]
+            DEFTQTYSUM += d3[0]["DEFTSUMQTY"]
             PASSOPER += 1
 
         d4 = list(filter(lambda d: d["PROD_NBR"]
@@ -3068,8 +3068,8 @@ class INTLV3(BaseType):
             CKENFPY = 1
         else:
             CKENFPY = copy.deepcopy(d4[0]["FPY_RATE"])
-            PASSQTYSUM += d4[0]["PassSUMQty"]
-            DEFTQTYSUM += d4[0]["DeftSUMQty"]
+            PASSQTYSUM += d4[0]["PASSSUMQTY"]
+            DEFTQTYSUM += d4[0]["DEFTSUMQTY"]
             PASSOPER += 1
 
         d5 = list(filter(lambda d: d["PROD_NBR"]
@@ -3078,8 +3078,8 @@ class INTLV3(BaseType):
             DKENFPY = 1
         else:
             DKENFPY = copy.deepcopy(d5[0]["FPY_RATE"])
-            PASSQTYSUM += d5[0]["PassSUMQty"]
-            DEFTQTYSUM += d5[0]["DeftSUMQty"]
+            PASSQTYSUM += d5[0]["PASSSUMQTY"]
+            DEFTQTYSUM += d5[0]["DEFTSUMQTY"]
             PASSOPER += 1
 
         FPY = round(PCBIFPY * LAMFPY * AAFCFPY * CKENFPY * DKENFPY, 4)
