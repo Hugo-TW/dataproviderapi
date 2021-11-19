@@ -893,9 +893,9 @@ class INTLV3(BaseType):
                             pa.OPER, \
                             pa.DATARANGENAME, \
                             pa.XVALUE, \
-                            df.DEFTSUMQTY, \
+                            nvl(df.DEFTSUMQTY,0) as DEFTSUMQTY, \
                             pa.PASSSUMQTY, \
-                            trunc(df.DEFTSUMQTY/pa.PASSSUMQTY,6) as DEFECT_YIELD \
+                            nvl(trunc(df.DEFTSUMQTY/pa.PASSSUMQTY,6),0) as DEFECT_YIELD \
                             from pass pa left join deft df \
                             on df.APPLICATION = pa.APPLICATION \
                             and df.prod_nbr = pa.prod_nbr \
