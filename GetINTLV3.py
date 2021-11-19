@@ -893,8 +893,8 @@ class INTLV3(BaseType):
                             pa.OPER, \
                             pa.DATARANGENAME, \
                             pa.XVALUE, \
-                            nvl(df.DEFTSUMQTY,0) as DEFTSUMQTY, \
-                            pa.PASSSUMQTY, \
+                            nvl(df.DEFTSUMQTY,0) as DEFTQTY, \
+                            pa.PASSSUMQTY as PASSQTY, \
                             nvl(trunc(df.DEFTSUMQTY/pa.PASSSUMQTY,6),0) as DEFECT_YIELD \
                             from pass pa left join deft df \
                             on df.APPLICATION = pa.APPLICATION \
@@ -952,7 +952,7 @@ class INTLV3(BaseType):
                         "APPLICATION" : "$APPLICATION",
                         "PROD_NBR": "$PROD_NBR"
                     },
-                    "deftQty": {
+                    "DEFTQTY": {
                         "$sum": {"$toInt": "$QTY"}
                     }
                 }
@@ -961,8 +961,8 @@ class INTLV3(BaseType):
                 "$addFields": {
                     "APPLICATION" : "$_id.APPLICATION",
                     "PROD_NBR": "$_id.PROD_NBR",
-                    "deftQty": "$deftQty",
-                    "passQty": 0
+                    "DEFTQTY": "$DEFTQTY",
+                    "PASSQTY": 0
                 }
             },
             {
@@ -991,7 +991,7 @@ class INTLV3(BaseType):
                                             "APPLICATION" : "$APPLICATION",
                                             "PROD_NBR": "$PROD_NBR"
                                         },
-                                        "passQty": {
+                                        "PASSQTY": {
                                             "$sum": {
                                                 "$toInt": "$QTY"
                                             }
@@ -1002,8 +1002,8 @@ class INTLV3(BaseType):
                                     "$addFields": {
                                         "APPLICATION" : "$_id.APPLICATION",
                                         "PROD_NBR": "$_id.PROD_NBR",
-                                        "passQty": "$passQty",
-                                        "deftQty": 0
+                                        "PASSQTY": "$PASSQTY",
+                                        "DEFTQTY": 0
                                     }
                                 },
                                 {
@@ -1020,11 +1020,11 @@ class INTLV3(BaseType):
                         "APPLICATION" : "$APPLICATION",
                         "PROD_NBR": "$PROD_NBR"
                     },
-                    "deftQty": {
-                        "$sum": "$deftQty"
+                    "DEFTQTY": {
+                        "$sum": "$DEFTQTY"
                     },
-                    "passQty": {
-                        "$sum": "$passQty"
+                    "PASSQTY": {
+                        "$sum": "$PASSQTY"
                     }
                 }
             },
@@ -1039,15 +1039,15 @@ class INTLV3(BaseType):
                         "$cond": [
                             {
                                 "$eq": [
-                                    "$passQty",
+                                    "$PASSQTY",
                                     0
                                 ]
                             },
                             0,
                             {
                                 "$divide": [
-                                    "$deftQty",
-                                    "$passQty"
+                                    "$DEFTQTY",
+                                    "$PASSQTY"
                                 ]
                             }
                         ]
@@ -1232,7 +1232,7 @@ class INTLV3(BaseType):
                     "APPLICATION" : "$_id.APPLICATION",
                     "PROD_NBR": "$_id.PROD_NBR",
                     "reasonQty": "$reasonQty",
-                    "passQty": 0
+                    "PASSQTY": 0
                 }
             },
             {
@@ -1260,7 +1260,7 @@ class INTLV3(BaseType):
                                             "APPLICATION" : "$APPLICATION",
                                             "PROD_NBR": "$PROD_NBR"
                                         },
-                                        "passQty": {
+                                        "PASSQTY": {
                                             "$sum": {
                                                 "$toInt": "$QTY"
                                             }
@@ -1271,7 +1271,7 @@ class INTLV3(BaseType):
                                     "$addFields": {
                                         "APPLICATION" : "$_id.APPLICATION",
                                         "PROD_NBR": "$_id.PROD_NBR",
-                                        "passQty": "$passQty",
+                                        "PASSQTY": "$PASSQTY",
                                         "reasonQty": 0
                                     }
                                 },
@@ -1292,8 +1292,8 @@ class INTLV3(BaseType):
                     "reasonQty": {
                         "$sum": "$reasonQty"
                     },
-                    "passQty": {
-                        "$sum": "$passQty"
+                    "PASSQTY": {
+                        "$sum": "$PASSQTY"
                     }
                 }
             },
@@ -1308,7 +1308,7 @@ class INTLV3(BaseType):
                         "$cond": [
                             {
                                 "$eq": [
-                                    "$passQty",
+                                    "$PASSQTY",
                                     0
                                 ]
                             },
@@ -1316,7 +1316,7 @@ class INTLV3(BaseType):
                             {
                                 "$divide": [
                                     "$reasonQty",
-                                    "$passQty"
+                                    "$PASSQTY"
                                 ]
                             }
                         ]
