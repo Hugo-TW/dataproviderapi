@@ -712,7 +712,7 @@ class INTLV2(BaseType):
             data = {}
             if tmpSITE == "TN":
                 data = self._getFPYLV2PIEDataFromMongo(OPER,PROD_NBR)
-            elif tmpSITE == "NGB":
+            else:
                 data = self._getFPYLV2PIEDataFromOracle(OPER,PROD_NBR)
             returnData = {
                 "pData": data["pData"],

@@ -219,6 +219,7 @@ class INTLV3(BaseType):
                 }
             }
         }
+        self.__indentity = "INT_ORACLEDB_TEST"
 
     def getData(self):
         try:
@@ -255,10 +256,10 @@ class INTLV3(BaseType):
             if tmpCHECKCODE != None:
                 tmp.append(tmpCHECKCODE)
             redisKey = bottomLine.join(tmp)
-
+            """
             if tmpFACTORY_ID not in self.operSetData.keys():
                 return {'Result': 'NG', 'Reason': f'{tmpFACTORY_ID} not in FactoryID MAP'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
-
+            """
             # Check Redis Data
 
             self.getRedisConnection()
@@ -285,6 +286,11 @@ class INTLV3(BaseType):
                 
                 magerData = self._groupINTLV3(n1d_DATA,n2d_DATA,n3d_DATA,n4d_DATA,n5d_DATA,n6d_DATA,n1w_DATA,n2w_DATA,n3w_DATA,n1m_DATA,n2m_DATA,n1s_DATA)
 
+                ERRC_DESCR = ""
+                if tmpSITE == "TN":
+                    ERRC_DESCR = self._deftCodeInf(tmpFACTORY_ID, tmpCHECKCODE) if tmpCHECKCODE != None else ''
+                else:
+                    ERRC_DESCR = self._deftCodeInf("J001", tmpCHECKCODE) if tmpCHECKCODE != None else ''
                 returnData = {                    
                     "KPITYPE": tmpKPITYPE,
                     "COMPANY_CODE": tmpCOMPANY_CODE,
@@ -295,7 +301,7 @@ class INTLV3(BaseType):
                     "PROD_NBR": tmpPROD_NBR,
                     "OPER": tmpOPER,
                     "DFCT_CODE": tmpCHECKCODE,
-                    "ERRC_DESCR": self._deftCodeInf(tmpFACTORY_ID, tmpCHECKCODE) if tmpCHECKCODE != None else '',
+                    "ERRC_DESCR": ERRC_DESCR,
                     "DATASERIES": magerData
                 }
 
@@ -809,7 +815,111 @@ class INTLV3(BaseType):
             dataArray.append( d.strftime(x, '%Y%m%d'))
         return dataArray
 
-    def _getFPYLV3DATA(self, OPER, PROD_NBR, DEFECTCODE, DATARANGENAME, ACCT_DATE_ARRAY, TYPE):
+    def _getFPYLV3DATAFromOracle(self, OPER, PROD_NBR, DEFECTCODE, DATARANGENAME, ACCT_DATE_ARRAY, TYPE):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpKPITYPE = self.jsonData["KPITYPE"]
+        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
+
+        _ACCT_DATE_ARRAY_LIST = ""
+        for x in ACCT_DATE_ARRAY:
+            _ACCT_DATE_ARRAY_LIST = _ACCT_DATE_ARRAY_LIST + f"'{x}',"
+        if _ACCT_DATE_ARRAY_LIST != "":
+            _ACCT_DATE_ARRAY_LIST = _ACCT_DATE_ARRAY_LIST[:-1]
+
+        applicatiionWhere = ""
+        if tmpAPPLICATION != "ALL":
+            applicatiionWhere = f"AND dmo.application = '{tmpAPPLICATION}' "        
+        try:
+            self.getConnection(self.__indentity)
+            fpyString = f"with pass as( \
+                            SELECT \
+                                dmo.application    AS APPLICATION, \
+                                dmo.code           AS prod_nbr, \
+                                dop.name           AS OPER, \
+                                '{DATARANGENAME}' AS DATARANGENAME, \
+                                '{TYPE}' AS XVALUE, \
+                                SUM(fpa.sumqty) AS passsumqty \
+                            FROM \
+                                INTMP_DB.fact_fpy_pass_sum fpa \
+                                LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = fpa.local_id \
+                                LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = fpa.model_id \
+                                LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = fpa.oper_id \
+                            WHERE \
+                                dlo.company_code = '{tmpCOMPANY_CODE}' \
+                                AND dlo.site_code = '{tmpSITE}' \
+                                AND dlo.factory_code = '{tmpFACTORY_ID}' \
+                                AND dop.name = '{OPER}' \
+                                AND fpa.mfgdate in ({_ACCT_DATE_ARRAY_LIST}) \
+                                and dmo.code = '{PROD_NBR}' \
+                            GROUP BY \
+                                dmo.application, \
+                                dmo.code, \
+                                dop.name \
+                            HAVING SUM(fpa.sumqty) > 0  \
+                            Order by dmo.code), \
+                            deft as ( \
+                            SELECT \
+                                dmo.application    AS APPLICATION, \
+                                dmo.code           AS prod_nbr, \
+                                dop.name           AS OPER, \
+                                '{DATARANGENAME}' AS DATARANGENAME, \
+                                '{TYPE}' AS XVALUE, \
+                                SUM(fdf.sumqty) AS deftsumqty \
+                            FROM \
+                                INTMP_DB.fact_fpy_deft_sum fdf \
+                                LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = fdf.local_id \
+                                LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = fdf.model_id \
+                                LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = fdf.oper_id    \
+                            WHERE \
+                                dlo.company_code = '{tmpCOMPANY_CODE}' \
+                                AND dlo.site_code = '{tmpSITE}' \
+                                AND dlo.factory_code = '{tmpFACTORY_ID}' \
+                                AND dop.name = '{OPER}' \
+                                AND fdf.mfgdate in ({_ACCT_DATE_ARRAY_LIST}) \
+                                and dmo.code = '{PROD_NBR}' \
+                                and fdf.deftcode = '{DEFECTCODE}' \
+                            GROUP BY \
+                                dmo.application, \
+                                dmo.code, \
+                                dop.name \
+                            HAVING SUM(fdf.sumqty) > 0  \
+                            Order by dmo.code) \
+                            select   \
+                            pa.APPLICATION, \
+                            pa.prod_nbr, \
+                            pa.OPER, \
+                            pa.DATARANGENAME, \
+                            pa.XVALUE, \
+                            df.deftsumqty, \
+                            pa.passsumqty, \
+                            trunc(df.deftsumqty/pa.passsumqty,6) as DEFECT_YIELD \
+                            from pass pa left join deft df \
+                            on df.APPLICATION = pa.APPLICATION \
+                            and df.prod_nbr = pa.prod_nbr \
+                            and df.OPER = pa.OPER \
+                            and df.DATARANGENAME = pa.DATARANGENAME \
+                            and df.XVALUE = pa.XVALUE"
+            description , data = self.SelectAndDescription(fpyString)            
+            rData = self._zipDescriptionAndData(description, data)  
+            self.closeConnection()
+            return rData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+    def _getFPYLV3DATAFromMongo(self, OPER, PROD_NBR, DEFECTCODE, DATARANGENAME, ACCT_DATE_ARRAY, TYPE):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
@@ -979,6 +1089,33 @@ class INTLV3(BaseType):
             self.writeError(
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
+
+    def _getFPYLV3DATA(self, OPER, PROD_NBR, DEFECTCODE, DATARANGENAME, ACCT_DATE_ARRAY, TYPE):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        
+        try:
+            data = {}
+            if tmpSITE == "TN":
+                data = self._getFPYLV3DATAFromMongo(OPER, PROD_NBR, DEFECTCODE, DATARANGENAME, ACCT_DATE_ARRAY, TYPE)
+            else:
+                data = self._getFPYLV3DATAFromOracle(OPER, PROD_NBR, DEFECTCODE, DATARANGENAME, ACCT_DATE_ARRAY, TYPE)
+                
+            return data
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
 
     def _groupINTLV3(self, n1d,n2d,n3d,n4d,n5d,n6d,n1w,n2w,n3w,n1m,n2m,n1s): 
             magerData = [] 
@@ -3467,6 +3604,26 @@ class INTLV3(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
-
+    def _zipDescriptionAndData(self, description, data):
+        """ 取得 description和data壓縮後資料
+            description :row column description 
+            data : row data 
+            回傳 [{key:value}]
+        """
+        try:
+            col_names = [row[0] for row in description]
+            dictdatan = [dict(zip(col_names, da)) for da in data]
+            return dictdatan
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError("File:[{0}] , Line:{1} , in {2} : [{3}] {4}".format(
+                fileName, lineNum, funcName, error_class, detail))
+            return None
 
 

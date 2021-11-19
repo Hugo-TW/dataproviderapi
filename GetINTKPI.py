@@ -785,7 +785,7 @@ class INTKPI(BaseType):
             data = {}
             if tmpSITE == "TN":
                 data = self._getFPYDataFromMongo(OPER)
-            elif tmpSITE == "NGB":
+            else:
                 data = self._getFPYDataFromOracle(OPER)
             returnData = {
                 "pData": data["pData"],
