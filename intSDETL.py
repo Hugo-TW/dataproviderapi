@@ -92,7 +92,7 @@ class INTSDETL():
             returnData = {
                         "status_code": 201,
                         "status": "success",
-                        "data": f'成功上傳 {len(check["modeldata"])} 筆 modeldata',
+                        "data": f'get {len(check["modeldata"])} record in modeldata',
                         "message": ""
                     }  
             return returnData

@@ -214,6 +214,7 @@ class INTKPI(BaseType):
                 }
             }
         }
+        self.__indentity = "INT_ORACLEDB_TEST"
 
     def getData(self):
         try:
@@ -242,10 +243,10 @@ class INTKPI(BaseType):
             tmp.append(tmpACCT_DATE)
             redisKey = bottomLine.join(tmp)
             expirTimeKey = tmpFACTORY_ID + '_PASS'
-
+            """
             if tmpFACTORY_ID not in self.operSetData.keys():
                 return {'Result': 'NG', 'Reason': f'{tmpFACTORY_ID} not in FactoryID MAP'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
-
+            """
             # Check Redis Data
             self.getRedisConnection()
             if self.searchRedisKeys(redisKey):
@@ -365,7 +366,6 @@ class INTKPI(BaseType):
                         returnData, sort_keys=True, indent=2), 60)
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
-
             # 一階 MSHIP KPI API
             elif tmpKPITYPE == "MSHIP":
                 expirTimeKey = tmpFACTORY_ID + '_SCRP'
@@ -454,7 +454,105 @@ class INTKPI(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return {'Result': 'NG', 'Reason': f'{funcName} erro'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
-    def _getFPYData(self, OPER):
+    def _getFPYDataFromOracle(self, OPER):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpKPITYPE = self.jsonData["KPITYPE"]
+        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
+
+        applicatiionWhere = ""
+        if tmpAPPLICATION != "ALL":
+            applicatiionWhere = f"AND dmo.application = '{tmpAPPLICATION}' "        
+        try:
+            self.getConnection(self.__indentity)
+            passString = f"SELECT \
+                            dlo.company_code   AS company_code, \
+                            dlo.site_code      AS site, \
+                            dlo.factory_code   AS factory_id, \
+                            dmo.code           AS prod_nbr, \
+                            fpa.mfgdate        AS acct_date, \
+                            dmo.application    AS APPLICATION, \
+                            dop.name           AS OPER, \
+                            SUM(fpa.sumqty) AS PASSSUMQTY \
+                        FROM \
+                            INTMP_DB.fact_fpy_pass_sum fpa \
+                            LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = fpa.local_id \
+                            LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = fpa.model_id \
+                            LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = fpa.oper_id \
+                        WHERE \
+                            dlo.company_code = '{tmpCOMPANY_CODE}' \
+                            AND dlo.site_code = '{tmpSITE}' \
+                            AND dlo.factory_code = '{tmpFACTORY_ID}' \
+                            AND dop.name = '{OPER}' \
+                            AND fpa.mfgdate = '{tmpACCT_DATE}' \
+                            {applicatiionWhere} \
+                        GROUP BY \
+                            dlo.company_code, \
+                            dlo.site_code, \
+                            dlo.factory_code, \
+                            dmo.code, \
+                            fpa.mfgdate, \
+                            dmo.application, \
+                            dop.name \
+                        HAVING SUM(fpa.sumqty) > 0 "
+            description , data = self.SelectAndDescription(passString)            
+            pData = self._zipDescriptionAndData(description, data)  
+            deftString = f"SELECT \
+                            dlo.company_code   AS company_code, \
+                            dlo.site_code      AS site, \
+                            dlo.factory_code   AS factory_id, \
+                            dmo.code           AS prod_nbr, \
+                            fdf.mfgdate        AS acct_date, \
+                            dmo.application    AS APPLICATION, \
+                            dop.name           AS OPER, \
+                            SUM(fdf.sumqty) AS DEFTSUMQTY \
+                        FROM \
+                            INTMP_DB.fact_fpy_deft_sum fdf \
+                            LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = fdf.local_id \
+                            LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = fdf.model_id \
+                            LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = fdf.oper_id \
+                        WHERE \
+                            dlo.company_code =  '{tmpCOMPANY_CODE}' \
+                            AND dlo.site_code = '{tmpSITE}' \
+                            AND dlo.factory_code = '{tmpFACTORY_ID}' \
+                            AND dop.name ='{OPER}' \
+                            AND fdf.mfgdate = '{tmpACCT_DATE}' \
+                            {applicatiionWhere} \
+                        GROUP BY \
+                            dlo.company_code, \
+                            dlo.site_code, \
+                            dlo.factory_code, \
+                            dmo.code, \
+                            fdf.mfgdate, \
+                            dmo.application, \
+                            dop.name \
+                        HAVING SUM(fdf.sumqty) > 0 "
+            description , data = self.SelectAndDescription(deftString)            
+            dData = self._zipDescriptionAndData(description, data)  
+            self.closeConnection()
+
+            returnData = {
+                "pData": pData,
+                "dData": dData
+            }
+
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+    def _getFPYDataFromMongo(self, OPER):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
@@ -522,7 +620,7 @@ class INTKPI(BaseType):
                     "ACCT_DATE": "$ACCT_DATE",
                     "APPLICATION": "$APPLICATION"
                 },
-                "PassSUMQty": {
+                "PASSSUMQTY": {
                     "$sum": {"$toInt": "$PASS_QTY"}
                 }
             }
@@ -537,7 +635,7 @@ class INTKPI(BaseType):
                 "ACCT_DATE": "$_id.ACCT_DATE",
                 "APPLICATION": "$_id.APPLICATION",
                 "OPER": OPER,
-                "PassSUMQty": "$PassSUMQty"
+                "PASSSUMQTY": "$PASSSUMQTY"
             }
         }
         passSort = {
@@ -609,7 +707,7 @@ class INTKPI(BaseType):
                     "ACCT_DATE": "$ACCT_DATE",
                     "APPLICATION": "$APPLICATION"
                 },
-                "DeftSUMQty": {
+                "DEFTSUMQTY": {
                     "$sum": {"$toInt": "$DEFT_QTY"}
                 }
             }
@@ -624,7 +722,7 @@ class INTKPI(BaseType):
                 "ACCT_DATE": "$_id.ACCT_DATE",
                 "APPLICATION": "$_id.APPLICATION",
                 "OPER": OPER,
-                "DeftSUMQty": "$DeftSUMQty"
+                "DEFTSUMQTY": "$DEFTSUMQTY"
             }
         }
         deftSort = {
@@ -676,6 +774,37 @@ class INTKPI(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
+    def _getFPYData(self, OPER):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpKPITYPE = self.jsonData["KPITYPE"]
+        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
+        try:
+            data = {}
+            if tmpSITE == "TN":
+                data = self._getFPYDataFromMongo(OPER)
+            elif tmpSITE == "NGB":
+                data = self._getFPYDataFromOracle(OPER)
+            returnData = {
+                "pData": data["pData"],
+                "dData": data["dData"]
+            }
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
     def _groupPassDeftByPRODandOPER(self, dData, pData):
         deftData = []
         for d in dData:
@@ -699,21 +828,21 @@ class INTKPI(BaseType):
             else:
                 oData["APPLICATION"] = None
             oData["OPER"] = copy.deepcopy(p["OPER"])
-            oData["PassSUMQty"] = copy.deepcopy(p["PassSUMQty"])
+            oData["PASSSUMQTY"] = copy.deepcopy(p["PASSSUMQTY"])
             if d == []:
-                oData["DeftSUMQty"] = 0
+                oData["DEFTSUMQTY"] = 0
             else:
-                oData["DeftSUMQty"] = copy.deepcopy(d[0]["DeftSUMQty"])
-            if oData["DeftSUMQty"] == 0:
+                oData["DEFTSUMQTY"] = copy.deepcopy(d[0]["DEFTSUMQTY"])
+            if oData["DEFTSUMQTY"] == 0:
                 oData["DEFECT_RATE"] = 0
             else:
-                if(oData["PassSUMQty"] != 0):
+                if(oData["PASSSUMQTY"] != 0):
                     oData["DEFECT_RATE"] = round(
-                        oData["DeftSUMQty"] / oData["PassSUMQty"], 4)
+                        oData["DEFTSUMQTY"] / oData["PASSSUMQTY"], 4)
                 else:
                     oData["DEFECT_RATE"] = 1
             oData["FPY_RATE"] = round(1 - oData["DEFECT_RATE"], 4)
-            if oData["DeftSUMQty"] < oData["PassSUMQty"] and oData["FPY_RATE"] > 0:
+            if oData["DEFTSUMQTY"] < oData["PASSSUMQTY"] and oData["FPY_RATE"] > 0:
                 data.append(copy.deepcopy(oData))
             oData = {}
         return data
@@ -752,8 +881,8 @@ class INTKPI(BaseType):
                 PCBIFPY = 1
             else:
                 PCBIFPY = copy.deepcopy(d1[0]["FPY_RATE"])
-                PASSQTYSUM += d1[0]["PassSUMQty"]
-                DEFTQTYSUM += d1[0]["DeftSUMQty"]
+                PASSQTYSUM += d1[0]["PASSSUMQTY"]
+                DEFTQTYSUM += d1[0]["DEFTSUMQTY"]
                 PASSOPER += 1
 
             d2 = list(filter(lambda d: d["PROD_NBR"] == prod["PROD_NBR"], LAM))
@@ -761,8 +890,8 @@ class INTKPI(BaseType):
                 LAMFPY = 1
             else:
                 LAMFPY = copy.deepcopy(d2[0]["FPY_RATE"])
-                PASSQTYSUM += d2[0]["PassSUMQty"]
-                DEFTQTYSUM += d2[0]["DeftSUMQty"]
+                PASSQTYSUM += d2[0]["PASSSUMQTY"]
+                DEFTQTYSUM += d2[0]["DEFTSUMQTY"]
                 PASSOPER += 1
 
             d3 = list(filter(lambda d: d["PROD_NBR"]
@@ -771,8 +900,8 @@ class INTKPI(BaseType):
                 AAFCFPY = 1
             else:
                 AAFCFPY = copy.deepcopy(d3[0]["FPY_RATE"])
-                PASSQTYSUM += d3[0]["PassSUMQty"]
-                DEFTQTYSUM += d3[0]["DeftSUMQty"]
+                PASSQTYSUM += d3[0]["PASSSUMQTY"]
+                DEFTQTYSUM += d3[0]["DEFTSUMQTY"]
                 PASSOPER += 1
 
             d4 = list(filter(lambda d: d["PROD_NBR"]
@@ -781,8 +910,8 @@ class INTKPI(BaseType):
                 CKENFPY = 1
             else:
                 CKENFPY = copy.deepcopy(d4[0]["FPY_RATE"])
-                PASSQTYSUM += d4[0]["PassSUMQty"]
-                DEFTQTYSUM += d4[0]["DeftSUMQty"]
+                PASSQTYSUM += d4[0]["PASSSUMQTY"]
+                DEFTQTYSUM += d4[0]["DEFTSUMQTY"]
                 PASSOPER += 1
 
             d5 = list(filter(lambda d: d["PROD_NBR"]
@@ -791,8 +920,8 @@ class INTKPI(BaseType):
                 DKENFPY = 1
             else:
                 DKENFPY = copy.deepcopy(d5[0]["FPY_RATE"])
-                PASSQTYSUM += d5[0]["PassSUMQty"]
-                DEFTQTYSUM += d5[0]["DeftSUMQty"]
+                PASSQTYSUM += d5[0]["PASSSUMQTY"]
+                DEFTQTYSUM += d5[0]["DEFTSUMQTY"]
                 PASSOPER += 1
 
             FPY = round(PCBIFPY * LAMFPY * AAFCFPY * CKENFPY * DKENFPY, 4)
@@ -815,8 +944,9 @@ class INTKPI(BaseType):
         return PRODData
 
     def _calFPYData(self, PRODFPYBaseData):
+        tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
-        getLimitData = self.operSetData[tmpFACTORY_ID]["FPY"]["limit"]
+        getLimitData = self.operSetData[tmpFACTORY_ID]["FPY"]["limit"] if tmpSITE == "TN" else {}
 
         GREEN_VALUE = 0
         YELLOW_VALUE = 0
@@ -854,7 +984,8 @@ class INTKPI(BaseType):
     def _calPRODFPYListData(self, PRODFPYBaseData):
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         tmpAPPLICATION = self.jsonData["APPLICATION"]
-        getLimitData = self.operSetData[tmpFACTORY_ID]["FPY"]["limit"]
+        tmpSITE = self.jsonData["SITE"]
+        getLimitData = self.operSetData[tmpFACTORY_ID]["FPY"]["limit"] if tmpSITE == "TN" else {}
 
         COLOR = "#118AB2"
         SYMBOL = "undefined"
@@ -956,7 +1087,8 @@ class INTKPI(BaseType):
     def _calPRODFPYData(self, PRODFPYBaseData):
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         tmpAPPLICATION = self.jsonData["APPLICATION"]
-        getLimitData = self.operSetData[tmpFACTORY_ID]["FPY"]["limit"]
+        tmpSITE = self.jsonData["SITE"]
+        getLimitData = self.operSetData[tmpFACTORY_ID]["FPY"]["limit"] if tmpSITE == "TN" else {}
 
         COLOR = "#118AB2"
         SYMBOL = "undefined"
@@ -1747,3 +1879,25 @@ class INTKPI(BaseType):
         }
 
         return returnData
+
+    def _zipDescriptionAndData(self, description, data):
+        """ 取得 description和data壓縮後資料
+            description :row column description 
+            data : row data 
+            回傳 [{key:value}]
+        """
+        try:
+            col_names = [row[0] for row in description]
+            dictdatan = [dict(zip(col_names, da)) for da in data]
+            return dictdatan
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError("File:[{0}] , Line:{1} , in {2} : [{3}] {4}".format(
+                fileName, lineNum, funcName, error_class, detail))
+            return None
