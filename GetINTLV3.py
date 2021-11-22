@@ -3446,6 +3446,7 @@ class INTLV3(BaseType):
                 data.append(copy.deepcopy(oData))
             oData = {}
         return data
+        
 
     def _groupFPYLINEData(self, PROD_NBR, PCBI, LAM, AAFC, CKEN, DKEN, DATARANGE, DATARANGEID):
         PRODData = []
