@@ -390,7 +390,7 @@ class INTLV3(BaseType):
                     self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n2m_DATA["dData"], n2m_DATA["pData"]), tmpOPER, dataRange["n2m"], 1),
                     self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n1s_DATA["dData"], n1s_DATA["pData"]), tmpOPER, dataRange["n1s"], 0))
 
-                getLimitData = self.operSetData[tmpFACTORY_ID]["FPY"]["limit"]
+                getLimitData = self.operSetData[tmpFACTORY_ID]["FPY"]["limit"] if tmpSITE == "TN" else {}
                 xLimit = None
                 yLimit = None
                 if self.__tmpAPPLICATION in getLimitData.keys():
@@ -458,7 +458,7 @@ class INTLV3(BaseType):
 
                 FPYLINE = self._getFPYLINEData(tmpPROD_NBR, dataRange)
 
-                getLimitData = self.operSetData[tmpFACTORY_ID]["FPY"]["limit"]
+                getLimitData = self.operSetData[tmpFACTORY_ID]["FPY"]["limit"] if tmpSITE == "TN" else {}
                 xLimit = None
                 yLimit = None
                 if self.__tmpAPPLICATION in getLimitData.keys():
@@ -840,7 +840,7 @@ class INTLV3(BaseType):
                                 dmo.code           AS prod_nbr, \
                                 dop.name           AS OPER, \
                                 '{DATARANGENAME}' AS DATARANGE, \
-                                '{TYPE}' AS XVALUE, \
+                                {TYPE} AS XVALUE, \
                                 SUM(fpa.sumqty) AS PASSSUMQTY \
                             FROM \
                                 INTMP_DB.fact_fpy_pass_sum fpa \
@@ -866,7 +866,7 @@ class INTLV3(BaseType):
                                 dmo.code           AS prod_nbr, \
                                 dop.name           AS OPER, \
                                 '{DATARANGENAME}' AS DATARANGE, \
-                                '{TYPE}' AS XVALUE, \
+                                {TYPE} AS XVALUE, \
                                 SUM(fdf.sumqty) AS DEFTSUMQTY \
                             FROM \
                                 INTMP_DB.fact_fpy_deft_sum fdf \
@@ -1116,7 +1116,6 @@ class INTLV3(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
-
     def _groupINTLV3(self, n1d,n2d,n3d,n4d,n5d,n6d,n1w,n2w,n3w,n1m,n2m,n1s): 
             magerData = [] 
             for d in n1s:   
@@ -1364,6 +1363,31 @@ class INTLV3(BaseType):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        try:
+            data = {}
+            if tmpSITE == "TN":
+                data = self._getFPYLV2LINEDataFromMongo(OPER, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE)
+            else:
+                data = self._getFPYLV2LINEDataFromOracle(OPER, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE)
+                
+            return data
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+    def _getFPYLV2LINEDataFromMongo(self, OPER, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
 
         getFabData = self.operSetData[tmpFACTORY_ID]
         numeratorData = getFabData["FPY"]["numerator"][OPER]        
@@ -1551,6 +1575,119 @@ class INTLV3(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
+    def _getFPYLV2LINEDataFromOracle(self, OPER, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpKPITYPE = self.jsonData["KPITYPE"]
+        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
+
+        _ACCT_DATE_ARRAY_LIST = ""
+        for x in ACCT_DATE_ARRAY:
+            _ACCT_DATE_ARRAY_LIST = _ACCT_DATE_ARRAY_LIST + f"'{x}',"
+        if _ACCT_DATE_ARRAY_LIST != "":
+            _ACCT_DATE_ARRAY_LIST = _ACCT_DATE_ARRAY_LIST[:-1]
+
+        applicatiionWhere = ""
+        if tmpAPPLICATION != "ALL":
+            applicatiionWhere = f"AND dmo.application = '{tmpAPPLICATION}' "        
+        try:
+            self.getConnection(self.__indentity)
+            passString = f"SELECT \
+                            dlo.company_code   AS company_code, \
+                            dlo.site_code      AS site, \
+                            dlo.factory_code   AS factory_id, \
+                            dmo.code           AS prod_nbr, \
+                            dmo.application    AS APPLICATION, \
+                            dop.name           AS OPER, \
+                            '{DATARANGENAME}' AS DATARANGE, \
+                            {TYPE} AS XVALUE, \
+                            SUM(fpa.sumqty) AS PASSSUMQTY \
+                        FROM \
+                            INTMP_DB.fact_fpy_pass_sum fpa \
+                            LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = fpa.local_id \
+                            LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = fpa.model_id \
+                            LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = fpa.oper_id \
+                        WHERE \
+                            dlo.company_code = '{tmpCOMPANY_CODE}' \
+                            AND dlo.site_code = '{tmpSITE}' \
+                            AND dlo.factory_code = '{tmpFACTORY_ID}' \
+                            AND dop.name = '{OPER}' \
+                            AND fpa.mfgdate in ({_ACCT_DATE_ARRAY_LIST}) \
+                            AND dmo.code = '{PROD_NBR}' \
+                            {applicatiionWhere} \
+                        GROUP BY \
+                            dlo.company_code, \
+                            dlo.site_code, \
+                            dlo.factory_code, \
+                            dmo.code, \
+                            fpa.mfgdate, \
+                            dmo.application, \
+                            dop.name \
+                        HAVING SUM(fpa.sumqty) > 0 "
+            description , data = self.SelectAndDescription(passString)            
+            pData = self._zipDescriptionAndData(description, data)  
+            deftString = f"SELECT \
+                            dlo.company_code   AS company_code, \
+                            dlo.site_code      AS site, \
+                            dlo.factory_code   AS factory_id, \
+                            dmo.code           AS prod_nbr, \
+                            dmo.application    AS APPLICATION, \
+                            dop.name           AS OPER, \
+                            '{DATARANGENAME}' AS DATARANGE, \
+                            {TYPE} AS XVALUE, \
+                            ddf.DEFTCODE as DFCT_CODE, \
+                            ddf.DEFTCODE_DESC as ERRC_DESCR, \
+                            SUM(fdf.sumqty) AS DEFT_QTY \
+                        FROM \
+                            INTMP_DB.fact_fpy_deft_sum fdf \
+                            LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = fdf.local_id \
+                            LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = fdf.model_id \
+                            LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = fdf.oper_id \
+                            LEFT JOIN INTMP_DB.dime_deftcode ddf ON ddf.DEFTCODE= fdf.DEFTCODE \
+                        WHERE \
+                            dlo.company_code =  '{tmpCOMPANY_CODE}' \
+                            AND dlo.site_code = '{tmpSITE}' \
+                            AND dlo.factory_code = '{tmpFACTORY_ID}' \
+                            AND dop.name ='{OPER}' \
+                            AND fdf.mfgdate in ({_ACCT_DATE_ARRAY_LIST}) \
+                            AND dmo.code = '{PROD_NBR}' \
+                            {applicatiionWhere} \
+                        GROUP BY \
+                            dlo.company_code, \
+                            dlo.site_code, \
+                            dlo.factory_code, \
+                            dmo.code, \
+                            fdf.mfgdate, \
+                            dmo.application, \
+                            dop.name, \
+                            ddf.DEFTCODE, \
+                            ddf.DEFTCODE_DESC \
+                        HAVING SUM(fdf.sumqty) > 0 "
+            description , data = self.SelectAndDescription(deftString)            
+            dData = self._zipDescriptionAndData(description, data)  
+            self.closeConnection()
+
+            returnData = {
+                "pData": pData,
+                "dData": dData
+            }
+
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
     def _groupPassDeftByPRODandOPER(self, dData, pData):
         deftData = []
         for d in dData:
@@ -1701,6 +1838,31 @@ class INTLV3(BaseType):
             return magerData
 
     def _getFPYLV2LINEDataALL(self, OPER, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        try:
+            data = {}
+            if tmpSITE == "TN":
+                data = self._getFPYLV2LINEDataALLFromMongo(OPER, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE)
+            else:
+                data = self._getFPYLV2LINEDataALLFromOracle(OPER, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE)
+             
+            return data
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+    def _getFPYLV2LINEDataALLFromMongo(self, OPER, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
@@ -1974,6 +2136,139 @@ class INTLV3(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
+    def pass_FPYLV2LINEDataALL_SQL(self, OPER, PROD_NBR, DATARANGENAME, _ACCT_DATE_ARRAY_LIST, TYPE):        
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
+
+        applicatiionWhere = ""
+        if tmpAPPLICATION != "ALL":
+            applicatiionWhere = f"AND dmo.application = '{tmpAPPLICATION}' "        
+        passString = f"SELECT \
+                            dlo.company_code   AS company_code, \
+                            dlo.site_code      AS site, \
+                            dlo.factory_code   AS factory_id, \
+                            dmo.code           AS prod_nbr, \
+                            dmo.application    AS APPLICATION, \
+                            dop.name           AS OPER, \
+                            '{DATARANGENAME}' AS DATARANGE, \
+                            {TYPE} AS XVALUE, \
+                            SUM(fpa.sumqty) AS PASSSUMQTY \
+                        FROM \
+                            INTMP_DB.fact_fpy_pass_sum fpa \
+                            LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = fpa.local_id \
+                            LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = fpa.model_id \
+                            LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = fpa.oper_id \
+                        WHERE \
+                            dlo.company_code = '{tmpCOMPANY_CODE}' \
+                            AND dlo.site_code = '{tmpSITE}' \
+                            AND dlo.factory_code = '{tmpFACTORY_ID}' \
+                            AND dop.name = '{OPER}' \
+                            AND fpa.mfgdate in ({_ACCT_DATE_ARRAY_LIST}) \
+                            AND dmo.code = '{PROD_NBR}' \
+                            {applicatiionWhere} \
+                        GROUP BY \
+                            dlo.company_code, \
+                            dlo.site_code, \
+                            dlo.factory_code, \
+                            dmo.code, \
+                            fpa.mfgdate, \
+                            dmo.application, \
+                            dop.name \
+                        HAVING SUM(fpa.sumqty) > 0 "
+        self.getConnection(self.__indentity)
+        description , data = self.SelectAndDescription(passString)
+        pData = self._zipDescriptionAndData(description, data)  
+        self.closeConnection()
+        return pData
+
+    def _getFPYLV2LINEDataALLFromOracle(self, OPER, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpKPITYPE = self.jsonData["KPITYPE"]
+        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
+
+        _ACCT_DATE_ARRAY_LIST = ""
+        for x in ACCT_DATE_ARRAY:
+            _ACCT_DATE_ARRAY_LIST = _ACCT_DATE_ARRAY_LIST + f"'{x}',"
+        if _ACCT_DATE_ARRAY_LIST != "":
+            _ACCT_DATE_ARRAY_LIST = _ACCT_DATE_ARRAY_LIST[:-1]
+
+        applicatiionWhere = ""
+        if tmpAPPLICATION != "ALL":
+            applicatiionWhere = f"AND dmo.application = '{tmpAPPLICATION}' "        
+        try:
+            self.getConnection(self.__indentity)
+            passArray = {
+                    "PCBI": self.pass_FPYLV2LINEDataALL_SQL("PCBI", PROD_NBR, DATARANGENAME, _ACCT_DATE_ARRAY_LIST, TYPE),
+                    "LAM": self.pass_FPYLV2LINEDataALL_SQL("LAM", PROD_NBR, DATARANGENAME, _ACCT_DATE_ARRAY_LIST, TYPE),
+                    "AAFC":  self.pass_FPYLV2LINEDataALL_SQL("AAFC", PROD_NBR, DATARANGENAME, _ACCT_DATE_ARRAY_LIST, TYPE),
+                    "CKEN": self.pass_FPYLV2LINEDataALL_SQL("CKEN", PROD_NBR, DATARANGENAME, _ACCT_DATE_ARRAY_LIST, TYPE),
+                    "DKEN": self.pass_FPYLV2LINEDataALL_SQL("DKEN", PROD_NBR, DATARANGENAME, _ACCT_DATE_ARRAY_LIST, TYPE)
+                }  
+            deftString = f"SELECT \
+                            dlo.company_code   AS company_code, \
+                            dlo.site_code      AS site, \
+                            dlo.factory_code   AS factory_id, \
+                            dmo.code           AS prod_nbr, \
+                            dmo.application    AS APPLICATION, \
+                            'ALL'           AS OPER, \
+                            '{DATARANGENAME}' AS DATARANGE, \
+                            {TYPE} AS XVALUE, \
+                            ddf.DEFTCODE as DFCT_CODE, \
+                            ddf.DEFTCODE_DESC as ERRC_DESCR, \
+                            SUM(fdf.sumqty) AS DEFT_QTY \
+                        FROM \
+                            INTMP_DB.fact_fpy_deft_sum fdf \
+                            LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = fdf.local_id \
+                            LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = fdf.model_id \
+                            LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = fdf.oper_id \
+                            LEFT JOIN INTMP_DB.dime_deftcode ddf ON ddf.DEFTCODE= fdf.DEFTCODE \
+                        WHERE \
+                            dlo.company_code =  '{tmpCOMPANY_CODE}' \
+                            AND dlo.site_code = '{tmpSITE}' \
+                            AND dlo.factory_code = '{tmpFACTORY_ID}' \
+                            AND dop.name ='{OPER}' \
+                            AND fdf.mfgdate in ({_ACCT_DATE_ARRAY_LIST}) \
+                            AND dmo.code = '{PROD_NBR}' \
+                            {applicatiionWhere} \
+                        GROUP BY \
+                            dlo.company_code, \
+                            dlo.site_code, \
+                            dlo.factory_code, \
+                            dmo.code, \
+                            fdf.mfgdate, \
+                            dmo.application, \
+                            dop.name, \
+                            ddf.DEFTCODE, \
+                            ddf.DEFTCODE_DESC \
+                        HAVING SUM(fdf.sumqty) > 0 "
+            self.getConnection(self.__indentity)
+            description , data = self.SelectAndDescription(deftString)            
+            dData = self._zipDescriptionAndData(description, data)  
+            self.closeConnection()
+
+            returnData = {
+                "pData": passArray,
+                "dData": dData
+            }
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
     def _groupPassDeftByPRODandOPERALL(self, dData, pData):        
         tempPassData = []
         for p in pData["PCBI"]:
@@ -2038,7 +2333,6 @@ class INTLV3(BaseType):
                     data.append(copy.deepcopy(oData))
                 oData = {}
         return data
-
 
     def _getMSHIPLV2LINE(self,getFabData, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
@@ -2779,6 +3073,30 @@ class INTLV3(BaseType):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        try:
+            data = {}
+            if tmpSITE == "TN":
+                data = self._getFPYLINEDatabyOPERFromMongo(OPER, PROD_NBR, ACCT_DATE_ARRAY)
+            else:
+                data = self._getFPYLINEDatabyOPERFromOracle(OPER, PROD_NBR, ACCT_DATE_ARRAY)             
+            return data
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+    def _getFPYLINEDatabyOPERFromMongo(self, OPER, PROD_NBR, ACCT_DATE_ARRAY):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         tmpAPPLICATION = self.jsonData["APPLICATION"]
 
         getFabData = self.operSetData[tmpFACTORY_ID]
@@ -2987,6 +3305,108 @@ class INTLV3(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
     
+    def _getFPYLINEDatabyOPERFromOracle(self, OPER, PROD_NBR, ACCT_DATE_ARRAY):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
+
+        _ACCT_DATE_ARRAY_LIST = ""
+        for x in ACCT_DATE_ARRAY:
+            _ACCT_DATE_ARRAY_LIST = _ACCT_DATE_ARRAY_LIST + f"'{x}',"
+        if _ACCT_DATE_ARRAY_LIST != "":
+            _ACCT_DATE_ARRAY_LIST = _ACCT_DATE_ARRAY_LIST[:-1]
+
+        applicatiionWhere = ""
+        if tmpAPPLICATION != "ALL":
+            applicatiionWhere = f"AND dmo.application = '{tmpAPPLICATION}' "        
+        try:
+            self.getConnection(self.__indentity)
+            passString = f"SELECT \
+                            dlo.company_code   AS company_code, \
+                            dlo.site_code      AS site, \
+                            dlo.factory_code   AS factory_id, \
+                            dmo.code           AS prod_nbr, \
+                            dmo.application    AS APPLICATION, \
+                            dop.name           AS OPER, \
+                            SUM(fpa.sumqty) AS PASSSUMQTY \
+                        FROM \
+                            INTMP_DB.fact_fpy_pass_sum fpa \
+                            LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = fpa.local_id \
+                            LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = fpa.model_id \
+                            LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = fpa.oper_id \
+                        WHERE \
+                            dlo.company_code = '{tmpCOMPANY_CODE}' \
+                            AND dlo.site_code = '{tmpSITE}' \
+                            AND dlo.factory_code = '{tmpFACTORY_ID}' \
+                            AND dop.name = '{OPER}' \
+                            AND fpa.mfgdate in ({_ACCT_DATE_ARRAY_LIST}) \
+                            AND dmo.code = '{PROD_NBR}' \
+                            {applicatiionWhere} \
+                        GROUP BY \
+                            dlo.company_code, \
+                            dlo.site_code, \
+                            dlo.factory_code, \
+                            dmo.code, \
+                            fpa.mfgdate, \
+                            dmo.application, \
+                            dop.name \
+                        HAVING SUM(fpa.sumqty) > 0 "
+            description , data = self.SelectAndDescription(passString)            
+            pData = self._zipDescriptionAndData(description, data)
+            deftString = f"SELECT \
+                            dlo.company_code   AS company_code, \
+                            dlo.site_code      AS site, \
+                            dlo.factory_code   AS factory_id, \
+                            dmo.code           AS prod_nbr, \
+                            dmo.application    AS APPLICATION, \
+                            dop.name           AS OPER, \
+                            SUM(fdf.sumqty) AS DEFTSUMQTY \
+                        FROM \
+                            INTMP_DB.fact_fpy_deft_sum fdf \
+                            LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = fdf.local_id \
+                            LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = fdf.model_id \
+                            LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = fdf.oper_id \
+                        WHERE \
+                            dlo.company_code =  '{tmpCOMPANY_CODE}' \
+                            AND dlo.site_code = '{tmpSITE}' \
+                            AND dlo.factory_code = '{tmpFACTORY_ID}' \
+                            AND dop.name ='{OPER}' \
+                            AND fdf.mfgdate in ({_ACCT_DATE_ARRAY_LIST}) \
+                            AND dmo.code = '{PROD_NBR}' \
+                            {applicatiionWhere} \
+                        GROUP BY \
+                            dlo.company_code, \
+                            dlo.site_code, \
+                            dlo.factory_code, \
+                            dmo.code, \
+                            fdf.mfgdate, \
+                            dmo.application, \
+                            dop.name \
+                        HAVING SUM(fdf.sumqty) > 0 "
+            description , data = self.SelectAndDescription(deftString)            
+            dData = self._zipDescriptionAndData(description, data)  
+            self.closeConnection()
+
+            returnData = {
+                "pData": pData,
+                "dData": dData
+            }
+
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
     def _groupFPYLINEDatabyOPER(self, dData, pData):
         deftData = []
         for d in dData:
