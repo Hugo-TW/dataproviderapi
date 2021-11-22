@@ -2231,7 +2231,6 @@ class INTLV3(BaseType):
                             dlo.company_code =  '{tmpCOMPANY_CODE}' \
                             AND dlo.site_code = '{tmpSITE}' \
                             AND dlo.factory_code = '{tmpFACTORY_ID}' \
-                            AND dop.name ='{OPER}' \
                             AND fdf.mfgdate in ({_ACCT_DATE_ARRAY_LIST}) \
                             AND dmo.code = '{PROD_NBR}' \
                             {applicatiionWhere} \
