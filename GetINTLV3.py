@@ -358,6 +358,39 @@ class INTLV3(BaseType):
 
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
+            elif tmpKPITYPE == "EFALV2LINE":
+                expirTimeKey = tmpFACTORY_ID + '_REASON'
+
+                dataRange =  self._dataRangeMin(tmpACCT_DATE)
+
+                BONDINGData = self._getEFALV2DATA("BONDING", tmpPROD_NBR, dataRange)
+                LAMData = self._getEFALV2DATA("LAM", tmpPROD_NBR, dataRange)
+                AAFCData = self._getEFALV2DATA("AAFC", tmpPROD_NBR, dataRange)
+                CKENData = self._getEFALV2DATA("CKEN", tmpPROD_NBR, dataRange)
+
+                magerData =  self._groupEFALV2(BONDINGData,LAMData,AAFCData,CKENData) 
+                returnData = {                    
+                    "KPITYPE": tmpKPITYPE,
+                    "COMPANY_CODE": tmpCOMPANY_CODE,
+                    "SITE": tmpSITE,
+                    "FACTORY_ID": tmpFACTORY_ID,
+                    "APPLICATION": tmpAPPLICATION,
+                    "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
+                    "PROD_NBR": tmpPROD_NBR,
+                    "DATASERIES": magerData
+                }
+                
+                self.getRedisConnection()
+                if self.searchRedisKeys(redisKey):     
+                    self.setRedisData(redisKey, json.dumps(
+                        returnData, sort_keys=True, indent=2), self.getKeyExpirTime(expirTimeKey))
+                else:
+                    self.setRedisData(redisKey, json.dumps(
+                        returnData, sort_keys=True, indent=2), 60)                
+
+                return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+
+
             elif tmpKPITYPE == "FPYLV2LINE":                
                 expirTimeKey = tmpFACTORY_ID + '_PASS'
 
@@ -3443,8 +3476,7 @@ class INTLV3(BaseType):
                 data.append(copy.deepcopy(oData))
             oData = {}
         return data
-        
-
+    
     def _groupFPYLINEData(self, PROD_NBR, PCBI, LAM, AAFC, CKEN, DKEN, DATARANGE, DATARANGEID):
         PRODData = []
         PASSQTYSUM = 0
@@ -4043,5 +4075,210 @@ class INTLV3(BaseType):
             self.writeError("File:[{0}] , Line:{1} , in {2} : [{3}] {4}".format(
                 fileName, lineNum, funcName, error_class, detail))
             return None
+    
+    def _getEFALV2DATA(self, OPER, tmpPROD_NBR, dataRange):   
+        try:
+            n1d_DATA = self._getEFALV2DATAbyDateRange(OPER, tmpPROD_NBR, dataRange["n1d"], dataRange["n1d_array"], 11)            
+            n2d_DATA = self._getEFALV2DATAbyDateRange(OPER, tmpPROD_NBR, dataRange["n2d"], dataRange["n2d_array"], 10)
+            n3d_DATA = self._getEFALV2DATAbyDateRange(OPER, tmpPROD_NBR, dataRange["n3d"], dataRange["n3d_array"], 9)
+            n4d_DATA = self._getEFALV2DATAbyDateRange(OPER, tmpPROD_NBR, dataRange["n4d"], dataRange["n4d_array"], 8)
+            n5d_DATA = self._getEFALV2DATAbyDateRange(OPER, tmpPROD_NBR, dataRange["n5d"], dataRange["n5d_array"], 7)
+            n6d_DATA = self._getEFALV2DATAbyDateRange(OPER, tmpPROD_NBR, dataRange["n6d"], dataRange["n6d_array"], 6)
+            n1w_DATA = self._getEFALV2DATAbyDateRange(OPER, tmpPROD_NBR, dataRange["n1w"], dataRange["n1w_array"], 5)
+            n2w_DATA = self._getEFALV2DATAbyDateRange(OPER, tmpPROD_NBR, dataRange["n2w"], dataRange["n2w_array"], 4)
+            n3w_DATA = self._getEFALV2DATAbyDateRange(OPER, tmpPROD_NBR, dataRange["n3w"], dataRange["n3w_array"], 3)
+            n1m_DATA = self._getEFALV2DATAbyDateRange(OPER, tmpPROD_NBR, dataRange["n1m"], dataRange["n1m_array"], 2)
+            n2m_DATA = self._getEFALV2DATAbyDateRange(OPER, tmpPROD_NBR, dataRange["n2m"], dataRange["n2m_array"], 1)
+            n1s_DATA = self._getEFALV2DATAbyDateRange(OPER, tmpPROD_NBR, dataRange["n1s"], dataRange["n1s_array"], 0)
 
+            returnData = self._grouptFPYLV2LINE(n1d_DATA,n2d_DATA,n3d_DATA,n4d_DATA,n5d_DATA,
+                n6d_DATA,n1w_DATA,n2w_DATA,n3w_DATA,n1m_DATA,n2m_DATA,n1s_DATA)
+            
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+    def _getEFALV2DATAbyDateRange(self, OPER, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+             
+        OPERDATA = {
+            "BONDING":{"OPER": [1300,1301]},
+            "LAM":{"OPER": [1340,1370]},
+            "AAFC":{"OPER": [1419,1420]},
+            "CKEN":{"OPER": [1600]}        
+            } 
+        #"TPI":{"OPER": [1510]},
+        #"OTPC":{"OPER": [1590]}
+        OPERARRAY = OPERDATA[OPER]["OPER"]
+        
+        EFALV2_Aggregate = [
+            {
+                "$match": {
+                    "COMPANY_CODE": tmpCOMPANY_CODE,
+                    "SITE": tmpSITE,
+                    "FACTORY_ID": tmpFACTORY_ID,  
+                    "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
+                    "LCM_OWNER": {"$in": ["LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                    "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERARRAY]}
+                }
+            },
+            {
+                "$group": {
+                    "_id": {
+                        "FACTORY_ID" : "$FACTORY_ID"
+                    },
+                    "DEFTQTY": {
+                        "$sum": {"$toInt": "$QTY"}
+                    }
+                }
+            },
+            {
+                "$addFields": {
+                    "FACTORY_ID" : "$_id.FACTORY_ID",
+                    "DEFTQTY": "$DEFTQTY",
+                    "PASSQTY": 0
+                }
+            },
+            {
+                "$project": {
+                    "_id": 0
+                }
+            },
+            {
+                "$unionWith": {
+                    "coll": "passHisAndCurrent",
+                    "pipeline": [
+                        {
+                            "$match": {
+                                "COMPANY_CODE": tmpCOMPANY_CODE,
+                                "SITE": tmpSITE,
+                                "FACTORY_ID": tmpFACTORY_ID,                                
+                                "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},    
+                                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERARRAY]}
+                            }
+                        },
+                        {
+                            "$group": {
+                                "_id": {
+                                    "FACTORY_ID" : "$FACTORY_ID"
+                                },
+                                "PASSQTY": {
+                                    "$sum": {
+                                        "$toInt": "$QTY"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "$addFields": {
+                                "FACTORY_ID" : "$_id.FACTORY_ID",
+                                "PASSQTY": "$PASSQTY",
+                                "DEFTQTY": 0
+                            }
+                        },
+                        {
+                            "$project": {
+                                "_id": 0
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "$group": {
+                    "_id": {
+                        "FACTORY_ID" : "$FACTORY_ID"
+                    },
+                    "DEFTQTY": {
+                        "$sum": "$DEFTQTY"
+                    },
+                    "PASSQTY": {
+                        "$sum": "$PASSQTY"
+                    }
+                }
+            },
+            {
+                "$addFields": {
+                    "OPER" : OPER,
+                    "DATARANGE": DATARANGENAME,
+                    "XVALUE": TYPE,
+                    "RANK": 0,
+                    "DEFECT_YIELD": {
+                        "$cond": [
+                            {
+                                "$eq": [
+                                    "$PASSQTY",
+                                    0
+                                ]
+                            },
+                            0,
+                            {
+                                "$divide": [
+                                    "$DEFTQTY",
+                                    "$PASSQTY"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "$project": {
+                    "_id": 0
+                }
+            }
+        ]
+
+        if PROD_NBR != '':
+            EFALV2_Aggregate[0]["$match"]["PROD_NBR"] = PROD_NBR
+            EFALV2_Aggregate[4]["$unionWith"]["pipeline"][0]["$match"]["PROD_NBR"] = PROD_NBR
+               
+        try:
+            self.getMongoConnection()
+            self.setMongoDb("IAMP")
+            self.setMongoCollection("deftHisAndCurrent")
+            returnData = self.aggregate(EFALV2_Aggregate)
+            self.closeMongoConncetion()
+            
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+    def _groupEFALV2(self, data1,data2,data3,data4): 
+        magerData = [] 
+        for d in data1:   
+            d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0    
+            magerData.append(d)
+        for d in data2:
+            d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0       
+            magerData.append(d)
+        for d in data3:   
+            d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0    
+            magerData.append(d)              
+        for d in data4:   
+            d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0    
+            magerData.append(d)
+        return magerData
 
