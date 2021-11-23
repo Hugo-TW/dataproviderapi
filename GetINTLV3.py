@@ -4112,6 +4112,7 @@ class INTLV3(BaseType):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
              
         OPERDATA = {
             "BONDING":{"OPER": [1300,1301]},
@@ -4249,6 +4250,10 @@ class INTLV3(BaseType):
         if PROD_NBR != '':
             EFALV2_Aggregate[0]["$match"]["PROD_NBR"] = PROD_NBR
             EFALV2_Aggregate[4]["$unionWith"]["pipeline"][0]["$match"]["PROD_NBR"] = PROD_NBR
+
+        if tmpAPPLICATION != "ALL":
+            EFALV2_Aggregate[0]["$match"]["APPLICATION"] = tmpAPPLICATION
+            EFALV2_Aggregate[4]["$unionWith"]["pipeline"][0]["$match"]["APPLICATION"] = tmpAPPLICATION
                
         try:
             self.getMongoConnection()
