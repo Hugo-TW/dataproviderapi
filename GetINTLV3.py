@@ -2225,7 +2225,6 @@ class INTLV3(BaseType):
                             INTMP_DB.fact_fpy_deft_sum fdf \
                             LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = fdf.local_id \
                             LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = fdf.model_id \
-                            LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = fdf.oper_id \
                             LEFT JOIN INTMP_DB.dime_deftcode ddf ON ddf.DEFTCODE= fdf.DEFTCODE \
                         WHERE \
                             dlo.company_code =  '{tmpCOMPANY_CODE}' \
@@ -2241,7 +2240,6 @@ class INTLV3(BaseType):
                             dmo.code, \
                             fdf.mfgdate, \
                             dmo.application, \
-                            dop.name, \
                             ddf.DEFTCODE, \
                             ddf.DEFTCODE_DESC \
                         HAVING SUM(fdf.sumqty) > 0 "

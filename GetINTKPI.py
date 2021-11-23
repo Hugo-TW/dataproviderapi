@@ -1589,7 +1589,7 @@ class INTKPI(BaseType):
 
         return returnData
 
-    def _getEFAData(self, OPERDATA):
+    def _getEFADatabyDeft(self, OPERDATA):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
@@ -1775,8 +1775,8 @@ class INTKPI(BaseType):
             self.writeError(
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
-
-    def _groupEFAData(self, dData, pData):
+    
+    def _groupEFADatabyDeft(self, dData, pData):
         deftData = []
         for d in dData:
             deftData.append(d)
@@ -1828,9 +1828,360 @@ class INTKPI(BaseType):
                     oData = {}
         return data
 
+    def _getEFAData(self, OPERDATA):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
+
+        OPERList = []
+        for x in OPERDATA:
+            OPERList.append(f'{x.get("OPER")}')
+
+        passAggregate = []
+        deftAggregate = []
+
+        # pass
+        passMatch1 = {
+            "$match": {
+                "COMPANY_CODE": tmpCOMPANY_CODE,
+                "SITE": tmpSITE,
+                "FACTORY_ID": tmpFACTORY_ID,
+                "ACCT_DATE": tmpACCT_DATE,
+                "MAIN_WC": {"$in": OPERList}
+            }
+        }
+        passGroup1 = {
+            "$group": {
+                "_id": {
+                    "COMPANY_CODE": "$COMPANY_CODE",
+                    "SITE": "$SITE",
+                    "FACTORY_ID": "$FACTORY_ID",
+                    "PROD_NBR": "$PROD_NBR",
+                    "ACCT_DATE": "$ACCT_DATE",
+                    "APPLICATION": "$APPLICATION",
+                    "MAIN_WC": "$MAIN_WC"
+                },
+                "PASS_QTY": {
+                    "$sum": {"$toInt": "$QTY"}
+                }
+            }
+        }
+        passProject1 = {
+            "$project": {
+                "_id": 0,
+                "COMPANY_CODE": "$_id.COMPANY_CODE",
+                "SITE": "$_id.SITE",
+                "FACTORY_ID": "$_id.FACTORY_ID",
+                "PROD_NBR": "$_id.PROD_NBR",
+                "ACCT_DATE": "$_id.ACCT_DATE",
+                "APPLICATION": "$_id.APPLICATION",
+                "MAIN_WC": "$_id.MAIN_WC",
+                "PASS_QTY": "$PASS_QTY"
+            }
+        }
+        passSort = {
+            "$sort": {
+                "COMPANY_CODE": 1,
+                "SITE": 1,
+                "FACTORY_ID": 1,
+                "PROD_NBR": 1,
+                "ACCT_DATE": 1,
+                "MAIN_WC": 1,
+                "APPLICATION": 1
+            }
+        }
+
+        # deft
+        deftMatch1 = {
+            "$match": {
+                "COMPANY_CODE": tmpCOMPANY_CODE,
+                "SITE": tmpSITE,
+                "FACTORY_ID": tmpFACTORY_ID,
+                "ACCT_DATE": tmpACCT_DATE,
+                "MAIN_WC": {"$in": OPERList}
+            }
+        }
+        deftlookup1 = {
+            "$lookup": {
+                "from": "deftCodeView",
+                "as": "deftCodeList",
+                "let": {
+                        "dfctCode": "$DFCT_CODE"
+                },
+                "pipeline": [
+                    {
+                        "$match": {
+                            "$expr": {
+                                "$and": [
+                                    {
+                                        "$eq": [
+                                            "$$dfctCode",
+                                            "$DEFECT_CODE"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "$project": {
+                            "DEFECT_CODE": 1
+                        }
+                    }
+                ]
+            }
+        }
+        deftunwind1 = {
+            "$unwind": "$deftCodeList"
+        }
+
+        deftGroup1 = {
+            "$group": {
+                "_id": {
+                    "COMPANY_CODE": "$COMPANY_CODE",
+                    "SITE": "$SITE",
+                    "FACTORY_ID": "$FACTORY_ID",
+                    "PROD_NBR": "$PROD_NBR",
+                    "ACCT_DATE": "$ACCT_DATE",
+                    "APPLICATION": "$APPLICATION",
+                    "MAIN_WC": "$MAIN_WC"
+                },
+                "DEFT_QTY": {
+                    "$sum": {"$toInt": "$QTY"}
+                }
+            }
+        }
+        deftProject1 = {
+            "$project": {
+                "_id": 0,
+                "COMPANY_CODE": "$_id.COMPANY_CODE",
+                "SITE": "$_id.SITE",
+                "FACTORY_ID": "$_id.FACTORY_ID",
+                "PROD_NBR": "$_id.PROD_NBR",
+                "ACCT_DATE": "$_id.ACCT_DATE",
+                "APPLICATION": "$_id.APPLICATION",
+                "MAIN_WC": "$_id.MAIN_WC",
+                "DEFT_QTY": "$DEFT_QTY"
+            }
+        }
+        deftSort = {
+            "$sort": {
+                "COMPANY_CODE": 1,
+                "SITE": 1,
+                "FACTORY_ID": 1,
+                "PROD_NBR": 1,
+                "ACCT_DATE": 1,
+                "MAIN_WC": 1,
+                "APPLICATION": 1
+            }
+        }
+
+        if tmpAPPLICATION != "ALL":
+            passMatch1["$match"]["APPLICATION"] = tmpAPPLICATION
+            deftMatch1["$match"]["APPLICATION"] = tmpAPPLICATION
+
+        passAggregate.extend([passMatch1, passGroup1, passProject1, passSort])
+        deftAggregate.extend(
+            [deftMatch1, deftlookup1, deftunwind1, deftGroup1, deftProject1, deftSort])
+
+        try:
+            self.getMongoConnection()
+            self.setMongoDb("IAMP")
+            self.setMongoCollection("passHisAndCurrent")
+            pData = self.aggregate(passAggregate)
+            self.setMongoCollection("deftHisAndCurrent")
+            dData = self.aggregate(deftAggregate)
+            self.closeMongoConncetion()
+
+            returnData = {
+                "pData": pData,
+                "dData": dData
+            }
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+    def _groupEFAData(self, dData, pData):
+        deftData = []
+        for d in dData:
+            deftData.append(d)
+        passData = []
+        for p in pData:
+            passData.append(p)
+        data = []
+        oData = {}
+        for p in passData:
+            d = list(filter(lambda d: d["PROD_NBR"] == p["PROD_NBR"]
+                            and d["MAIN_WC"] == p["MAIN_WC"], deftData))
+            if d == []:
+                oData["COMPANY_CODE"] = copy.deepcopy(p["COMPANY_CODE"])
+                oData["SITE"] = copy.deepcopy(p["SITE"])
+                oData["FACTORY_ID"] = copy.deepcopy(p["FACTORY_ID"])
+                oData["PROD_NBR"] = copy.deepcopy(p["PROD_NBR"])
+                oData["ACCT_DATE"] = datetime.datetime.strptime(
+                    p["ACCT_DATE"], '%Y%m%d').strftime('%Y-%m-%d')
+                if "APPLICATION" in p.keys():
+                    oData["APPLICATION"] = copy.deepcopy(p["APPLICATION"])
+                else:
+                    oData["APPLICATION"] = None
+                oData["MAIN_WC"] = copy.deepcopy(p["MAIN_WC"])
+                oData["PASS_QTY"] = copy.deepcopy(p["PASS_QTY"])
+                oData["DEFT_QTY"] = 0.00
+                oData["DEFECT_RATE"] = 0.00
+                data.append(copy.deepcopy(oData))
+                oData = {}
+            else:
+                for dd in d:
+                    oData["COMPANY_CODE"] = copy.deepcopy(p["COMPANY_CODE"])
+                    oData["SITE"] = copy.deepcopy(p["SITE"])
+                    oData["FACTORY_ID"] = copy.deepcopy(p["FACTORY_ID"])
+                    oData["PROD_NBR"] = copy.deepcopy(p["PROD_NBR"])
+                    oData["ACCT_DATE"] = datetime.datetime.strptime(
+                        p["ACCT_DATE"], '%Y%m%d').strftime('%Y-%m-%d')
+                    if "APPLICATION" in p.keys():
+                        oData["APPLICATION"] = copy.deepcopy(p["APPLICATION"])
+                    else:
+                        oData["APPLICATION"] = None
+                    oData["MAIN_WC"] = copy.deepcopy(p["MAIN_WC"])
+                    oData["PASS_QTY"] = copy.deepcopy(p["PASS_QTY"])
+                    oData["DEFT_QTY"] = copy.deepcopy(dd["DEFT_QTY"])
+                    oData["DEFECT_RATE"] = round(
+                        oData["DEFT_QTY"] / oData["PASS_QTY"], 4)
+                    data.append(copy.deepcopy(oData))
+                    oData = {}
+        return data
+
+    def _getProdReasonData(self, Prod, REASON):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        reasonAggregate = []
+        # reason
+        reasonMatch1 = {
+            "$match": {
+                "COMPANY_CODE": tmpCOMPANY_CODE,
+                "SITE": tmpSITE,
+                "FACTORY_ID": tmpFACTORY_ID,
+                "ACCT_DATE": tmpACCT_DATE,
+                "MAIN_WC": "1600",
+                "PROD_NBR" : Prod,
+                "DFCT_REASON": {"$in": REASON}
+            }
+        }
+        reasonGroup1 = {
+            "$group": {
+                "_id": {
+                    "COMPANY_CODE": "$COMPANY_CODE",
+                    "SITE": "$SITE",
+                    "FACTORY_ID": "$FACTORY_ID",
+                    "PROD_NBR": "$PROD_NBR",
+                    "ACCT_DATE": "$ACCT_DATE",
+                    "APPLICATION": "$APPLICATION",
+                    "MAIN_WC": "$MAIN_WC",
+                    "DFCT_REASON": "$DFCT_REASON"
+                },
+                "REASON_QTY": {
+                    "$sum": {"$toInt": "$QTY"}
+                }
+            }
+        }
+        reasonProject1 = {
+            "$project": {
+                "_id": 0,
+                "COMPANY_CODE": "$_id.COMPANY_CODE",
+                "SITE": "$_id.SITE",
+                "FACTORY_ID": "$_id.FACTORY_ID",
+                "PROD_NBR": "$_id.PROD_NBR",
+                "ACCT_DATE": "$_id.ACCT_DATE",
+                "APPLICATION": "$_id.APPLICATION",
+                "MAIN_WC": "$_id.MAIN_WC",
+                "DFCT_REASON": "$_id.DFCT_REASON",
+                "REASON_QTY": "$PASS_QTY"
+            }
+        }
+        reasonSort = {
+            "$sort": {
+                "COMPANY_CODE": 1,
+                "SITE": 1,
+                "FACTORY_ID": 1,
+                "PROD_NBR": 1,
+                "ACCT_DATE": 1,
+                "MAIN_WC": 1,
+                "APPLICATION": 1
+            }
+        }
+
+        reasonAggregate.extend([reasonMatch1, reasonGroup1, reasonProject1, reasonSort])
+        try:
+            self.getMongoConnection()
+            self.setMongoDb("IAMP")
+            self.setMongoCollection("reasonHisAndCurrent")
+            rData = self.aggregate(reasonAggregate)
+            self.closeMongoConncetion()
+            returnData = rData
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+    def _getEFA_impReason(self):
+        try:
+            self.getMongoConnection()
+            self.setMongoDb("IAMP")
+            self.setMongoCollection("excelToJson")
+            reqParm={
+                "_id": "MOD2_DEFECT_DEV@J001-alarmReason"
+            }
+            projectionFields={
+                "_id": False,
+                "DATA": True
+            }
+            deftData = self.getMongoFind(reqParm,projectionFields)
+            self.closeMongoConncetion()
+            returnData = deftData
+            return returnData
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
     def _calEFAData(self, EFAData):
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         getLimitData = self.operSetData[tmpFACTORY_ID]["EFA"]["limit"]
+
+        yellowList = []
+        for d in self._getEFA_impReason():    
+            for x in d["DATA"]:                  
+                yellowList.append(x["REASON_CODE"])
 
         PRODList = []
         for x in EFAData:
@@ -1847,6 +2198,8 @@ class INTKPI(BaseType):
         REDL = []
 
         for prod in PRODList:
+            if prod["PROD_NBR"] == "GN140HCAGJ40S":
+                QQ = "TEST"
             d1 = list(filter(lambda d: d["PROD_NBR"]
                       == prod["PROD_NBR"], EFAData))
             targrt = 0.003
@@ -1855,19 +2208,38 @@ class INTKPI(BaseType):
                 targrt = getLimitData[prod["APPLICATION"]]["target"]
                 targrtQTY = getLimitData[prod["APPLICATION"]]["qytlim"]
 
+            rCheck = False
+            yCheck = False
             checkTargrt = list(
-                filter(lambda d: d["DEFECT_RATE"] >= targrt, d1))
-            checkQTY = list(
-                filter(lambda d: d["PASS_QTY"] >= targrtQTY, checkTargrt))
-
-            if len(checkTargrt) != 0:
-                if len(checkQTY) != 0:
-                    RED_VALUE += 1
-                    REDL.append(prod)
-                else:
-                    YELLOW_VALUE += 1
-                    YELLOWL.append(prod)
+                filter(lambda d: d["DEFECT_RATE"] >= targrt, d1))            
+            if len(checkTargrt) > 0:
+                oper1600 = list(
+                    filter(lambda d: d["MAIN_WC"] in "1600", d1))
+                if len(oper1600) > 0:
+                    checkRed = list(
+                        filter(lambda d: d["DEFECT_RATE"] >= targrt, oper1600))
+                    checkQTY = list(
+                        filter(lambda d: d["PASS_QTY"] >= targrtQTY, checkRed))
+                    if len(checkRed) != 0:
+                        if len(checkQTY) != 0:
+                            RED_VALUE += 1
+                            REDL.append(prod)
+                            rCheck = False
             else:
+                rCheck = True            
+            
+            _ReasonData = self._getProdReasonData(prod["PROD_NBR"],yellowList)
+            checkYellow = []
+            for x in _ReasonData:
+                checkYellow.append(x)
+            if len(checkYellow) != 0:
+                YELLOW_VALUE += 1
+                YELLOWL.append(prod)
+                yCheck = False
+            else:
+                yCheck = True
+            
+            if rCheck == True and yCheck == True:
                 GREEN_VALUE += 1
                 GREENL.append(prod)
 
