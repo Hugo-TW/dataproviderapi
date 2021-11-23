@@ -4122,6 +4122,10 @@ class INTLV3(BaseType):
         #"TPI":{"OPER": [1510]},
         #"OTPC":{"OPER": [1590]}
         OPERARRAY = OPERDATA[OPER]["OPER"]
+
+        yellowList = []
+        for d in self._getEFA_impDeft():    
+            yellowList.append(d["DEFECT_CODE"])
         
         EFALV2_Aggregate = [
             {
@@ -4131,41 +4135,9 @@ class INTLV3(BaseType):
                     "FACTORY_ID": tmpFACTORY_ID,  
                     "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
                     "LCM_OWNER": {"$in": ["LCM0", "LCME", "PROD", "QTAP", "RES0"]},
-                    "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERARRAY]}
+                    "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERARRAY]},                    
+                    "DFCT_CODE": {"$in": yellowList}
                 }
-            },
-            {
-                "$lookup": {
-                    "from": "deftCodeView",
-                    "as": "deftCodeList",
-                    "let": {
-                        "dfctCode": "$DFCT_CODE"
-                    },
-                    "pipeline": [
-                    {
-                        "$match": {
-                        "$expr": {
-                            "$and": [
-                            {
-                                "$eq": [
-                                "$$dfctCode",
-                                "$DEFECT_CODE"
-                                ]
-                            }
-                            ]
-                        }
-                        }
-                    },
-                    {
-                        "$project": {
-                            "DEFECT_CODE": 1
-                        }
-                    }
-                    ]
-                }
-            },
-            {
-                "$unwind": "$deftCodeList"
             },
             {
                 "$group": {
@@ -4276,7 +4248,7 @@ class INTLV3(BaseType):
 
         if PROD_NBR != '':
             EFALV2_Aggregate[0]["$match"]["PROD_NBR"] = PROD_NBR
-            EFALV2_Aggregate[6]["$unionWith"]["pipeline"][0]["$match"]["PROD_NBR"] = PROD_NBR
+            EFALV2_Aggregate[4]["$unionWith"]["pipeline"][0]["$match"]["PROD_NBR"] = PROD_NBR
                
         try:
             self.getMongoConnection()
@@ -4314,4 +4286,30 @@ class INTLV3(BaseType):
             d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0    
             magerData.append(d)
         return magerData
+
+    def _getEFA_impDeft(self):
+        try:
+            self.getMongoConnection()
+            self.setMongoDb("IAMP")
+            self.setMongoCollection("deftCodeView")
+            reqParm={
+            }
+            projectionFields={
+                "_id": False
+            }
+            deftData = self.getMongoFind(reqParm,projectionFields)
+            self.closeMongoConncetion()
+            returnData = deftData
+            return returnData
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
 
