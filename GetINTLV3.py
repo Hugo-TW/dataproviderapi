@@ -368,7 +368,7 @@ class INTLV3(BaseType):
                 AAFCData = self._getEFALV2DATA("AAFC", tmpPROD_NBR, dataRange)
                 CKENData = self._getEFALV2DATA("CKEN", tmpPROD_NBR, dataRange)
 
-                magerData =  self._groupEFALV2(BONDINGData,LAMData,AAFCData,CKENData) 
+                magerData =  self._groupEFALV2(CKENData, AAFCData, LAMData, BONDINGData) 
                 returnData = {                    
                     "KPITYPE": tmpKPITYPE,
                     "COMPANY_CODE": tmpCOMPANY_CODE,
