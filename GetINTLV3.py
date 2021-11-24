@@ -4075,24 +4075,40 @@ class INTLV3(BaseType):
             self.writeError("File:[{0}] , Line:{1} , in {2} : [{3}] {4}".format(
                 fileName, lineNum, funcName, error_class, detail))
             return None
-    
+        
     def _getEFALV2DATA(self, OPER, tmpPROD_NBR, dataRange):   
         try:
-            n1d_DATA = self._getEFALV2DATAbyDateRange(OPER, tmpPROD_NBR, dataRange["n1d"], dataRange["n1d_array"], 11)            
-            n2d_DATA = self._getEFALV2DATAbyDateRange(OPER, tmpPROD_NBR, dataRange["n2d"], dataRange["n2d_array"], 10)
-            n3d_DATA = self._getEFALV2DATAbyDateRange(OPER, tmpPROD_NBR, dataRange["n3d"], dataRange["n3d_array"], 9)
-            n4d_DATA = self._getEFALV2DATAbyDateRange(OPER, tmpPROD_NBR, dataRange["n4d"], dataRange["n4d_array"], 8)
-            n5d_DATA = self._getEFALV2DATAbyDateRange(OPER, tmpPROD_NBR, dataRange["n5d"], dataRange["n5d_array"], 7)
-            n6d_DATA = self._getEFALV2DATAbyDateRange(OPER, tmpPROD_NBR, dataRange["n6d"], dataRange["n6d_array"], 6)
-            n1w_DATA = self._getEFALV2DATAbyDateRange(OPER, tmpPROD_NBR, dataRange["n1w"], dataRange["n1w_array"], 5)
-            n2w_DATA = self._getEFALV2DATAbyDateRange(OPER, tmpPROD_NBR, dataRange["n2w"], dataRange["n2w_array"], 4)
-            n3w_DATA = self._getEFALV2DATAbyDateRange(OPER, tmpPROD_NBR, dataRange["n3w"], dataRange["n3w_array"], 3)
-            n1m_DATA = self._getEFALV2DATAbyDateRange(OPER, tmpPROD_NBR, dataRange["n1m"], dataRange["n1m_array"], 2)
-            n2m_DATA = self._getEFALV2DATAbyDateRange(OPER, tmpPROD_NBR, dataRange["n2m"], dataRange["n2m_array"], 1)
-            n1s_DATA = self._getEFALV2DATAbyDateRange(OPER, tmpPROD_NBR, dataRange["n1s"], dataRange["n1s_array"], 0)
+            start = time.time()
+            e_date = dataRange["n1d_array"][0]
+            s_date = dataRange["n1s_array"][0]
+            _tempData = self._getEFALV2DATAbyALLDate(OPER, tmpPROD_NBR, s_date, e_date)
+            tempData = []
+            for d in _tempData:   
+                tempData.append(d)
+            end = time.time()
+            self.writeLog('getDBdata time elapsed: ' + str(round(end-start, 2)) + ' seconds')
+            
+            start = time.time()
+            n1d_DATA = self._getEFALV2LINEDatabyDDATARANGE(OPER, tempData, dataRange["n1d"], dataRange["n1d_array"], 11) 
+            n2d_DATA = self._getEFALV2LINEDatabyDDATARANGE(OPER, tempData, dataRange["n2d"], dataRange["n2d_array"], 10)
+            n3d_DATA = self._getEFALV2LINEDatabyDDATARANGE(OPER, tempData, dataRange["n3d"], dataRange["n3d_array"], 9)
+            n4d_DATA = self._getEFALV2LINEDatabyDDATARANGE(OPER, tempData, dataRange["n4d"], dataRange["n4d_array"], 8)
+            n5d_DATA = self._getEFALV2LINEDatabyDDATARANGE(OPER, tempData, dataRange["n5d"], dataRange["n5d_array"], 7)
+            n6d_DATA = self._getEFALV2LINEDatabyDDATARANGE(OPER, tempData, dataRange["n6d"], dataRange["n6d_array"], 6)
+            n1w_DATA = self._getEFALV2LINEDatabyDDATARANGE(OPER, tempData, dataRange["n1w"], dataRange["n1w_array"], 5)
+            n2w_DATA = self._getEFALV2LINEDatabyDDATARANGE(OPER, tempData, dataRange["n2w"], dataRange["n2w_array"], 4)
+            n3w_DATA = self._getEFALV2LINEDatabyDDATARANGE(OPER, tempData, dataRange["n3w"], dataRange["n3w_array"], 3)
+            n1m_DATA = self._getEFALV2LINEDatabyDDATARANGE(OPER, tempData, dataRange["n1m"], dataRange["n1m_array"], 2)
+            n2m_DATA = self._getEFALV2LINEDatabyDDATARANGE(OPER, tempData, dataRange["n2m"], dataRange["n2m_array"], 1)
+            n1s_DATA = self._getEFALV2LINEDatabyDDATARANGE(OPER, tempData, dataRange["n1s"], dataRange["n1s_array"], 0)
+            end = time.time()
+            self.writeLog('processData time elapsed: ' + str(round(end-start, 2)) + ' seconds')
 
+            start = time.time()
             returnData = self._grouptFPYLV2LINE(n1d_DATA,n2d_DATA,n3d_DATA,n4d_DATA,n5d_DATA,
                 n6d_DATA,n1w_DATA,n2w_DATA,n3w_DATA,n1m_DATA,n2m_DATA,n1s_DATA)
+            end = time.time()
+            self.writeLog('GroupData time elapsed: ' + str(round(end-start, 2)) + ' seconds')
             
             return returnData
 
@@ -4108,7 +4124,7 @@ class INTLV3(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
-    def _getEFALV2DATAbyDateRange(self, OPER, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE):
+    def _getEFALV2DATAbyALLDate(self, OPER, PROD_NBR, s_date, e_date):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
@@ -4134,8 +4150,10 @@ class INTLV3(BaseType):
                     "COMPANY_CODE": tmpCOMPANY_CODE,
                     "SITE": tmpSITE,
                     "FACTORY_ID": tmpFACTORY_ID,  
-                    "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
-                    "LCM_OWNER": {"$in": ["LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                    "ACCT_DATE": {
+                        "$gte": s_date,
+                        "$lte": e_date
+                    },
                     "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERARRAY]},                    
                     "DFCT_CODE": {"$in": yellowList}
                 }
@@ -4143,7 +4161,8 @@ class INTLV3(BaseType):
             {
                 "$group": {
                     "_id": {
-                        "FACTORY_ID" : "$FACTORY_ID"
+                        "FACTORY_ID" : "$FACTORY_ID",
+                        "ACCT_DATE": "$ACCT_DATE"
                     },
                     "DEFTQTY": {
                         "$sum": {"$toInt": "$QTY"}
@@ -4153,7 +4172,8 @@ class INTLV3(BaseType):
             {
                 "$addFields": {
                     "FACTORY_ID" : "$_id.FACTORY_ID",
-                    "DEFTQTY": "$DEFTQTY",
+                    "ACCT_DATE": "$_id.ACCT_DATE",
+                    "DEFTQTY": "$DEFTQTY",                    
                     "PASSQTY": 0
                 }
             },
@@ -4170,15 +4190,19 @@ class INTLV3(BaseType):
                             "$match": {
                                 "COMPANY_CODE": tmpCOMPANY_CODE,
                                 "SITE": tmpSITE,
-                                "FACTORY_ID": tmpFACTORY_ID,                                
-                                "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},    
+                                "FACTORY_ID": tmpFACTORY_ID,  
+                                "ACCT_DATE": {
+                                    "$gte": s_date,
+                                    "$lte": e_date
+                                },
                                 "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERARRAY]}
                             }
                         },
                         {
                             "$group": {
                                 "_id": {
-                                    "FACTORY_ID" : "$FACTORY_ID"
+                                    "FACTORY_ID" : "$FACTORY_ID",                                    
+                                    "ACCT_DATE": "$ACCT_DATE"
                                 },
                                 "PASSQTY": {
                                     "$sum": {
@@ -4190,6 +4214,7 @@ class INTLV3(BaseType):
                         {
                             "$addFields": {
                                 "FACTORY_ID" : "$_id.FACTORY_ID",
+                                "ACCT_DATE": "$_id.ACCT_DATE",
                                 "PASSQTY": "$PASSQTY",
                                 "DEFTQTY": 0
                             }
@@ -4205,7 +4230,8 @@ class INTLV3(BaseType):
             {
                 "$group": {
                     "_id": {
-                        "FACTORY_ID" : "$FACTORY_ID"
+                        "FACTORY_ID" : "$FACTORY_ID",                        
+                        "ACCT_DATE": "$ACCT_DATE"
                     },
                     "DEFTQTY": {
                         "$sum": "$DEFTQTY"
@@ -4217,27 +4243,10 @@ class INTLV3(BaseType):
             },
             {
                 "$addFields": {
-                    "OPER" : OPER,
-                    "DATARANGE": DATARANGENAME,
-                    "XVALUE": TYPE,
-                    "RANK": 0,
-                    "DEFECT_YIELD": {
-                        "$cond": [
-                            {
-                                "$eq": [
-                                    "$PASSQTY",
-                                    0
-                                ]
-                            },
-                            0,
-                            {
-                                "$divide": [
-                                    "$DEFTQTY",
-                                    "$PASSQTY"
-                                ]
-                            }
-                        ]
-                    }
+                    "FACTORY_ID" : "$_id.FACTORY_ID",
+                    "ACCT_DATE": "$_id.ACCT_DATE",
+                    "PASSQTY": "$PASSQTY",
+                    "DEFTQTY": "$DEFTQTY"
                 }
             },
             {
@@ -4254,7 +4263,6 @@ class INTLV3(BaseType):
         if tmpAPPLICATION != "ALL":
             EFALV2_Aggregate[0]["$match"]["APPLICATION"] = tmpAPPLICATION
             EFALV2_Aggregate[4]["$unionWith"]["pipeline"][0]["$match"]["APPLICATION"] = tmpAPPLICATION
-               
         try:
             self.getMongoConnection()
             self.setMongoDb("IAMP")
@@ -4275,6 +4283,29 @@ class INTLV3(BaseType):
             self.writeError(
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
+
+    def _getEFALV2LINEDatabyDDATARANGE(self, OPER, data, DATARANGENAME, ACCT_DATE_ARRAY, TYPE):
+        returnData = []
+        d = [dd for dd in data if dd["ACCT_DATE"] in ACCT_DATE_ARRAY] 
+        sumDEFTQTY = 0
+        sumPASSQTY = 0
+        for x in d:   
+            sumPASSQTY += x["PASSQTY"]
+            sumDEFTQTY += x["DEFTQTY"]
+
+        DEFECT_YIELD = round(sumDEFTQTY / sumPASSQTY, 4) if sumPASSQTY != 0 and sumPASSQTY  != 0 else 0
+
+        if len(d) > 0:
+            returnData = [{
+                    "DEFTQTY": sumDEFTQTY,
+                    "PASSQTY": sumPASSQTY,
+                    "OPER" : OPER,
+                    "DATARANGE": DATARANGENAME,
+                    "XVALUE": TYPE,
+                    "RANK": 0,
+                    "DEFECT_YIELD": DEFECT_YIELD
+                }]
+        return returnData
 
     def _groupEFALV2(self, data1,data2,data3,data4): 
         magerData = [] 
