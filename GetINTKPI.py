@@ -2348,7 +2348,8 @@ class INTKPI(BaseType):
                         "YIELD": DEFECT_RATE,
                         "DEFECT_RATE": DEFECT_RATE,
                         "COLOR": COLOR,
-                        "SYMBOL": SYMBOL
+                        "SYMBOL": SYMBOL,
+                        "QTY": sumPASSQTY
                     })
 
         # red ef476f
