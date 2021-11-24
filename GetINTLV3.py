@@ -4314,7 +4314,7 @@ class INTLV3(BaseType):
         magerData = [] 
         for d in data:  
             for x in d: 
-                x["DEFECT_YIELD"] = round(x["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0    
+                x["DEFECT_YIELD"] = round(x["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in x else 0    
                 magerData.append(x)        
         return magerData
 
