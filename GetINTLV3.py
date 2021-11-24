@@ -366,9 +366,11 @@ class INTLV3(BaseType):
                 BONDINGData = self._getEFALV2DATA("BONDING", tmpPROD_NBR, dataRange)
                 LAMData = self._getEFALV2DATA("LAM", tmpPROD_NBR, dataRange)
                 AAFCData = self._getEFALV2DATA("AAFC", tmpPROD_NBR, dataRange)
+                TPIData = self._getEFALV2DATA("TPI", tmpPROD_NBR, dataRange)
+                OTPCData = self._getEFALV2DATA("OTPC", tmpPROD_NBR, dataRange)
                 CKENData = self._getEFALV2DATA("CKEN", tmpPROD_NBR, dataRange)
 
-                magerData =  self._groupEFALV2(CKENData, AAFCData, LAMData, BONDINGData) 
+                magerData =  self._groupEFALV2([CKENData, OTPCData, TPIData, AAFCData, LAMData, BONDINGData]) 
                 returnData = {                    
                     "KPITYPE": tmpKPITYPE,
                     "COMPANY_CODE": tmpCOMPANY_CODE,
@@ -4131,13 +4133,13 @@ class INTLV3(BaseType):
         tmpAPPLICATION = self.jsonData["APPLICATION"]
              
         OPERDATA = {
-            "BONDING":{"OPER": [1300,1301]},
-            "LAM":{"OPER": [1340,1370]},
-            "AAFC":{"OPER": [1419,1420]},
-            "CKEN":{"OPER": [1600]}        
+                "BONDING":{"OPER": [1300,1301]},
+                "LAM":{"OPER": [1340,1370]},
+                "AAFC":{"OPER": [1419,1420]},
+                "TPI":{"OPER": [1510]},
+                "OTPC":{"OPER": [1590]},
+                "CKEN":{"OPER": [1600]}     
             } 
-        #"TPI":{"OPER": [1510]},
-        #"OTPC":{"OPER": [1590]}
         OPERARRAY = OPERDATA[OPER]["OPER"]
 
         yellowList = []
@@ -4263,6 +4265,7 @@ class INTLV3(BaseType):
         if tmpAPPLICATION != "ALL":
             EFALV2_Aggregate[0]["$match"]["APPLICATION"] = tmpAPPLICATION
             EFALV2_Aggregate[4]["$unionWith"]["pipeline"][0]["$match"]["APPLICATION"] = tmpAPPLICATION
+            
         try:
             self.getMongoConnection()
             self.setMongoDb("IAMP")
@@ -4293,7 +4296,7 @@ class INTLV3(BaseType):
             sumPASSQTY += x["PASSQTY"]
             sumDEFTQTY += x["DEFTQTY"]
 
-        DEFECT_YIELD = round(sumDEFTQTY / sumPASSQTY, 4) if sumPASSQTY != 0 and sumPASSQTY  != 0 else 0
+        DEFECT_YIELD = round(sumDEFTQTY / sumPASSQTY, 4) if sumPASSQTY != 0 and sumDEFTQTY  != 0 else 0
 
         if len(d) > 0:
             returnData = [{
@@ -4307,20 +4310,12 @@ class INTLV3(BaseType):
                 }]
         return returnData
 
-    def _groupEFALV2(self, data1,data2,data3,data4): 
+    def _groupEFALV2(self, data): 
         magerData = [] 
-        for d in data1:   
-            d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0    
-            magerData.append(d)
-        for d in data2:
-            d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0       
-            magerData.append(d)
-        for d in data3:   
-            d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0    
-            magerData.append(d)              
-        for d in data4:   
-            d["DEFECT_YIELD"] = round(d["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0    
-            magerData.append(d)
+        for d in data:  
+            for x in d: 
+                x["DEFECT_YIELD"] = round(x["DEFECT_YIELD"], 4) if "DEFECT_YIELD" in d else 0    
+                magerData.append(x)        
         return magerData
 
     def _getEFA_impDeft(self):

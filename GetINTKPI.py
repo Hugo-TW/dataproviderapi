@@ -408,22 +408,20 @@ class INTKPI(BaseType):
             # 一階 EFA KPI API
             elif tmpKPITYPE == "EFA":
                 expirTimeKey = tmpFACTORY_ID + '_PASS'
-                OPERDATA = [
-                    {"PROCESS": "BONDING", "OPER": 1300, "DESC": "PCBI(HMT)"},
-                    {"PROCESS": "BONDING", "OPER": 1301,
-                        "DESC": "PCBT(串線PCBI)"},
-                    {"PROCESS": "LAM", "OPER": 1340, "DESC": "BT"},
-                    {"PROCESS": "LAM", "OPER": 1370, "DESC": "PT"},
-                    {"PROCESS": "ASSY", "OPER": 1419,
-                        "DESC": "OTPA(OTP AAFC)"},
-                    {"PROCESS": "ASSY", "OPER": 1420, "DESC": "AAFC(同C-)"},
-                    {"PROCESS": "TPI", "OPER": 1510, "DESC": "TPI"},
-                    {"PROCESS": "OTPC", "OPER": 1590, "DESC": "Flicker check"},
-                    {"PROCESS": "C-KEN", "OPER": 1600,
-                        "DESC": "(A+B) Panel C-"}
-                ]
 
-                efaData = self._getEFAData(OPERDATA)
+                OPERDATA = {
+                        "BONDING":{"OPER": [1300,1301]},
+                        "LAM":{"OPER": [1340,1370]},
+                        "AAFC":{"OPER": [1419,1420]},
+                        "TPI":{"OPER": [1510]},
+                        "OTPC":{"OPER": [1590]},
+                        "CKEN":{"OPER": [1600]}   
+                    }      
+                OPERList = []           
+                for key, value in OPERDATA.items():
+                    OPERList.extend(value.get("OPER"))
+
+                efaData = self._getEFAData(OPERList)
                 groupEFAData = self._groupEFAData(
                     efaData["dData"], efaData["pData"])
                 returnData = self._calEFAData(groupEFAData)
@@ -438,6 +436,42 @@ class INTKPI(BaseType):
                         returnData, sort_keys=True, indent=2), 60)
 
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+
+            # 二階 EFA 泡泡圖 API
+            elif tmpKPITYPE == "PRODEFA":
+                tmpOPER = self.jsonData["OPER"] if "OPER" in self.jsonData else "CKEN"                
+                expirTimeKey = tmpFACTORY_ID + '_DEFT'
+                OPERDATA = {
+                        "BONDING":{"OPER": [1300,1301]},
+                        "LAM":{"OPER": [1340,1370]},
+                        "AAFC":{"OPER": [1419,1420]},
+                        "TPI":{"OPER": [1510]},
+                        "OTPC":{"OPER": [1590]},
+                        "CKEN":{"OPER": [1600]}                         
+                    }         
+                OPERList = []
+                if tmpOPER == "ALL":
+                    for key, value in OPERDATA.items():
+                        OPERList.extend(value.get("OPER"))
+                else:
+                    OPERList.extend(OPERDATA[tmpOPER]["OPER"])
+
+                efaData = self._getEFADatabyDeft(OPERList)
+                groupEFAData = self._groupEFADatabyDeft(
+                    efaData["dData"], efaData["pData"], tmpOPER)
+                returnData = self._calPRODEFAData(groupEFAData, tmpOPER, OPERList)
+
+                # 存到 redis 暫存
+                self.getRedisConnection()
+                if self.searchRedisKeys(redisKey):
+                    self.setRedisData(redisKey, json.dumps(
+                        returnData, sort_keys=True, indent=2), self.getKeyExpirTime(expirTimeKey))
+                else:
+                    self.setRedisData(redisKey, json.dumps(
+                        returnData, sort_keys=True, indent=2), 60)
+
+                return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+
 
             else:
                 return {'Result': 'Fail', 'Reason': 'Parametes[KPITYPE] not in Rule'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
@@ -1589,17 +1623,13 @@ class INTKPI(BaseType):
 
         return returnData
 
-    def _getEFADatabyDeft(self, OPERDATA):
+    def _getEFADatabyDeft(self, OPERList):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         tmpACCT_DATE = self.jsonData["ACCT_DATE"]
         tmpAPPLICATION = self.jsonData["APPLICATION"]
-
-        OPERList = []
-        for x in OPERDATA:
-            OPERList.append(f'{x.get("OPER")}')
-
+        tmpPROD_NBR = self.jsonData["PROD_NBR"] if "PROD_NBR" in self.jsonData else ""
         passAggregate = []
         deftAggregate = []
 
@@ -1610,7 +1640,7 @@ class INTKPI(BaseType):
                 "SITE": tmpSITE,
                 "FACTORY_ID": tmpFACTORY_ID,
                 "ACCT_DATE": tmpACCT_DATE,
-                "MAIN_WC": {"$in": OPERList}
+                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]}
             }
         }
         passGroup1 = {
@@ -1621,8 +1651,7 @@ class INTKPI(BaseType):
                     "FACTORY_ID": "$FACTORY_ID",
                     "PROD_NBR": "$PROD_NBR",
                     "ACCT_DATE": "$ACCT_DATE",
-                    "APPLICATION": "$APPLICATION",
-                    "MAIN_WC": "$MAIN_WC"
+                    "APPLICATION": "$APPLICATION"
                 },
                 "PASS_QTY": {
                     "$sum": {"$toInt": "$QTY"}
@@ -1638,7 +1667,6 @@ class INTKPI(BaseType):
                 "PROD_NBR": "$_id.PROD_NBR",
                 "ACCT_DATE": "$_id.ACCT_DATE",
                 "APPLICATION": "$_id.APPLICATION",
-                "MAIN_WC": "$_id.MAIN_WC",
                 "PASS_QTY": "$PASS_QTY"
             }
         }
@@ -1649,7 +1677,6 @@ class INTKPI(BaseType):
                 "FACTORY_ID": 1,
                 "PROD_NBR": 1,
                 "ACCT_DATE": 1,
-                "MAIN_WC": 1,
                 "APPLICATION": 1
             }
         }
@@ -1661,7 +1688,7 @@ class INTKPI(BaseType):
                 "SITE": tmpSITE,
                 "FACTORY_ID": tmpFACTORY_ID,
                 "ACCT_DATE": tmpACCT_DATE,
-                "MAIN_WC": {"$in": OPERList}
+                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]}
             }
         }
         deftlookup1 = {
@@ -1707,7 +1734,6 @@ class INTKPI(BaseType):
                     "PROD_NBR": "$PROD_NBR",
                     "ACCT_DATE": "$ACCT_DATE",
                     "APPLICATION": "$APPLICATION",
-                    "MAIN_WC": "$MAIN_WC",
                     "DFCT_CODE": "$DFCT_CODE"
                 },
                 "DEFT_QTY": {
@@ -1724,7 +1750,6 @@ class INTKPI(BaseType):
                 "PROD_NBR": "$_id.PROD_NBR",
                 "ACCT_DATE": "$_id.ACCT_DATE",
                 "APPLICATION": "$_id.APPLICATION",
-                "MAIN_WC": "$_id.MAIN_WC",
                 "DFCT_CODE": "$_id.DFCT_CODE",
                 "DEFT_QTY": "$DEFT_QTY"
             }
@@ -1736,7 +1761,6 @@ class INTKPI(BaseType):
                 "FACTORY_ID": 1,
                 "PROD_NBR": 1,
                 "ACCT_DATE": 1,
-                "MAIN_WC": 1,
                 "APPLICATION": 1
             }
         }
@@ -1744,6 +1768,10 @@ class INTKPI(BaseType):
         if tmpAPPLICATION != "ALL":
             passMatch1["$match"]["APPLICATION"] = tmpAPPLICATION
             deftMatch1["$match"]["APPLICATION"] = tmpAPPLICATION
+        
+        if tmpPROD_NBR != '':
+            passMatch1["$match"]["PROD_NBR"] = tmpPROD_NBR
+            deftMatch1["$match"]["PROD_NBR"] = tmpPROD_NBR
 
         passAggregate.extend([passMatch1, passGroup1, passProject1, passSort])
         deftAggregate.extend(
@@ -1776,7 +1804,7 @@ class INTKPI(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
     
-    def _groupEFADatabyDeft(self, dData, pData):
+    def _groupEFADatabyDeft(self, dData, pData, OPER):
         deftData = []
         for d in dData:
             deftData.append(d)
@@ -1786,8 +1814,7 @@ class INTKPI(BaseType):
         data = []
         oData = {}
         for p in passData:
-            d = list(filter(lambda d: d["PROD_NBR"] == p["PROD_NBR"]
-                            and d["MAIN_WC"] == p["MAIN_WC"], deftData))
+            d = list(filter(lambda d: d["PROD_NBR"] == p["PROD_NBR"], deftData))
             if d == []:
                 oData["COMPANY_CODE"] = copy.deepcopy(p["COMPANY_CODE"])
                 oData["SITE"] = copy.deepcopy(p["SITE"])
@@ -1799,7 +1826,7 @@ class INTKPI(BaseType):
                     oData["APPLICATION"] = copy.deepcopy(p["APPLICATION"])
                 else:
                     oData["APPLICATION"] = None
-                oData["MAIN_WC"] = copy.deepcopy(p["MAIN_WC"])
+                oData["OPER"] = OPER
                 oData["PASS_QTY"] = copy.deepcopy(p["PASS_QTY"])
                 oData["DFCT_CODE"] = ""
                 oData["DEFT_QTY"] = 0.00
@@ -1818,7 +1845,7 @@ class INTKPI(BaseType):
                         oData["APPLICATION"] = copy.deepcopy(p["APPLICATION"])
                     else:
                         oData["APPLICATION"] = None
-                    oData["MAIN_WC"] = copy.deepcopy(p["MAIN_WC"])
+                    oData["OPER"] = OPER
                     oData["PASS_QTY"] = copy.deepcopy(p["PASS_QTY"])
                     oData["DFCT_CODE"] = copy.deepcopy(dd["DFCT_CODE"])
                     oData["DEFT_QTY"] = copy.deepcopy(dd["DEFT_QTY"])
@@ -1828,17 +1855,12 @@ class INTKPI(BaseType):
                     oData = {}
         return data
 
-    def _getEFAData(self, OPERDATA):
+    def _getEFAData(self, OPERList):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         tmpACCT_DATE = self.jsonData["ACCT_DATE"]
         tmpAPPLICATION = self.jsonData["APPLICATION"]
-
-        OPERList = []
-        for x in OPERDATA:
-            OPERList.append(f'{x.get("OPER")}')
-
         passAggregate = []
         deftAggregate = []
 
@@ -1848,8 +1870,8 @@ class INTKPI(BaseType):
                 "COMPANY_CODE": tmpCOMPANY_CODE,
                 "SITE": tmpSITE,
                 "FACTORY_ID": tmpFACTORY_ID,
-                "ACCT_DATE": tmpACCT_DATE,
-                "MAIN_WC": {"$in": OPERList}
+                "ACCT_DATE": tmpACCT_DATE,                
+                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]}
             }
         }
         passGroup1 = {
@@ -1900,7 +1922,7 @@ class INTKPI(BaseType):
                 "SITE": tmpSITE,
                 "FACTORY_ID": tmpFACTORY_ID,
                 "ACCT_DATE": tmpACCT_DATE,
-                "MAIN_WC": {"$in": OPERList}
+                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]}
             }
         }
         deftlookup1 = {
@@ -2063,7 +2085,7 @@ class INTKPI(BaseType):
                     oData = {}
         return data
 
-    def _getProdReasonData(self, Prod, REASON):
+    def _getProdReasonData(self, Prod, REASON, OPERList):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
@@ -2076,7 +2098,7 @@ class INTKPI(BaseType):
                 "SITE": tmpSITE,
                 "FACTORY_ID": tmpFACTORY_ID,
                 "ACCT_DATE": tmpACCT_DATE,
-                "MAIN_WC": "1600",
+                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]},
                 "PROD_NBR" : Prod,
                 "DFCT_REASON": {"$in": REASON}
             }
@@ -2176,7 +2198,8 @@ class INTKPI(BaseType):
 
     def _calEFAData(self, EFAData):
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
-        getLimitData = self.operSetData[tmpFACTORY_ID]["EFA"]["limit"]
+        tmpSITE = self.jsonData["SITE"]
+        getLimitData = self.operSetData[tmpFACTORY_ID]["EFA"]["limit"] if tmpSITE == "TN" else {}
 
         yellowList = []
         for d in self._getEFA_impReason():    
@@ -2198,8 +2221,6 @@ class INTKPI(BaseType):
         REDL = []
 
         for prod in PRODList:
-            if prod["PROD_NBR"] == "GN140HCAGJ40S":
-                QQ = "TEST"
             d1 = list(filter(lambda d: d["PROD_NBR"]
                       == prod["PROD_NBR"], EFAData))
             targrt = 0.003
@@ -2228,7 +2249,7 @@ class INTKPI(BaseType):
             else:
                 rCheck = True            
             
-            _ReasonData = self._getProdReasonData(prod["PROD_NBR"],yellowList)
+            _ReasonData = self._getProdReasonData(prod["PROD_NBR"],yellowList,[1600])
             checkYellow = []
             for x in _ReasonData:
                 checkYellow.append(x)
@@ -2251,6 +2272,101 @@ class INTKPI(BaseType):
         }
 
         return returnData
+
+    def _calPRODEFAData(self, EFAData, OPER, OPERList):
+        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpSITE = self.jsonData["SITE"]
+        getLimitData = self.operSetData[tmpFACTORY_ID]["EFA"]["limit"] if tmpSITE == "TN" else {}
+
+        yellowList = []
+        for d in self._getEFA_impReason():    
+            for x in d["DATA"]:                  
+                yellowList.append(x["REASON_CODE"])
+
+        PRODList = []
+        for x in EFAData:
+            if {"PROD_NBR": x["PROD_NBR"], "APPLICATION": x["APPLICATION"]} not in PRODList:
+                PRODList.append(
+                    {"PROD_NBR": x["PROD_NBR"], "APPLICATION": x["APPLICATION"]})
+   
+        DATASERIES = []  
+        targrt = 0.003
+        targrtQTY = 3000
+        for prod in PRODList:
+            d1 = list(filter(lambda d: d["PROD_NBR"]
+                      == prod["PROD_NBR"], EFAData))
+            if prod["APPLICATION"] in getLimitData.keys():
+                targrt = getLimitData[prod["APPLICATION"]]["target"]
+                targrtQTY = getLimitData[prod["APPLICATION"]]["qytlim"]            
+            
+            DEFECT_RATE = 0
+            sumPASSQTY = 0
+            sumDEFTQTY = 0   
+            if len(d1) > 0:         
+                sdCheck = False #單項不良率超標
+                checkTargrtAndQyt = list(
+                    filter(lambda d: d["PASS_QTY"] >= targrtQTY and d["DEFECT_RATE"] >= targrt, d1)) 
+                sdCheck = False if len(checkTargrtAndQyt) > 0 else True 
+                
+                tdCheck = False #總不良率超標
+                sumPASSQTY = d1[0]["PASS_QTY"]
+                for x in d1:
+                    sumDEFTQTY += x["DEFT_QTY"]
+                DEFECT_RATE = round(sumDEFTQTY / sumPASSQTY, 4) if sumPASSQTY != 0 and sumDEFTQTY  != 0 else 0
+                tdCheck = False if sumPASSQTY >= targrtQTY and DEFECT_RATE >= targrt else True
+
+                rCheck = False #潛在不良(REASON CODE)
+                _ReasonData = self._getProdReasonData(prod["PROD_NBR"],yellowList, OPERList)
+                checkYellow = []
+                for x in _ReasonData:
+                    checkYellow.append(x)
+                rCheck = False if len(checkYellow) > 0 else True
+                
+                #SYMBOL
+                SYMBOL= ""
+                if sdCheck == False and rCheck == False:
+                    SYMBOL = "diamond"
+                elif sdCheck == True and rCheck == False:
+                    SYMBOL = "triangle-down"
+                elif sdCheck == False and rCheck == True:
+                    SYMBOL = "triangle"
+                else:
+                    SYMBOL = "circle"
+                #COLOR
+                COLOR= ""
+                if tdCheck == True and sdCheck == True and rCheck == True:
+                    COLOR = "#06d6a0"
+                elif tdCheck == True and sdCheck == True and rCheck == False:
+                    COLOR = "#ffd166"
+                else :
+                    COLOR = "#ef476f"
+
+                DATASERIES.append({
+                        "APPLICATION": prod["APPLICATION"],
+                        "PROD_NBR": prod["PROD_NBR"],
+                        "YIELD": DEFECT_RATE,
+                        "DEFECT_RATE": DEFECT_RATE,
+                        "COLOR": COLOR,
+                        "SYMBOL": SYMBOL
+                    })
+
+        # red ef476f
+        # yellow ffd166
+        # green 06d6a0
+        # blue 118AB2
+        # midGreen 073b4c
+
+        returnData = {
+            "XLIMIT": targrtQTY,
+            "YLIMIT": targrt,
+            "OPER": OPER,
+            "ACCT_DATE": tmpACCT_DATE,
+            "DATASERIES": DATASERIES
+        }
+
+        return returnData
+
 
     def _zipDescriptionAndData(self, description, data):
         """ 取得 description和data壓縮後資料
