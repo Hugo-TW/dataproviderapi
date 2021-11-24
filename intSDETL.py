@@ -81,8 +81,9 @@ class INTSDETL():
                 "values (:1, :2, :3, :4, :5, :6)"
             self._getConnection(self.DBconfig)
             self._daoHelper.Delete(delString)
+            self.writeLog(f'DEL: {_COMPANY_CODE}-{_SITE}-{_FACTORY_ID}-{_ACCT_DATE}-{_DATATYPE}')
             self._daoHelper.InserMany(insertString,insertData)
-            #SELECT JSON_SERIALIZE(ORIGDATA) AS data FROM sdetluploadlog
+            self.writeLog(f'INS: {_COMPANY_CODE}-{_SITE}-{_FACTORY_ID}-{_ACCT_DATE}-{_DATATYPE}')
             selString = f"Select * from INTMP_DB.SDETLUPLOADLOG where COMPANY_CODE = '{_COMPANY_CODE}' \
                 and SITE = '{_SITE}' and FACTORY_ID = '{_FACTORY_ID}' and ACCT_DATE = '{_ACCT_DATE}' \
                 and DATATYPE = '{_DATATYPE}' "
@@ -95,6 +96,7 @@ class INTSDETL():
                         "data": f'get {len(check["modeldata"])} record in modeldata',
                         "message": ""
                     }  
+            self.writeLog(f'{_COMPANY_CODE}-{_SITE}-{_FACTORY_ID}-{_ACCT_DATE}-{_DATATYPE}: {returnData}')
             return returnData
 
         except Exception as e:
