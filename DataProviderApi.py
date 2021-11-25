@@ -71,6 +71,7 @@ from GetDpsPlain import dpsPlainFunc
 from GetSingleCollection import singleCollectionFunc
 from SetMongoInserMany import mongoInsertManyFunc
 from CompensateDb2 import compensate
+from GetWayneTestInfo import WayneTestInfo
 os.environ['NLS_LANG'] = 'TRADITIONAL CHINESE_TAIWAN.UTF8'
 from Logger import Logger
 log = Logger('./log/Main.log',level='debug')
@@ -2140,6 +2141,39 @@ intSDTemp = [
       }
     }
   ]
+
+wayneTestInfoNS = api.namespace('GetWayneTestInfo', description = 'WayneTestInfo')
+wayneTestInfoML = api.model('GetWayneTestInfo', {
+"COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+"SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'J001', example = 'J001'),
+})
+@wayneTestInfoNS.route('', methods = ['POST'])
+@wayneTestInfoNS.response(200, 'Sucess')
+@wayneTestInfoNS.response(201, 'Created Sucess')
+@wayneTestInfoNS.response(204, 'No Content')
+@wayneTestInfoNS.response(400, 'Bad Request')
+@wayneTestInfoNS.response(401, 'Unauthorized')
+@wayneTestInfoNS.response(403, 'Forbidden')
+@wayneTestInfoNS.response(404, 'Not Found')
+@wayneTestInfoNS.response(405, 'Method Not Allowed')
+@wayneTestInfoNS.response(409, 'Conflict')
+@wayneTestInfoNS.response(500, 'Internal Server Error')
+class GetWayneTestInfo(Resource):
+    @wayneTestInfoNS.doc('AppConfSysMain')
+    @wayneTestInfoNS.expect(wayneTestInfoML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        jsonData = BaseType.validateType(request.json)
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData:  
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        identity = jsonData["COMPANY_CODE"] + "-" + jsonData["SITE"] + "-" + jsonData["FACTORY_ID"]
+        log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
+        wayneTestInfo = WayneTestInfo(identity)
+        return wayneTestInfo.getData()  
 
 intSDETLNs = api.namespace('intSDETL', description = 'intSDETL')
 intSDETLML_local = api.model('intSDETLML_local', {
