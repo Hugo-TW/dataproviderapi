@@ -2368,7 +2368,6 @@ class INTKPI(BaseType):
 
         return returnData
 
-
     def _zipDescriptionAndData(self, description, data):
         """ 取得 description和data壓縮後資料
             description :row column description 
