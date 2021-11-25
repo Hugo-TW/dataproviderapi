@@ -368,11 +368,9 @@ class INTLV2(BaseType):
                 else:
                     OPERList.extend(OPERDATA[tmpOPER]["OPER"])
 
-                rData = self._getEFALV2_3_Data(OPERList)
+                data = self._getEFALV2_3_Data(OPERList)
 
-                _data = []
-                for x in rData["rData"]:
-                    _data.append(x)
+                DATASERIES = self._calEFALV2_3_Data(data["rData"], data["pData"])
 
                 returnData = returnData = {                    
                     "KPITYPE": tmpKPITYPE,
@@ -383,7 +381,7 @@ class INTLV2(BaseType):
                     "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
                     "PROD_NBR": tmpPROD_NBR,
                     "OPER": tmpOPER,
-                    "DATASERIES": _data
+                    "DATASERIES": DATASERIES
                 }
                 
                 """
@@ -1197,6 +1195,46 @@ class INTLV2(BaseType):
         tmpAPPLICATION = self.jsonData["APPLICATION"]
         tmpPROD_NBR = self.jsonData["PROD_NBR"]
 
+        passAggregate =[
+                  {
+                    "$match": {
+                      "COMPANY_CODE":  tmpCOMPANY_CODE,
+                      "SITE": tmpSITE,
+                      "FACTORY_ID": tmpFACTORY_ID,
+                      "ACCT_DATE": tmpACCT_DATE,
+                      "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]}
+                    }
+                  },
+                  {
+                    "$group": {
+                      "_id": {
+                        "PROD_NBR": "$PROD_NBR"
+                      },
+                      "passQty": {
+                        "$sum": {
+                          "$toInt": "$QTY"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "$addFields": {
+                      "PROD_NBR": "$_id.PROD_NBR",
+                      "passQty": "$passQty"
+                    }
+                  },
+                  {
+                    "$project": {
+                      "_id": 0
+                    }
+                  },
+                  {
+                    "$sort": {
+                      "passQty": -1
+                    }
+                  }
+                ]
+
         reasonAggregate = [
                   {
                     "$match": {
@@ -1279,17 +1317,22 @@ class INTLV2(BaseType):
         
         if tmpPROD_NBR != '':
             reasonAggregate[0]["$match"]["PROD_NBR"] = tmpPROD_NBR
+            passAggregate[0]["$match"]["PROD_NBR"] = tmpPROD_NBR
         if tmpAPPLICATION != 'ALL':
             reasonAggregate[0]["$match"]["APPLICATION"] = tmpAPPLICATION
+            passAggregate[0]["$match"]["PROD_NBR"] = tmpPROD_NBR
         try:
             self.getMongoConnection()
             self.setMongoDb("IAMP")
             self.setMongoCollection("reasonHisAndCurrent")
             rData = self.aggregate(reasonAggregate)
+            self.setMongoCollection("passHisAndCurrent")
+            pData = self.aggregate(passAggregate)
             self.closeMongoConncetion()
 
             returnData = {
-                "rData": rData
+                "rData": rData,
+                "pData": pData
             }
 
             return returnData
@@ -1306,4 +1349,27 @@ class INTLV2(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
+    def _calEFALV2_3_Data(self, rdata, pdata):
+        _rData = []            
+        for e in rdata:       
+            _rData.append(e) 
+        _pData = []            
+        for p in pdata:       
+            _pData.append(p) 
+
+        prodNbrPassQty = 0
+        for p in _pData:
+            prodNbrPassQty += p["passQty"]
+
+        returnData = []
+        for r in _rData:
+            REASONYIELD = round(r["reasonQty"] / prodNbrPassQty, 6) if r["reasonQty"] != 0 and prodNbrPassQty != 0 else 0
+            returnData.append({
+                "PASSQTY": prodNbrPassQty,
+                "DFCT_REASON": r["DFCT_REASON"],
+                "REASON_DESC": r["REASON_DESC"],
+                "REASONQTY": r["reasonQty"],
+                "REASONYIELD": REASONYIELD
+            })        
+        return returnData
 
