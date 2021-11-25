@@ -2146,7 +2146,7 @@ wayneTestInfoNS = api.namespace('GetWayneTestInfo', description = 'WayneTestInfo
 wayneTestInfoML = api.model('GetWayneTestInfo', {
 "COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
 "SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
-"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'J001', example = 'J001'),
+"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'J003', example = 'J003'),
 })
 @wayneTestInfoNS.route('', methods = ['POST'])
 @wayneTestInfoNS.response(200, 'Sucess')
