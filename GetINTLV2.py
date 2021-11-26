@@ -1324,8 +1324,9 @@ class INTLV2(BaseType):
         if tmpAPPLICATION != 'ALL':
             reasonAggregate[0]["$match"]["APPLICATION"] = tmpAPPLICATION
             passAggregate[0]["$match"]["PROD_NBR"] = tmpPROD_NBR
-        if tmpAPPLICATION != '':
+        if tmpCHECKCODE != '':
             reasonAggregate[0]["$match"]["DFCT_CODE"] = tmpCHECKCODE
+
         try:
             self.getMongoConnection()
             self.setMongoDb("IAMP")
