@@ -1212,28 +1212,21 @@ class INTLV3(BaseType):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
-        
-        OPERDATA = [
-            {"PROCESS": "BONDING", "OPER": 1300, "DESC": "PCBI(HMT)"},
-            {"PROCESS": "BONDING", "OPER": 1301,
-                "DESC": "PCBT(串線PCBI)"},
-            {"PROCESS": "LAM", "OPER": 1340, "DESC": "BT"},
-            {"PROCESS": "LAM", "OPER": 1370, "DESC": "PT"},
-            {"PROCESS": "ASSY", "OPER": 1419,
-                "DESC": "OTPA(OTP AAFC)"},
-            {"PROCESS": "ASSY", "OPER": 1420, "DESC": "AAFC(同C-)"},
-            {"PROCESS": "TPI", "OPER": 1510, "DESC": "TPI"},
-            {"PROCESS": "OTPC", "OPER": 1590, "DESC": "Flicker check"},
-            {"PROCESS": "C-KEN", "OPER": 1600,
-                "DESC": "(A+B) Panel C-"}
-        ]
 
+        OPERDATA = {
+                "BONDING":{"OPER": [1300,1301]},
+                "LAM":{"OPER": [1340,1370]},
+                "AAFC":{"OPER": [1419,1420]},
+                "TPI":{"OPER": [1510]},
+                "OTPC":{"OPER": [1590]},
+                "CKEN":{"OPER": [1600]}                         
+            }         
         OPERList = []
-        OPERList.append(OPER)
-        ###
-        #for x in OPERDATA:
-        #    OPERList.append(f'{x.get("OPER")}')
-        ###
+        if OPER == "ALL":
+            for key, value in OPERDATA.items():
+                OPERList.extend(value.get("OPER"))
+        else:
+            OPERList.extend(OPERDATA[OPER]["OPER"])
 
         EFALV3_Aggregate = [
             {
@@ -1243,7 +1236,7 @@ class INTLV3(BaseType):
                     "FACTORY_ID": tmpFACTORY_ID,
                     "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
                     "LCM_OWNER": {"$in": ["LCM0", "LCME", "PROD", "QTAP", "RES0"]},
-                    "MAIN_WC": {"$in": OPERList},
+                    "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]},  
                     "WORK_CTR": "2110",
                     "PROD_NBR": PROD_NBR
                 }
@@ -1283,7 +1276,7 @@ class INTLV3(BaseType):
                                         "SITE": tmpSITE,
                                         "FACTORY_ID": tmpFACTORY_ID,
                                         "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
-                                        "MAIN_WC": {"$in": OPERList},
+                                        "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]},  
                                         "PROD_NBR": PROD_NBR
                                     }
                                 },
