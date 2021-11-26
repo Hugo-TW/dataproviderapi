@@ -231,7 +231,8 @@ class INTKPI(BaseType):
             tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
             tmpAPPLICATION = self.jsonData["APPLICATION"]
             tmpKPITYPE = self.jsonData["KPITYPE"]
-            tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+            tmpACCT_DATE = self.jsonData["ACCT_DATE"]            
+            tmpOPER = self.jsonData["OPER"] if "OPER" in self.jsonData else "CKEN"    
 
             # redisKey
             tmp.append(className)
@@ -241,6 +242,7 @@ class INTKPI(BaseType):
             tmp.append(tmpAPPLICATION)
             tmp.append(tmpKPITYPE)
             tmp.append(tmpACCT_DATE)
+            tmp.append(tmpOPER)
             redisKey = bottomLine.join(tmp)
             expirTimeKey = tmpFACTORY_ID + '_PASS'
             """
@@ -438,8 +440,7 @@ class INTKPI(BaseType):
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
             # 二階 EFA 泡泡圖 API
-            elif tmpKPITYPE == "PRODEFA":
-                tmpOPER = self.jsonData["OPER"] if "OPER" in self.jsonData else "CKEN"                
+            elif tmpKPITYPE == "PRODEFA":                            
                 expirTimeKey = tmpFACTORY_ID + '_DEFT'
                 OPERDATA = {
                         "BONDING":{"OPER": [1300,1301]},
@@ -2357,6 +2358,16 @@ class INTKPI(BaseType):
         # green 06d6a0
         # blue 118AB2
         # midGreen 073b4c
+        # 因為使用 operator.itemgetter 方法 排序順序要反過來執行
+        # 不同欄位key 排序方式不同時 需要 3 - 2 - 1  反順序去寫code
+        DATASERIES.sort(key=operator.itemgetter("QTY"), reverse=True)
+        DATASERIES.sort(key=operator.itemgetter("YIELD"), reverse=True)
+
+        length = len(DATASERIES)
+        rank = 1
+        for x in range(length):
+            DATASERIES[x]["RANK"] = rank
+            rank += 1
 
         returnData = {
             "XLIMIT": targrtQTY,

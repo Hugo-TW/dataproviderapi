@@ -392,7 +392,6 @@ class INTLV3(BaseType):
 
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
-
             elif tmpKPITYPE == "FPYLV2LINE":                
                 expirTimeKey = tmpFACTORY_ID + '_PASS'
 

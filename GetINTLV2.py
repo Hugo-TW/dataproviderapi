@@ -232,6 +232,8 @@ class INTLV2(BaseType):
             tmpKPITYPE = self.jsonData["KPITYPE"]
             tmpACCT_DATE = self.jsonData["ACCT_DATE"]
             tmpPROD_NBR = self.jsonData["PROD_NBR"]
+            tmpOPER = self.jsonData["OPER"] if "OPER" in self.jsonData else "CKEN"              
+            tmpCHECKCODE = self.jsonData["CHECKCODE"] if "CHECKCODE" in self.jsonData else ""
             expirTimeKey = tmpFACTORY_ID + '_PASS'
 
             #redisKey
@@ -243,6 +245,8 @@ class INTLV2(BaseType):
             tmp.append(tmpKPITYPE)
             tmp.append(tmpACCT_DATE)
             tmp.append(tmpPROD_NBR)
+            tmp.append(tmpOPER)
+            tmp.append(tmpCHECKCODE)
             redisKey = bottomLine.join(tmp)
             """
             if tmpFACTORY_ID not in self.operSetData.keys():
@@ -349,8 +353,7 @@ class INTLV2(BaseType):
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
             #二階 MSHIP PIE API
-            elif tmpKPITYPE == "EFALV2_3":
-                tmpOPER = self.jsonData["OPER"] if "OPER" in self.jsonData else "CKEN"      
+            elif tmpKPITYPE == "EFALV2_3":    
                 expirTimeKey = tmpFACTORY_ID + '_REASON'
 
                 OPERDATA = {
@@ -394,7 +397,6 @@ class INTLV2(BaseType):
                         returnData, sort_keys=True, indent=2), 60)
                 """
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
-
 
             else:
                 return {'Result': 'Fail', 'Reason': 'Parametes[KPITYPE] not in Rule'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
@@ -1194,6 +1196,7 @@ class INTLV2(BaseType):
         tmpACCT_DATE = self.jsonData["ACCT_DATE"]
         tmpAPPLICATION = self.jsonData["APPLICATION"]
         tmpPROD_NBR = self.jsonData["PROD_NBR"]
+        tmpCHECKCODE = self.jsonData["CHECKCODE"] if "CHECKCODE" in self.jsonData else ""
 
         passAggregate =[
                   {
@@ -1321,6 +1324,8 @@ class INTLV2(BaseType):
         if tmpAPPLICATION != 'ALL':
             reasonAggregate[0]["$match"]["APPLICATION"] = tmpAPPLICATION
             passAggregate[0]["$match"]["PROD_NBR"] = tmpPROD_NBR
+        if tmpAPPLICATION != '':
+            reasonAggregate[0]["$match"]["DFCT_CODE"] = tmpCHECKCODE
         try:
             self.getMongoConnection()
             self.setMongoDb("IAMP")
