@@ -354,8 +354,6 @@ class INTLV2(BaseType):
 
             #二階 MSHIP PIE API
             elif tmpKPITYPE == "EFALV2_3":    
-                expirTimeKey = tmpFACTORY_ID + '_REASON'
-
                 OPERDATA = {
                         "BONDING":{"OPER": [1300,1301]},
                         "LAM":{"OPER": [1340,1370]},
@@ -387,13 +385,6 @@ class INTLV2(BaseType):
                     "DATASERIES": DATASERIES
                 }
                 
-                self.getRedisConnection()
-                if self.searchRedisKeys(redisKey):     
-                    self.setRedisData(redisKey, json.dumps(
-                        returnData, sort_keys=True, indent=2), self.getKeyExpirTime(expirTimeKey))
-                else:
-                    self.setRedisData(redisKey, json.dumps(
-                        returnData, sort_keys=True, indent=2), 60)
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
             #二階 MSHIP PIE API
@@ -416,11 +407,8 @@ class INTLV2(BaseType):
                     OPERList.extend(OPERDATA[tmpOPER]["OPER"])
 
                 data = self._getEFALV2_21_Data(OPERList)
-                #groupEFAData = self._groupEFADatabyDeft(
-                #    efaData["dData"], efaData["pData"], tmpOPER)
-                #returnData = self._calPRODEFAData(groupEFAData, tmpOPER, OPERList)
 
-                #DATASERIES = self._calEFALV2_21_Data(data["rData"], data["pData"])
+                DATASERIES = self._calEFALV2_21_Data(data["dData"], data["pData"])
 
                 returnData = returnData = {                    
                     "KPITYPE": tmpKPITYPE,
@@ -430,9 +418,9 @@ class INTLV2(BaseType):
                     "APPLICATION": tmpAPPLICATION,
                     "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
                     "PROD_NBR": tmpPROD_NBR,
-                    "OPER": tmpOPER
+                    "OPER": tmpOPER,
+                    "DATASERIES": DATASERIES
                 }
-                #"DATASERIES": DATASERIES
                 
                 """
                 self.getRedisConnection()
@@ -1261,7 +1249,7 @@ class INTLV2(BaseType):
                       "_id": {
                         "PROD_NBR": "$PROD_NBR"
                       },
-                      "passQty": {
+                      "PASSQTY": {
                         "$sum": {
                           "$toInt": "$QTY"
                         }
@@ -1271,7 +1259,7 @@ class INTLV2(BaseType):
                   {
                     "$addFields": {
                       "PROD_NBR": "$_id.PROD_NBR",
-                      "passQty": "$passQty"
+                      "PASSQTY": "$PASSQTY"
                     }
                   },
                   {
@@ -1281,7 +1269,7 @@ class INTLV2(BaseType):
                   },
                   {
                     "$sort": {
-                      "passQty": -1
+                      "PASSQTY": -1
                     }
                   }
                 ]
@@ -1342,7 +1330,7 @@ class INTLV2(BaseType):
                         "DFCT_REASON": "$DFCT_REASON",
                         "REASON_DESC": "$REASON_DESC"
                       },
-                      "reasonQty": {
+                      "REASONQTY": {
                         "$sum": "$QTY"
                       }
                     }
@@ -1351,7 +1339,7 @@ class INTLV2(BaseType):
                     "$addFields": {
                       "DFCT_REASON": "$_id.DFCT_REASON",
                       "REASON_DESC": "$_id.REASON_DESC",
-                      "reasonQty": "$reasonQty"
+                      "REASONQTY": "$REASONQTY"
                     }
                   },
                    {
@@ -1361,7 +1349,7 @@ class INTLV2(BaseType):
                   },
                   {
                     "$sort": {
-                      "reasonQty": -1
+                      "REASONQTY": -1
                     }
                   }
                 ]
@@ -1413,19 +1401,19 @@ class INTLV2(BaseType):
         
         yellowList = self._getEFA_impReason()
 
-        prodNbrPassQty = 0
+        prodNbrPASSQTY = 0
         for p in _pData:
-            prodNbrPassQty += p["passQty"]
+            prodNbrPASSQTY += p["PASSQTY"]
         
         returnData = []
         for r in _rData:
             COLOR = "#ffd166" if r["DFCT_REASON"] in yellowList else "#0A8040"
-            REASONYIELD = round(r["reasonQty"] / prodNbrPassQty, 6) if r["reasonQty"] != 0 and prodNbrPassQty != 0 else 0
+            REASONYIELD = round(r["REASONQTY"] / prodNbrPASSQTY, 6) if r["REASONQTY"] != 0 and prodNbrPASSQTY != 0 else 0
             returnData.append({
-                "PASSQTY": prodNbrPassQty,
+                "PASSQTY": prodNbrPASSQTY,
                 "DFCT_REASON": r["DFCT_REASON"],
                 "REASON_DESC": r["REASON_DESC"],
-                "REASONQTY": r["reasonQty"],
+                "REASONQTY": r["REASONQTY"],
                 "REASONYIELD": REASONYIELD,
                 "COLOR": COLOR
             })        
@@ -1436,9 +1424,10 @@ class INTLV2(BaseType):
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         tmpACCT_DATE = self.jsonData["ACCT_DATE"]
-        tmpAPPLICATION = self.jsonData["APPLICATION"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]        
+        tmpPROD_NBR = self.jsonData["PROD_NBR"]
         passAggregate = []
-        deftAggregate = []
+        deftAggregate = []        
 
         # pass
         passMatch1 = {
@@ -1534,7 +1523,6 @@ class INTLV2(BaseType):
         deftunwind1 = {
             "$unwind": "$deftCodeList"
         }
-
         deftGroup1 = {
             "$group": {
                 "_id": {
@@ -1544,7 +1532,9 @@ class INTLV2(BaseType):
                     "PROD_NBR": "$PROD_NBR",
                     "ACCT_DATE": "$ACCT_DATE",
                     "APPLICATION": "$APPLICATION",
-                    "MAIN_WC": "$MAIN_WC"
+                    "MAIN_WC": "$MAIN_WC",
+                    "DFCT_CODE": "$DFCT_CODE",
+                    "ERRC_DESCR": "$ERRC_DESCR"
                 },
                 "DEFT_QTY": {
                     "$sum": {"$toInt": "$QTY"}
@@ -1560,7 +1550,9 @@ class INTLV2(BaseType):
                 "PROD_NBR": "$_id.PROD_NBR",
                 "ACCT_DATE": "$_id.ACCT_DATE",
                 "APPLICATION": "$_id.APPLICATION",
-                "MAIN_WC": "$_id.MAIN_WC",
+                "MAIN_WC": "$_id.MAIN_WC",                
+                "DFCT_CODE": "$_id.DFCT_CODE",
+                "ERRC_DESCR": "$_id.ERRC_DESCR",
                 "DEFT_QTY": "$DEFT_QTY"
             }
         }
@@ -1579,6 +1571,9 @@ class INTLV2(BaseType):
         if tmpAPPLICATION != "ALL":
             passMatch1["$match"]["APPLICATION"] = tmpAPPLICATION
             deftMatch1["$match"]["APPLICATION"] = tmpAPPLICATION
+        if tmpPROD_NBR != '':
+            passMatch1["$match"]["PROD_NBR"] = tmpPROD_NBR
+            deftMatch1["$match"]["PROD_NBR"] = tmpPROD_NBR
 
         passAggregate.extend([passMatch1, passGroup1, passProject1, passSort])
         deftAggregate.extend(
@@ -1610,6 +1605,33 @@ class INTLV2(BaseType):
             self.writeError(
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
+
+    def _calEFALV2_21_Data(self, dData, pData):
+        _dData = []            
+        for e in dData:       
+            _dData.append(e) 
+        _pData = []            
+        for p in pData:       
+            _pData.append(p) 
+        
+        prodNbrPASSQTY = 0
+        for p in _pData:
+            prodNbrPASSQTY += p["PASS_QTY"]
+        returnData = []
+        for r in _dData:
+            DEFTYIELD = round(r["DEFT_QTY"] / prodNbrPASSQTY, 6) if r["DEFT_QTY"] != 0 and prodNbrPASSQTY != 0 else 0
+            returnData.append({
+                "PASSQTY": prodNbrPASSQTY,
+                "DFCT_CODE": r["DFCT_CODE"],
+                "ERRC_DESCR": r["ERRC_DESCR"],
+                "PASSQTY": prodNbrPASSQTY,
+                "DEFTQTY": r["DEFT_QTY"],
+                "DEFTYIELD": DEFTYIELD
+            })        
+
+        returnData.sort(key=operator.itemgetter("DEFTQTY"), reverse=True)
+        
+        return returnData
 
     def _getEFA_impReason(self):
         try:
