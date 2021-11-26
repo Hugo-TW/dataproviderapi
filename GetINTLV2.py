@@ -1326,7 +1326,6 @@ class INTLV2(BaseType):
             passAggregate[0]["$match"]["PROD_NBR"] = tmpPROD_NBR
         if tmpCHECKCODE != '':
             reasonAggregate[0]["$match"]["DFCT_CODE"] = tmpCHECKCODE
-
         try:
             self.getMongoConnection()
             self.setMongoDb("IAMP")
