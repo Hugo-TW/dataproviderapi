@@ -1392,6 +1392,8 @@ class INTLV2(BaseType):
             return "error"
 
     def _calEFALV2_3_Data(self, rdata, pdata):
+        tmpPROD_NBR = self.jsonData["PROD_NBR"]
+        tmpOPER = self.jsonData["OPER"] if "OPER" in self.jsonData else "CKEN"
         _rData = []            
         for e in rdata:       
             _rData.append(e) 
@@ -1415,7 +1417,9 @@ class INTLV2(BaseType):
                 "REASON_DESC": r["REASON_DESC"],
                 "REASONQTY": r["REASONQTY"],
                 "REASONYIELD": REASONYIELD,
-                "COLOR": COLOR
+                "COLOR": COLOR,
+                "PROD_NBR": tmpPROD_NBR,
+                "OPER": tmpOPER
             })        
         return returnData
 
@@ -1607,6 +1611,8 @@ class INTLV2(BaseType):
             return "error"
 
     def _calEFALV2_21_Data(self, dData, pData):
+        tmpPROD_NBR = self.jsonData["PROD_NBR"]
+        tmpOPER = self.jsonData["OPER"] if "OPER" in self.jsonData else "CKEN"
         _dData = []            
         for e in dData:       
             _dData.append(e) 
@@ -1626,7 +1632,9 @@ class INTLV2(BaseType):
                 "ERRC_DESCR": r["ERRC_DESCR"],
                 "PASSQTY": prodNbrPASSQTY,
                 "DEFTQTY": r["DEFT_QTY"],
-                "DEFTYIELD": DEFTYIELD
+                "DEFTYIELD": DEFTYIELD,
+                "PROD_NBR": tmpPROD_NBR,
+                "OPER": tmpOPER
             })        
 
         returnData.sort(key=operator.itemgetter("DEFTQTY"), reverse=True)
