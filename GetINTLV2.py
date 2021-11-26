@@ -353,7 +353,7 @@ class INTLV2(BaseType):
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
             #二階 MSHIP PIE API
-            elif tmpKPITYPE == "EFALV2_3":    
+            elif tmpKPITYPE == "EFALV2_3" or tmpKPITYPE == "EFALV2_22":    
                 expirTimeKey = tmpFACTORY_ID + '_REASON'
 
                 OPERDATA = {
