@@ -353,7 +353,7 @@ class INTLV2(BaseType):
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
             #二階 MSHIP PIE API
-            elif tmpKPITYPE == "EFALV2_3" or tmpKPITYPE == "EFALV2_22":    
+            elif tmpKPITYPE == "EFALV2_3":    
                 expirTimeKey = tmpFACTORY_ID + '_REASON'
 
                 OPERDATA = {
@@ -387,6 +387,53 @@ class INTLV2(BaseType):
                     "DATASERIES": DATASERIES
                 }
                 
+                self.getRedisConnection()
+                if self.searchRedisKeys(redisKey):     
+                    self.setRedisData(redisKey, json.dumps(
+                        returnData, sort_keys=True, indent=2), self.getKeyExpirTime(expirTimeKey))
+                else:
+                    self.setRedisData(redisKey, json.dumps(
+                        returnData, sort_keys=True, indent=2), 60)
+                return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+
+            #二階 MSHIP PIE API
+            elif tmpKPITYPE == "EFALV2_21":    
+                expirTimeKey = tmpFACTORY_ID + '_DEFT'
+
+                OPERDATA = {
+                        "BONDING":{"OPER": [1300,1301]},
+                        "LAM":{"OPER": [1340,1370]},
+                        "AAFC":{"OPER": [1419,1420]},
+                        "TPI":{"OPER": [1510]},
+                        "OTPC":{"OPER": [1590]},
+                        "CKEN":{"OPER": [1600]}                         
+                    }         
+                OPERList = []
+                if tmpOPER == "ALL":
+                    for key, value in OPERDATA.items():
+                        OPERList.extend(value.get("OPER"))
+                else:
+                    OPERList.extend(OPERDATA[tmpOPER]["OPER"])
+
+                data = self._getEFALV2_21_Data(OPERList)
+                #groupEFAData = self._groupEFADatabyDeft(
+                #    efaData["dData"], efaData["pData"], tmpOPER)
+                #returnData = self._calPRODEFAData(groupEFAData, tmpOPER, OPERList)
+
+                #DATASERIES = self._calEFALV2_21_Data(data["rData"], data["pData"])
+
+                returnData = returnData = {                    
+                    "KPITYPE": tmpKPITYPE,
+                    "COMPANY_CODE": tmpCOMPANY_CODE,
+                    "SITE": tmpSITE,
+                    "FACTORY_ID": tmpFACTORY_ID,
+                    "APPLICATION": tmpAPPLICATION,
+                    "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
+                    "PROD_NBR": tmpPROD_NBR,
+                    "OPER": tmpOPER
+                }
+                #"DATASERIES": DATASERIES
+                
                 """
                 self.getRedisConnection()
                 if self.searchRedisKeys(redisKey):     
@@ -397,6 +444,7 @@ class INTLV2(BaseType):
                         returnData, sort_keys=True, indent=2), 60)
                 """
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+
 
             else:
                 return {'Result': 'Fail', 'Reason': 'Parametes[KPITYPE] not in Rule'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
@@ -1326,6 +1374,7 @@ class INTLV2(BaseType):
             passAggregate[0]["$match"]["PROD_NBR"] = tmpPROD_NBR
         if tmpCHECKCODE != '':
             reasonAggregate[0]["$match"]["DFCT_CODE"] = tmpCHECKCODE
+
         try:
             self.getMongoConnection()
             self.setMongoDb("IAMP")
@@ -1361,20 +1410,236 @@ class INTLV2(BaseType):
         _pData = []            
         for p in pdata:       
             _pData.append(p) 
+        
+        yellowList = self._getEFA_impReason()
 
         prodNbrPassQty = 0
         for p in _pData:
             prodNbrPassQty += p["passQty"]
-
+        
         returnData = []
         for r in _rData:
+            COLOR = "#ffd166" if r["DFCT_REASON"] in yellowList else "#0A8040"
             REASONYIELD = round(r["reasonQty"] / prodNbrPassQty, 6) if r["reasonQty"] != 0 and prodNbrPassQty != 0 else 0
             returnData.append({
                 "PASSQTY": prodNbrPassQty,
                 "DFCT_REASON": r["DFCT_REASON"],
                 "REASON_DESC": r["REASON_DESC"],
                 "REASONQTY": r["reasonQty"],
-                "REASONYIELD": REASONYIELD
+                "REASONYIELD": REASONYIELD,
+                "COLOR": COLOR
             })        
         return returnData
+
+    def _getEFALV2_21_Data(self, OPERList):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
+        passAggregate = []
+        deftAggregate = []
+
+        # pass
+        passMatch1 = {
+            "$match": {
+                "COMPANY_CODE": tmpCOMPANY_CODE,
+                "SITE": tmpSITE,
+                "FACTORY_ID": tmpFACTORY_ID,
+                "ACCT_DATE": tmpACCT_DATE,                
+                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]}
+            }
+        }
+        passGroup1 = {
+            "$group": {
+                "_id": {
+                    "COMPANY_CODE": "$COMPANY_CODE",
+                    "SITE": "$SITE",
+                    "FACTORY_ID": "$FACTORY_ID",
+                    "PROD_NBR": "$PROD_NBR",
+                    "ACCT_DATE": "$ACCT_DATE",
+                    "APPLICATION": "$APPLICATION",
+                    "MAIN_WC": "$MAIN_WC"
+                },
+                "PASS_QTY": {
+                    "$sum": {"$toInt": "$QTY"}
+                }
+            }
+        }
+        passProject1 = {
+            "$project": {
+                "_id": 0,
+                "COMPANY_CODE": "$_id.COMPANY_CODE",
+                "SITE": "$_id.SITE",
+                "FACTORY_ID": "$_id.FACTORY_ID",
+                "PROD_NBR": "$_id.PROD_NBR",
+                "ACCT_DATE": "$_id.ACCT_DATE",
+                "APPLICATION": "$_id.APPLICATION",
+                "MAIN_WC": "$_id.MAIN_WC",
+                "PASS_QTY": "$PASS_QTY"
+            }
+        }
+        passSort = {
+            "$sort": {
+                "COMPANY_CODE": 1,
+                "SITE": 1,
+                "FACTORY_ID": 1,
+                "PROD_NBR": 1,
+                "ACCT_DATE": 1,
+                "MAIN_WC": 1,
+                "APPLICATION": 1
+            }
+        }
+
+        # deft
+        deftMatch1 = {
+            "$match": {
+                "COMPANY_CODE": tmpCOMPANY_CODE,
+                "SITE": tmpSITE,
+                "FACTORY_ID": tmpFACTORY_ID,
+                "ACCT_DATE": tmpACCT_DATE,
+                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]}
+            }
+        }
+        deftlookup1 = {
+            "$lookup": {
+                "from": "deftCodeView",
+                "as": "deftCodeList",
+                "let": {
+                        "dfctCode": "$DFCT_CODE"
+                },
+                "pipeline": [
+                    {
+                        "$match": {
+                            "$expr": {
+                                "$and": [
+                                    {
+                                        "$eq": [
+                                            "$$dfctCode",
+                                            "$DEFECT_CODE"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "$project": {
+                            "DEFECT_CODE": 1
+                        }
+                    }
+                ]
+            }
+        }
+        deftunwind1 = {
+            "$unwind": "$deftCodeList"
+        }
+
+        deftGroup1 = {
+            "$group": {
+                "_id": {
+                    "COMPANY_CODE": "$COMPANY_CODE",
+                    "SITE": "$SITE",
+                    "FACTORY_ID": "$FACTORY_ID",
+                    "PROD_NBR": "$PROD_NBR",
+                    "ACCT_DATE": "$ACCT_DATE",
+                    "APPLICATION": "$APPLICATION",
+                    "MAIN_WC": "$MAIN_WC"
+                },
+                "DEFT_QTY": {
+                    "$sum": {"$toInt": "$QTY"}
+                }
+            }
+        }
+        deftProject1 = {
+            "$project": {
+                "_id": 0,
+                "COMPANY_CODE": "$_id.COMPANY_CODE",
+                "SITE": "$_id.SITE",
+                "FACTORY_ID": "$_id.FACTORY_ID",
+                "PROD_NBR": "$_id.PROD_NBR",
+                "ACCT_DATE": "$_id.ACCT_DATE",
+                "APPLICATION": "$_id.APPLICATION",
+                "MAIN_WC": "$_id.MAIN_WC",
+                "DEFT_QTY": "$DEFT_QTY"
+            }
+        }
+        deftSort = {
+            "$sort": {
+                "COMPANY_CODE": 1,
+                "SITE": 1,
+                "FACTORY_ID": 1,
+                "PROD_NBR": 1,
+                "ACCT_DATE": 1,
+                "MAIN_WC": 1,
+                "APPLICATION": 1
+            }
+        }
+
+        if tmpAPPLICATION != "ALL":
+            passMatch1["$match"]["APPLICATION"] = tmpAPPLICATION
+            deftMatch1["$match"]["APPLICATION"] = tmpAPPLICATION
+
+        passAggregate.extend([passMatch1, passGroup1, passProject1, passSort])
+        deftAggregate.extend(
+            [deftMatch1, deftlookup1, deftunwind1, deftGroup1, deftProject1, deftSort])
+
+        try:
+            self.getMongoConnection()
+            self.setMongoDb("IAMP")
+            self.setMongoCollection("passHisAndCurrent")
+            pData = self.aggregate(passAggregate)
+            self.setMongoCollection("deftHisAndCurrent")
+            dData = self.aggregate(deftAggregate)
+            self.closeMongoConncetion()
+
+            returnData = {
+                "pData": pData,
+                "dData": dData
+            }
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+    def _getEFA_impReason(self):
+        try:
+            self.getMongoConnection()
+            self.setMongoDb("IAMP")
+            self.setMongoCollection("excelToJson")
+            reqParm={
+                "_id": "MOD2_DEFECT_DEV@J001-alarmReason"
+            }
+            projectionFields={
+                "_id": False,
+                "DATA": True
+            }
+            deftData = self.getMongoFind(reqParm,projectionFields)
+            self.closeMongoConncetion()
+            returnData = []
+            for d in deftData:    
+                for x in d["DATA"]:                  
+                    returnData.append(x["REASON_CODE"])
+            return returnData
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
 
