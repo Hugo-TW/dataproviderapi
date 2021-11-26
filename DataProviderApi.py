@@ -2032,15 +2032,15 @@ class getINTTALK(Resource):
 
 INTRelationNs = api.namespace('GetINTRelation', description = 'NTRelation')
 INTRelationML = api.model('GetINTRelation', {
-    'FUNCTYPE': fields.String( required = True, description = 'FUNCTYPE', default = 'REASON_PROD', example = 'REASON_PROD'),
+    'FUNCTYPE': fields.String( required = True, description = 'FUNCTYPE', default = 'REASON_PROD2', example = 'REASON_PROD2'),
     'COMPANY_CODE': fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
     'SITE': fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
     'FACTORY_ID': fields.String( required = True, description = 'FACTORY_ID', default = 'J001', example = 'J001'),
     'APPLICATION': fields.String( required = True, description = 'APPLICATION', default = 'ALL', example = 'ALL'),
-    'ACCT_DATE': fields.String( required = True, description = 'ACCT_DATE', default = '20210715', example = '20210715'),
-    'PROD_NBR' : fields.String( required = True, description = '機種編碼', default = 'GP101KZD0210S', example = 'GP101KZD0210S'), 
-    'OPER' : fields.String( required = True, description = '站點', default = '1409', example = '1409'), 
-    'CHECKCODE' : fields.String( required = True, description = 'Defect or Reason Code', default = 'FAFD0-1', example = 'FAFD0-1') 
+    'ACCT_DATE': fields.String( required = True, description = 'ACCT_DATE', default = '20211125', example = '20211125'),
+    'PROD_NBR' : fields.String( required = True, description = '機種編碼', default = 'GP062CCAC100S', example = 'GP062CCAC100S'), 
+    'OPER' : fields.String( required = True, description = '站點', default = 'CKEN', example = 'CKEN'), 
+    'CHECKCODE' : fields.String( required = True, description = 'Defect or Reason Code', default = 'FAGEE-1', example = 'FAGEE-1') 
 })
 @INTRelationNs.route('', methods = ['POST'])
 @INTRelationNs.response(200, 'Sucess')
