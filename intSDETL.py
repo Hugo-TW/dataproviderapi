@@ -27,7 +27,7 @@ class INTSDETL():
             tmpDATATYPE = self.jsonData["DATATYPE"]
 
             #一階 FPY KPI API
-            if tmpDATATYPE == "FPY" or tmpDATATYPE == "MSHIP":                   
+            if tmpDATATYPE == "FPY" or tmpDATATYPE == "MSHIP" or tmpDATATYPE == "EFA":                   
                 returnData= self._insertData(self.jsonData) 
                 return returnData, returnData["status_code"], {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
             else:

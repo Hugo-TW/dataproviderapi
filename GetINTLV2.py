@@ -477,7 +477,6 @@ class INTLV2(BaseType):
                 
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
-
             else:
                 return {'Result': 'Fail', 'Reason': 'Parametes[KPITYPE] not in Rule'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
@@ -1951,7 +1950,8 @@ class INTLV2(BaseType):
                         "COMPANY_CODE": "$COMPANY_CODE",
                         "SITE": "$SITE",
                         "FACTORY_ID": "$FACTORY_ID",
-                        "WORK_CTR": "$WORK_CTR"
+                        "WORK_CTR": "$WORK_CTR",
+                        "PROD_NBR" : "$PROD_NBR"
                       },
                       "TOTALQTY": {
                         "$sum": {
@@ -2003,6 +2003,26 @@ class INTLV2(BaseType):
                           "$toInt": "$QTY45"
                         }
                       }}
+                  },
+                  {
+                      "$project": {
+                        "_id": 0,
+                        "COMPANY_CODE": "$_id.COMPANY_CODE",
+                        "SITE": "$_id.SITE",
+                        "FACTORY_ID": "$_id.FACTORY_ID",
+                        "WORK_CTR": "$_id.WORK_CTR",
+                        "PROD_NBR" : "$_id.PROD_NBR",
+                        "TOTALQTY": "$TOTALQTY",
+                        "QTY1": "$QTY1",
+                        "QTY2": "$QTY2",
+                        "QTY3": "$QTY3",
+                        "QTY5": "$QTY5",
+                        "QTY7": "$QTY7",
+                        "QTY15": "$QTY15",
+                        "QTY30": "$QTY30",
+                        "QTY31": "$QTY31",
+                        "QTY45": "$QTY45"
+                      }
                   }
                 ]
         
@@ -2037,23 +2057,35 @@ class INTLV2(BaseType):
             
         returnData = []
         for pn in _pData:  
+            oneDay = 0
+            oneThreeDay = 0
+            threeDay = 0
             oneDay = pn["QTY1"]   
             oneThreeDay = pn["QTY2"] + pn["QTY3"]
             threeDay = pn["QTY5"] + pn["QTY7"] + pn["QTY15"] + pn["QTY30"]+ pn["QTY31"] + pn["QTY45"]
-            returnData.append({
-                "days":"3day~",
-                "qty":threeDay,
-                "color": "red"
-            })
-            returnData.append({
-                "days":"1day~3day",
-                "qty":oneThreeDay,
-                "color": "yellow"
-            })
-            returnData.append({
-                "days":"~24hr",
-                "qty":oneDay,
-                "color": "green"
-            })
+            if threeDay != 0:
+                returnData.append({
+                    "days":"3day~",
+                    "qty":threeDay,
+                    "color": "red",
+                    "PROD_NBR" : pn["PROD_NBR"],
+                    "XVALUE": 0
+                })
+            if oneThreeDay != 0:
+                returnData.append({
+                    "days":"1day~3day",
+                    "qty":oneThreeDay,
+                    "color": "yellow",
+                    "PROD_NBR" : pn["PROD_NBR"],
+                    "XVALUE": 1
+                })
+            if oneDay != 0:
+                returnData.append({
+                    "days":"~24hr",
+                    "qty":oneDay,
+                    "color": "green",
+                    "PROD_NBR" : pn["PROD_NBR"],
+                    "XVALUE": 2
+                })
         return returnData
 

@@ -462,6 +462,40 @@ class INTKPI(BaseType):
                     efaData["dData"], efaData["pData"], tmpOPER)
                 returnData = self._calPRODEFAData(groupEFAData, tmpOPER, OPERList)
 
+
+                # 存到 redis 暫存
+                """self.getRedisConnection()
+                if self.searchRedisKeys(redisKey):
+                    self.setRedisData(redisKey, json.dumps(
+                        returnData, sort_keys=True, indent=2), self.getKeyExpirTime(expirTimeKey))
+                else:
+                    self.setRedisData(redisKey, json.dumps(
+                        returnData, sort_keys=True, indent=2), 60)"""
+
+                return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+
+            elif tmpKPITYPE == "PRODEFALIST":                            
+                expirTimeKey = tmpFACTORY_ID + '_DEFT'
+                OPERDATA = {
+                        "BONDING":{"OPER": [1300,1301]},
+                        "LAM":{"OPER": [1340,1370]},
+                        "AAFC":{"OPER": [1419,1420]},
+                        "TPI":{"OPER": [1510]},
+                        "OTPC":{"OPER": [1590]},
+                        "CKEN":{"OPER": [1600]}                         
+                    }         
+                OPERList = []
+                if tmpOPER == "ALL":
+                    for key, value in OPERDATA.items():
+                        OPERList.extend(value.get("OPER"))
+                else:
+                    OPERList.extend(OPERDATA[tmpOPER]["OPER"])
+
+                efaData = self._getEFADatabyDeft(OPERList)
+                groupEFAData = self._groupEFADatabyDeft(
+                    efaData["dData"], efaData["pData"], tmpOPER)
+                returnData = self._calPRODEFAListData(groupEFAData, tmpOPER, OPERList)
+
                 # 存到 redis 暫存
                 self.getRedisConnection()
                 if self.searchRedisKeys(redisKey):
@@ -472,7 +506,6 @@ class INTKPI(BaseType):
                         returnData, sort_keys=True, indent=2), 60)
 
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
-
 
             else:
                 return {'Result': 'Fail', 'Reason': 'Parametes[KPITYPE] not in Rule'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
@@ -1107,7 +1140,7 @@ class INTKPI(BaseType):
             selectlistData.append(
                 {
                     "value": x["PROD_NBR"],
-                    "text": f'({x["RANK"]}){x["PROD_NBR"]}-FPY:{round(x["YIELD"],4)*100}%-'\
+                    "text": f'({x["RANK"]}){x["PROD_NBR"]}-FPY:{float("{0:.4f}".format(x["YIELD"]))*100}%-'\
                         f'Pass:{_pass}'
                 }
             )
@@ -2378,6 +2411,120 @@ class INTKPI(BaseType):
         }
 
         return returnData
+
+    def _calPRODEFAListData(self, EFAData, OPER, OPERList):
+        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpSITE = self.jsonData["SITE"]
+        getLimitData = self.operSetData[tmpFACTORY_ID]["EFA"]["limit"] if tmpSITE == "TN" else {}
+
+        yellowList = []
+        for d in self._getEFA_impReason():    
+            for x in d["DATA"]:                  
+                yellowList.append(x["REASON_CODE"])
+
+        PRODList = []
+        for x in EFAData:
+            if {"PROD_NBR": x["PROD_NBR"], "APPLICATION": x["APPLICATION"]} not in PRODList:
+                PRODList.append(
+                    {"PROD_NBR": x["PROD_NBR"], "APPLICATION": x["APPLICATION"]})
+   
+        DATASERIES = []  
+        targrt = 0.003
+        targrtQTY = 3000
+        for prod in PRODList:
+            d1 = list(filter(lambda d: d["PROD_NBR"]
+                      == prod["PROD_NBR"], EFAData))
+            if prod["APPLICATION"] in getLimitData.keys():
+                targrt = getLimitData[prod["APPLICATION"]]["target"]
+                targrtQTY = getLimitData[prod["APPLICATION"]]["qytlim"]            
+            
+            DEFECT_RATE = 0
+            sumPASSQTY = 0
+            sumDEFTQTY = 0   
+            if len(d1) > 0:         
+                sdCheck = False #單項不良率超標
+                checkTargrtAndQyt = list(
+                    filter(lambda d: d["PASS_QTY"] >= targrtQTY and d["DEFECT_RATE"] >= targrt, d1)) 
+                sdCheck = False if len(checkTargrtAndQyt) > 0 else True 
+                
+                tdCheck = False #總不良率超標
+                sumPASSQTY = d1[0]["PASS_QTY"]
+                for x in d1:
+                    sumDEFTQTY += x["DEFT_QTY"]
+                DEFECT_RATE = round(sumDEFTQTY / sumPASSQTY, 4) if sumPASSQTY != 0 and sumDEFTQTY  != 0 else 0
+                tdCheck = False if sumPASSQTY >= targrtQTY and DEFECT_RATE >= targrt else True
+
+                rCheck = False #潛在不良(REASON CODE)
+                _ReasonData = self._getProdReasonData(prod["PROD_NBR"],yellowList, OPERList)
+                checkYellow = []
+                for x in _ReasonData:
+                    checkYellow.append(x)
+                rCheck = False if len(checkYellow) > 0 else True
+                
+                #SYMBOL
+                SYMBOL= ""
+                if sdCheck == False and rCheck == False:
+                    SYMBOL = "diamond"
+                elif sdCheck == True and rCheck == False:
+                    SYMBOL = "triangle-down"
+                elif sdCheck == False and rCheck == True:
+                    SYMBOL = "triangle"
+                else:
+                    SYMBOL = "circle"
+                #COLOR
+                COLOR= ""
+                if tdCheck == True and sdCheck == True and rCheck == True:
+                    COLOR = "#06d6a0"
+                elif tdCheck == True and sdCheck == True and rCheck == False:
+                    COLOR = "#ffd166"
+                else :
+                    COLOR = "#ef476f"
+
+                DATASERIES.append({
+                        "APPLICATION": prod["APPLICATION"],
+                        "PROD_NBR": prod["PROD_NBR"],
+                        "YIELD": DEFECT_RATE,
+                        "DEFECT_RATE": DEFECT_RATE,
+                        "COLOR": COLOR,
+                        "SYMBOL": SYMBOL,
+                        "QTY": sumPASSQTY
+                    })
+
+        # red ef476f
+        # yellow ffd166
+        # green 06d6a0
+        # blue 118AB2
+        # midGreen 073b4c
+        # 因為使用 operator.itemgetter 方法 排序順序要反過來執行
+        # 不同欄位key 排序方式不同時 需要 3 - 2 - 1  反順序去寫code
+        DATASERIES.sort(key=operator.itemgetter("QTY"), reverse=True)
+        DATASERIES.sort(key=operator.itemgetter("YIELD"), reverse=True)
+
+        length = len(DATASERIES)
+        rank = 1
+        for x in range(length):
+            DATASERIES[x]["RANK"] = rank
+            rank += 1
+
+        selectlistData = []
+        for x in DATASERIES:
+            _pass = f'{round(int(x["QTY"])/1000,1)}k' if int(x["QTY"]) > 99 else f'{int(x["QTY"])}'
+            selectlistData.append(
+                {
+                    "value": x["PROD_NBR"],
+                    "text": f'({x["RANK"]}){x["PROD_NBR"]}-DEFT RATE:{round(x["YIELD"],4)*100}%-'\
+                        f'Pass:{_pass}'
+                }
+            )
+
+        returnData = {
+            "TITLE": "快選機種",
+            "SELECTLIST": selectlistData
+        }
+
+        return returnData
+
 
     def _zipDescriptionAndData(self, description, data):
         """ 取得 description和data壓縮後資料
