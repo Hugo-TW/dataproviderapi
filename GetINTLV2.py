@@ -433,6 +433,50 @@ class INTLV2(BaseType):
                 """
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
+            elif tmpKPITYPE == "EFALV2_WIP_1":    
+                expirTimeKey = tmpFACTORY_ID + '_WIP'
+
+                data = self._getEFALV2_WIP_1_Data()
+
+                DATASERIES = self._calEFALV2_WIP_1_Data(data["faWip"], data["prodNbrWip"])
+
+                returnData = returnData = {                    
+                    "KPITYPE": tmpKPITYPE,
+                    "COMPANY_CODE": tmpCOMPANY_CODE,
+                    "SITE": tmpSITE,
+                    "FACTORY_ID": tmpFACTORY_ID,
+                    "APPLICATION": tmpAPPLICATION,
+                    "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
+                    "PROD_NBR": tmpPROD_NBR,
+                    "OPER": tmpOPER,
+                    "FADATA": DATASERIES["faData"],
+                    "PRODDATA1": DATASERIES["prodData1"],
+                    "PRODDATA2": DATASERIES["prodData2"]
+                }
+                
+                return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+
+            elif tmpKPITYPE == "EFALV2_WIP_2":    
+                expirTimeKey = tmpFACTORY_ID + '_WIP'
+
+                data = self._getEFALV2_WIP_2_Data()
+
+                DATASERIES = self._calEFALV2_WIP_2_Data(data)
+
+                returnData = returnData = {                    
+                    "KPITYPE": tmpKPITYPE,
+                    "COMPANY_CODE": tmpCOMPANY_CODE,
+                    "SITE": tmpSITE,
+                    "FACTORY_ID": tmpFACTORY_ID,
+                    "APPLICATION": tmpAPPLICATION,
+                    "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
+                    "PROD_NBR": tmpPROD_NBR,
+                    "OPER": tmpOPER,
+                    "DATASERIES": DATASERIES
+                }
+                
+                return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+
 
             else:
                 return {'Result': 'Fail', 'Reason': 'Parametes[KPITYPE] not in Rule'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
@@ -1672,4 +1716,344 @@ class INTLV2(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
+    def _getEFALV2_WIP_1_Data(self):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
+        tmpPROD_NBR = self.jsonData["PROD_NBR"]
+        tmpCHECKCODE = self.jsonData["CHECKCODE"] if "CHECKCODE" in self.jsonData else ""
+
+        faWipAggregate =[
+                  {
+                    "$match": {
+                      "COMPANY_CODE": tmpCOMPANY_CODE,
+                      "SITE": tmpSITE,
+                      "FACTORY_ID": tmpFACTORY_ID,
+                      "ACCT_DATE": tmpACCT_DATE,
+                      "WORK_CTR": "2110"
+                    }
+                  },
+                  {
+                    "$group": {
+                      "_id": {
+                        "COMPANY_CODE": "$COMPANY_CODE",
+                        "SITE": "$SITE",
+                        "FACTORY_ID": "$FACTORY_ID",
+                        "WORK_CTR": "$WORK_CTR"
+                      },
+                      "TOTALQTY": {
+                        "$sum": {
+                          "$toInt": "$QTY"
+                        }
+                      }
+                    }
+                  }
+                ]
+        
+        prodNbrWipAggregate = [
+                  {
+                    "$match": {
+                      "COMPANY_CODE": tmpCOMPANY_CODE,
+                      "SITE": tmpSITE,
+                      "FACTORY_ID": tmpFACTORY_ID,
+                      "ACCT_DATE": tmpACCT_DATE,
+                      "PROD_NBR": tmpPROD_NBR,
+                      "WORK_CTR": "2110"
+                    }
+                  },
+                  {
+                    "$group": {
+                      "_id": {
+                        "COMPANY_CODE": "$COMPANY_CODE",
+                        "SITE": "$SITE",
+                        "FACTORY_ID": "$FACTORY_ID",
+                        "WORK_CTR": "$WORK_CTR"
+                      },
+                      "TOTALQTY": {
+                        "$sum": {
+                          "$toInt": "$QTY"
+                        }
+                      },
+                      "QTY1": {
+                        "$sum": {
+                          "$toInt": "$QTY1"
+                        }
+                      },
+                      "QTY2": {
+                        "$sum": {
+                          "$toInt": "$QTY2"
+                        }
+                      },
+                      "QTY3": {
+                        "$sum": {
+                          "$toInt": "$QTY3"
+                        }
+                      },
+                      "QTY5": {
+                        "$sum": {
+                          "$toInt": "$QTY5"
+                        }
+                      },
+                      "QTY7": {
+                        "$sum": {
+                          "$toInt": "$QTY7"
+                        }
+                      },
+                      "QTY15": {
+                        "$sum": {
+                          "$toInt": "$QTY15"
+                        }
+                      },
+                      "QTY30": {
+                        "$sum": {
+                          "$toInt": "$QTY30"
+                        }
+                      },
+                      "QTY31": {
+                        "$sum": {
+                          "$toInt": "$QTY31"
+                        }
+                      },
+                      "QTY45": {
+                        "$sum": {
+                          "$toInt": "$QTY45"
+                        }
+                      }}
+                  }
+                ]
+        
+        if tmpAPPLICATION != 'ALL':
+            faWipAggregate[0]["$match"]["APPLICATION"] = tmpAPPLICATION
+            prodNbrWipAggregate[0]["$match"]["APPLICATION"] = tmpAPPLICATION
+        try:
+            self.getMongoConnection()
+            self.setMongoDb("IAMP")
+            self.setMongoCollection("wipHisAndCurrent")
+            faWip = self.aggregate(faWipAggregate)
+            prodNbrWip = self.aggregate(prodNbrWipAggregate)
+            self.closeMongoConncetion()
+
+            returnData = {
+                "faWip": faWip,
+                "prodNbrWip": prodNbrWip
+            }
+
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+    def _calEFALV2_WIP_1_Data(self, faWip, prodNbrWip):
+        _fData = []            
+        for e in faWip:       
+            _fData.append(e) 
+        _pData = []            
+        for p in prodNbrWip:       
+            _pData.append(p) 
+                           
+        faData = {}
+        for fa in _fData:       
+            faData= {
+                "y": fa["TOTALQTY"],
+                "name": "FA 2110 WIP",
+                "color": "#058DC7",
+                "radius": '112%',
+                "innerRadius": '88%'
+            }
+
+        prodData1 = {
+            "y": 0,
+            "name": "PROD_NBR",
+            "color": "#656565",
+            "radius": '87%',
+            "innerRadius": '63%'
+        }
+        prodData2 = {
+            "y": 0,
+            "name":"< 24hrs",
+            "color": "#8CE66A",
+            "radius": '62%',
+            "innerRadius": '38%',
+            "underColor": "#D1F5C4"
+        }
+        for pn in _pData:       
+            prodData1 = {
+                "y": pn["TOTALQTY"],
+                "name": "PROD_NBR",
+                "color": "#656565",
+                "radius": '87%',
+                "innerRadius": '63%'
+            } 
+            _name = ""
+            _y = ""
+            _fontColor = ""
+            _underColor = ""
+            _OVERONEDAYQTY = pn["QTY2"] + pn["QTY3"]+ pn["QTY5"]+ pn["QTY7"]+ pn["QTY15"] \
+                + pn["QTY30"]+ pn["QTY31"] + pn["QTY45"]
+            if _OVERONEDAYQTY > 0 :
+                _name = "> 24hrs"
+                _y = _OVERONEDAYQTY
+                _fontColor = "#F9CE24" #黃色
+                _underColor = "#FAEDB9"  #淺黃色            
+            else:
+                _name = "< 24hrs"
+                _y = pn["QTY1"]
+                _fontColor = "#8CE66A"  #綠色
+                _underColor = "#D1F5C4"  #淺綠色            
+            prodData2 = {
+                "y": _y,
+                "name": _name,
+                "color": _fontColor,
+                "radius": '62%',
+                "innerRadius": '38%',
+                "underColor": _underColor
+            }
+
+        returnData = {
+            "faData":faData,
+            "prodData1":prodData1,
+            "prodData2":prodData2
+        }
+        
+        return returnData
+
+    def _getEFALV2_WIP_2_Data(self):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
+        
+        wipAggregate = [
+                  {
+                    "$match": {
+                      "COMPANY_CODE": tmpCOMPANY_CODE,
+                      "SITE": tmpSITE,
+                      "FACTORY_ID": tmpFACTORY_ID,
+                      "ACCT_DATE": tmpACCT_DATE,
+                      "WORK_CTR": "2110"
+                    }
+                  },
+                  {
+                    "$group": {
+                      "_id": {
+                        "COMPANY_CODE": "$COMPANY_CODE",
+                        "SITE": "$SITE",
+                        "FACTORY_ID": "$FACTORY_ID",
+                        "WORK_CTR": "$WORK_CTR"
+                      },
+                      "TOTALQTY": {
+                        "$sum": {
+                          "$toInt": "$QTY"
+                        }
+                      },
+                      "QTY1": {
+                        "$sum": {
+                          "$toInt": "$QTY1"
+                        }
+                      },
+                      "QTY2": {
+                        "$sum": {
+                          "$toInt": "$QTY2"
+                        }
+                      },
+                      "QTY3": {
+                        "$sum": {
+                          "$toInt": "$QTY3"
+                        }
+                      },
+                      "QTY5": {
+                        "$sum": {
+                          "$toInt": "$QTY5"
+                        }
+                      },
+                      "QTY7": {
+                        "$sum": {
+                          "$toInt": "$QTY7"
+                        }
+                      },
+                      "QTY15": {
+                        "$sum": {
+                          "$toInt": "$QTY15"
+                        }
+                      },
+                      "QTY30": {
+                        "$sum": {
+                          "$toInt": "$QTY30"
+                        }
+                      },
+                      "QTY31": {
+                        "$sum": {
+                          "$toInt": "$QTY31"
+                        }
+                      },
+                      "QTY45": {
+                        "$sum": {
+                          "$toInt": "$QTY45"
+                        }
+                      }}
+                  }
+                ]
+        
+        if tmpAPPLICATION != 'ALL':
+            wipAggregate[0]["$match"]["APPLICATION"] = tmpAPPLICATION
+
+        try:
+            self.getMongoConnection()
+            self.setMongoDb("IAMP")
+            self.setMongoCollection("wipHisAndCurrent")
+            faWip = self.aggregate(wipAggregate)
+            self.closeMongoConncetion()
+            returnData = faWip
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+    def _calEFALV2_WIP_2_Data(self, prodNbrWip):
+        _pData = []            
+        for p in prodNbrWip:       
+            _pData.append(p) 
+            
+        returnData = []
+        for pn in _pData:  
+            oneDay = pn["QTY1"]   
+            oneThreeDay = pn["QTY2"] + pn["QTY3"]
+            threeDay = pn["QTY5"] + pn["QTY7"] + pn["QTY15"] + pn["QTY30"]+ pn["QTY31"] + pn["QTY45"]
+            returnData.append({
+                "days":"3day~",
+                "qty":threeDay,
+                "color": "red"
+            })
+            returnData.append({
+                "days":"1day~3day",
+                "qty":oneThreeDay,
+                "color": "yellow"
+            })
+            returnData.append({
+                "days":"~24hr",
+                "qty":oneDay,
+                "color": "green"
+            })
+        return returnData
 
