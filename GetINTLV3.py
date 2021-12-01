@@ -410,19 +410,85 @@ class INTLV3(BaseType):
                 n2m_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n2m"], dataRange["n2m_array"], 1)
                 n1s_DATA = self._getFPYLV2LINEData(tmpOPER, tmpPROD_NBR, dataRange["n1s"], dataRange["n1s_array"], 0)
                 
-                DATASERIES = self._grouptFPYLV2LINE(
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n1d_DATA["dData"], n1d_DATA["pData"]), tmpOPER, dataRange["n1d"], 11),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n2d_DATA["dData"], n2d_DATA["pData"]), tmpOPER, dataRange["n2d"], 10),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n3d_DATA["dData"], n3d_DATA["pData"]), tmpOPER, dataRange["n3d"], 9),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n4d_DATA["dData"], n4d_DATA["pData"]), tmpOPER, dataRange["n4d"], 8),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n5d_DATA["dData"], n5d_DATA["pData"]), tmpOPER, dataRange["n5d"], 7),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n6d_DATA["dData"], n6d_DATA["pData"]), tmpOPER, dataRange["n6d"], 6),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n1w_DATA["dData"], n1w_DATA["pData"]), tmpOPER, dataRange["n1w"], 5),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n2w_DATA["dData"], n2w_DATA["pData"]), tmpOPER, dataRange["n2w"], 4),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n3w_DATA["dData"], n3w_DATA["pData"]), tmpOPER, dataRange["n3w"], 3),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n1m_DATA["dData"], n1m_DATA["pData"]), tmpOPER, dataRange["n1m"], 2),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n2m_DATA["dData"], n2m_DATA["pData"]), tmpOPER, dataRange["n2m"], 1),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPER(n1s_DATA["dData"], n1s_DATA["pData"]), tmpOPER, dataRange["n1s"], 0))
+                DATASERIES = self._groupDATALINE(
+                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(n1d_DATA["dData"], n1d_DATA["pData"]), tmpOPER, dataRange["n1d"], 11),
+                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(n2d_DATA["dData"], n2d_DATA["pData"]), tmpOPER, dataRange["n2d"], 10),
+                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(n3d_DATA["dData"], n3d_DATA["pData"]), tmpOPER, dataRange["n3d"], 9),
+                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(n4d_DATA["dData"], n4d_DATA["pData"]), tmpOPER, dataRange["n4d"], 8),
+                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(n5d_DATA["dData"], n5d_DATA["pData"]), tmpOPER, dataRange["n5d"], 7),
+                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(n6d_DATA["dData"], n6d_DATA["pData"]), tmpOPER, dataRange["n6d"], 6),
+                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(n1w_DATA["dData"], n1w_DATA["pData"]), tmpOPER, dataRange["n1w"], 5),
+                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(n2w_DATA["dData"], n2w_DATA["pData"]), tmpOPER, dataRange["n2w"], 4),
+                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(n3w_DATA["dData"], n3w_DATA["pData"]), tmpOPER, dataRange["n3w"], 3),
+                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(n1m_DATA["dData"], n1m_DATA["pData"]), tmpOPER, dataRange["n1m"], 2),
+                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(n2m_DATA["dData"], n2m_DATA["pData"]), tmpOPER, dataRange["n2m"], 1),
+                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(n1s_DATA["dData"], n1s_DATA["pData"]), tmpOPER, dataRange["n1s"], 0))
+
+                getLimitData = self.operSetData[tmpFACTORY_ID]["FPY"]["limit"] if tmpSITE == "TN" else {}
+                xLimit = None
+                yLimit = None
+                if self.__tmpAPPLICATION in getLimitData.keys():
+                    xLimit = getLimitData[self.__tmpAPPLICATION]["qytlim"]
+                    yLimit = getLimitData[self.__tmpAPPLICATION]["FPY"] * 100
+                else:
+                    xLimit = 1000
+                    yLimit = 90
+
+                returnData = {                    
+                    "KPITYPE": tmpKPITYPE,
+                    "COMPANY_CODE": tmpCOMPANY_CODE,
+                    "SITE": tmpSITE,
+                    "FACTORY_ID": tmpFACTORY_ID,
+                    "APPLICATION": tmpAPPLICATION,  
+                    "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
+                    "PROD_NBR": tmpPROD_NBR,                                      
+                    "OPER": tmpOPER,
+                    "xLimit": xLimit,
+                    "yLimit": 100-yLimit,
+                    "DATASERIES": DATASERIES
+                }
+
+                self.getRedisConnection()
+                if self.searchRedisKeys(redisKey):     
+                    self.setRedisData(redisKey, json.dumps(
+                        returnData, sort_keys=True, indent=2), self.getKeyExpirTime(expirTimeKey))
+                else:
+                    self.setRedisData(redisKey, json.dumps(
+                        returnData, sort_keys=True, indent=2), 60)  
+
+                return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+
+            elif tmpKPITYPE == "EFALV2DRLINE":                
+                expirTimeKey = tmpFACTORY_ID + '_PASS'
+
+                dataRange =  self._dataRangeMin(tmpACCT_DATE)
+
+                n1d_DATA = self._getEFALV2DRLINEData(tmpOPER, tmpPROD_NBR, dataRange["n1d"], dataRange["n1d_array"], 11)
+                n2d_DATA = self._getEFALV2DRLINEData(tmpOPER, tmpPROD_NBR, dataRange["n2d"], dataRange["n2d_array"], 10)
+                n3d_DATA = self._getEFALV2DRLINEData(tmpOPER, tmpPROD_NBR, dataRange["n3d"], dataRange["n3d_array"], 9)
+                n4d_DATA = self._getEFALV2DRLINEData(tmpOPER, tmpPROD_NBR, dataRange["n4d"], dataRange["n4d_array"], 8)
+                n5d_DATA = self._getEFALV2DRLINEData(tmpOPER, tmpPROD_NBR, dataRange["n5d"], dataRange["n5d_array"], 7)
+                n6d_DATA = self._getEFALV2DRLINEData(tmpOPER, tmpPROD_NBR, dataRange["n6d"], dataRange["n6d_array"], 6)
+                n1w_DATA = self._getEFALV2DRLINEData(tmpOPER, tmpPROD_NBR, dataRange["n1w"], dataRange["n1w_array"], 5)
+                n2w_DATA = self._getEFALV2DRLINEData(tmpOPER, tmpPROD_NBR, dataRange["n2w"], dataRange["n2w_array"], 4)
+                n3w_DATA = self._getEFALV2DRLINEData(tmpOPER, tmpPROD_NBR, dataRange["n3w"], dataRange["n3w_array"], 3)
+                n1m_DATA = self._getEFALV2DRLINEData(tmpOPER, tmpPROD_NBR, dataRange["n1m"], dataRange["n1m_array"], 2)
+                n2m_DATA = self._getEFALV2DRLINEData(tmpOPER, tmpPROD_NBR, dataRange["n2m"], dataRange["n2m_array"], 1)
+                n1s_DATA = self._getEFALV2DRLINEData(tmpOPER, tmpPROD_NBR, dataRange["n1s"], dataRange["n1s_array"], 0)
+                
+                DATASERIES = self._groupDATALINE(
+                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(n1d_DATA["dData"], n1d_DATA["pData"]), tmpOPER, dataRange["n1d"], 11),
+                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(n2d_DATA["dData"], n2d_DATA["pData"]), tmpOPER, dataRange["n2d"], 10),
+                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(n3d_DATA["dData"], n3d_DATA["pData"]), tmpOPER, dataRange["n3d"], 9),
+                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(n4d_DATA["dData"], n4d_DATA["pData"]), tmpOPER, dataRange["n4d"], 8),
+                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(n5d_DATA["dData"], n5d_DATA["pData"]), tmpOPER, dataRange["n5d"], 7),
+                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(n6d_DATA["dData"], n6d_DATA["pData"]), tmpOPER, dataRange["n6d"], 6),
+                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(n1w_DATA["dData"], n1w_DATA["pData"]), tmpOPER, dataRange["n1w"], 5),
+                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(n2w_DATA["dData"], n2w_DATA["pData"]), tmpOPER, dataRange["n2w"], 4),
+                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(n3w_DATA["dData"], n3w_DATA["pData"]), tmpOPER, dataRange["n3w"], 3),
+                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(n1m_DATA["dData"], n1m_DATA["pData"]), tmpOPER, dataRange["n1m"], 2),
+                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(n2m_DATA["dData"], n2m_DATA["pData"]), tmpOPER, dataRange["n2m"], 1),
+                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(n1s_DATA["dData"], n1s_DATA["pData"]), tmpOPER, dataRange["n1s"], 0))
 
                 getLimitData = self.operSetData[tmpFACTORY_ID]["FPY"]["limit"] if tmpSITE == "TN" else {}
                 xLimit = None
@@ -476,19 +542,19 @@ class INTLV3(BaseType):
                 n2m_DATA = self._getFPYLV2LINEDataALL(tmpOPER, tmpPROD_NBR, dataRange["n2m"], dataRange["n2m_array"], 1)
                 n1s_DATA = self._getFPYLV2LINEDataALL(tmpOPER, tmpPROD_NBR, dataRange["n1s"], dataRange["n1s_array"], 0)
                 
-                DATASERIES = self._grouptFPYLV2LINE(
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPERALL(n1d_DATA["dData"], n1d_DATA["pData"]), tmpOPER, dataRange["n1d"], 11),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPERALL(n2d_DATA["dData"], n2d_DATA["pData"]), tmpOPER, dataRange["n2d"], 10),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPERALL(n3d_DATA["dData"], n3d_DATA["pData"]), tmpOPER, dataRange["n3d"], 9),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPERALL(n4d_DATA["dData"], n4d_DATA["pData"]), tmpOPER, dataRange["n4d"], 8),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPERALL(n5d_DATA["dData"], n5d_DATA["pData"]), tmpOPER, dataRange["n5d"], 7),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPERALL(n6d_DATA["dData"], n6d_DATA["pData"]), tmpOPER, dataRange["n6d"], 6),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPERALL(n1w_DATA["dData"], n1w_DATA["pData"]), tmpOPER, dataRange["n1w"], 5),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPERALL(n2w_DATA["dData"], n2w_DATA["pData"]), tmpOPER, dataRange["n2w"], 4),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPERALL(n3w_DATA["dData"], n3w_DATA["pData"]), tmpOPER, dataRange["n3w"], 3),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPERALL(n1m_DATA["dData"], n1m_DATA["pData"]), tmpOPER, dataRange["n1m"], 2),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPERALL(n2m_DATA["dData"], n2m_DATA["pData"]), tmpOPER, dataRange["n2m"], 1),
-                    self._calFPYLV2LINEOPER(self._groupPassDeftByPRODandOPERALL(n1s_DATA["dData"], n1s_DATA["pData"]), tmpOPER, dataRange["n1s"], 0))
+                DATASERIES = self._groupDATALINE(
+                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPERALL(n1d_DATA["dData"], n1d_DATA["pData"]), tmpOPER, dataRange["n1d"], 11),
+                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPERALL(n2d_DATA["dData"], n2d_DATA["pData"]), tmpOPER, dataRange["n2d"], 10),
+                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPERALL(n3d_DATA["dData"], n3d_DATA["pData"]), tmpOPER, dataRange["n3d"], 9),
+                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPERALL(n4d_DATA["dData"], n4d_DATA["pData"]), tmpOPER, dataRange["n4d"], 8),
+                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPERALL(n5d_DATA["dData"], n5d_DATA["pData"]), tmpOPER, dataRange["n5d"], 7),
+                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPERALL(n6d_DATA["dData"], n6d_DATA["pData"]), tmpOPER, dataRange["n6d"], 6),
+                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPERALL(n1w_DATA["dData"], n1w_DATA["pData"]), tmpOPER, dataRange["n1w"], 5),
+                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPERALL(n2w_DATA["dData"], n2w_DATA["pData"]), tmpOPER, dataRange["n2w"], 4),
+                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPERALL(n3w_DATA["dData"], n3w_DATA["pData"]), tmpOPER, dataRange["n3w"], 3),
+                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPERALL(n1m_DATA["dData"], n1m_DATA["pData"]), tmpOPER, dataRange["n1m"], 2),
+                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPERALL(n2m_DATA["dData"], n2m_DATA["pData"]), tmpOPER, dataRange["n2m"], 1),
+                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPERALL(n1s_DATA["dData"], n1s_DATA["pData"]), tmpOPER, dataRange["n1s"], 0))
 
                 FPYLINE = self._getFPYLINEData(tmpPROD_NBR, dataRange)
 
@@ -1386,6 +1452,228 @@ class INTLV3(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
+    def _getEFALV2DRLINEData(self, OPER, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+
+        OPERDATA = {
+                "BONDING":{"OPER": [1300,1301]},
+                "LAM":{"OPER": [1340,1370]},
+                "AAFC":{"OPER": [1419,1420]},
+                "TPI":{"OPER": [1510]},
+                "OTPC":{"OPER": [1590]},
+                "CKEN":{"OPER": [1600]}                         
+            }         
+        OPERList = []
+        if OPER == "ALL":
+            for key, value in OPERDATA.items():
+                OPERList.extend(value.get("OPER"))
+        else:
+            OPERList.extend(OPERDATA[OPER]["OPER"])
+
+        yellowList = []
+        for d in self._getEFA_impDeft():    
+            yellowList.append(d["DEFECT_CODE"])
+
+        try:
+            data = {}
+            data = self._getEFALV2DRLINEDataFromMongo(yellowList, OPER, OPERList, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE)
+              
+            return data
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+    
+    def _getEFALV2DRLINEDataFromMongo(self,yellowList, OPER, OPERList, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+
+        passAggregate = []
+        deftAggregate = []
+
+        #pass
+        passMatch1 = {
+            "$match": {
+                "COMPANY_CODE": tmpCOMPANY_CODE,
+                "SITE": tmpSITE,
+                "FACTORY_ID": tmpFACTORY_ID,
+                "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
+                "PROD_NBR": PROD_NBR,
+                "LCM_OWNER": {"$in": ["LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]}
+            }
+        }
+        passGroup1 = {
+            "$group": {
+                "_id": {
+                    "COMPANY_CODE": "$COMPANY_CODE",
+                    "SITE": "$SITE",
+                    "FACTORY_ID": "$FACTORY_ID",
+                    "PROD_NBR": "$PROD_NBR",
+                    "PROCESS": "$PROCESS",
+                    "APPLICATION": "$APPLICATION",
+                    "MAIN_WC": {"$toInt": "$MAIN_WC"}
+                },
+                "PASS_QTY": {
+                    "$sum": {"$toInt": "$QTY"}
+                }
+            }
+        }
+        passProject1 = {
+            "$project": {
+                "_id": 0,
+                "COMPANY_CODE": "$_id.COMPANY_CODE",
+                "SITE": "$_id.SITE",
+                "FACTORY_ID": "$_id.FACTORY_ID",
+                "PROD_NBR": "$_id.PROD_NBR",
+                "PROCESS": "$_id.PROCESS",
+                "APPLICATION": "$_id.APPLICATION",
+                "MAIN_WC": "$_id.MAIN_WC",
+                "PASS_QTY": "$PASS_QTY"
+            }
+        }
+        passGroup2 = {
+            "$group": {
+                "_id": {
+                    "COMPANY_CODE": "$COMPANY_CODE",
+                    "SITE": "$SITE",
+                    "FACTORY_ID": "$FACTORY_ID",
+                    "PROD_NBR": "$PROD_NBR",
+                    "APPLICATION": "$APPLICATION"
+                },
+                "PASSSUMQTY": {
+                    "$sum": {"$toInt": "$PASS_QTY"}
+                }
+            }
+        }
+        passProject2 = {
+            "$project": {
+                "_id": 0,
+                "COMPANY_CODE": "$_id.COMPANY_CODE",
+                "SITE": "$_id.SITE",
+                "FACTORY_ID": "$_id.FACTORY_ID",
+                "PROD_NBR": "$_id.PROD_NBR",
+                "APPLICATION": "$_id.APPLICATION",
+                "PASSSUMQTY": "$PASSSUMQTY"
+            }
+        }
+        passAdd = {
+                "$addFields": {
+                    "OPER": OPER
+                }
+            }
+        passSort = {
+            "$sort": {
+                "COMPANY_CODE": 1,
+                "SITE": 1,
+                "FACTORY_ID": 1,
+                "PROD_NBR": 1,
+                "MAIN_WC": 1,
+                "APPLICATION": 1
+            }
+        }
+
+        #deft
+        deftMatch1 = {
+            "$match": {
+                "COMPANY_CODE": tmpCOMPANY_CODE,
+                "SITE": tmpSITE,
+                "FACTORY_ID": tmpFACTORY_ID,
+                "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
+                "LCM_OWNER": {"$in": ["LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                "PROD_NBR": PROD_NBR,
+                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]},
+                "DFCT_CODE": {"$in": yellowList}
+            }
+        }
+        deftGroup1 = {
+            "$group": {
+                "_id": {
+                    "COMPANY_CODE": "$COMPANY_CODE",
+                    "SITE": "$SITE",
+                    "FACTORY_ID": "$FACTORY_ID",
+                    "PROD_NBR": "$PROD_NBR",                    
+                    "APPLICATION": "$APPLICATION",              
+                    "DFCT_CODE" : "$DFCT_CODE",
+                    "ERRC_DESCR" : "$ERRC_DESCR"
+                },
+                "DEFT_QTY": {
+                    "$sum": {"$toInt": "$QTY"}
+                }
+            }
+        }
+        deftProject1 = {
+            "$project": {
+                "_id": 0,
+                "COMPANY_CODE": "$_id.COMPANY_CODE",
+                "SITE": "$_id.SITE",
+                "FACTORY_ID": "$_id.FACTORY_ID",
+                "PROD_NBR": "$_id.PROD_NBR",
+                "APPLICATION": "$_id.APPLICATION",
+                "DFCT_CODE" : "$_id.DFCT_CODE",                
+                "ERRC_DESCR" : "$_id.ERRC_DESCR",
+                "DEFT_QTY": "$DEFT_QTY"
+            }
+        }
+        deftAdd = {
+                "$addFields": {
+                    "OPER": OPER,     
+                    "DATARANGE": DATARANGENAME,
+                    "XVALUE": TYPE
+                }
+            }
+        deftSort = {
+            "$sort": {
+                "COMPANY_CODE": 1,
+                "SITE": 1,
+                "FACTORY_ID": 1,
+                "PROD_NBR": 1,
+                "APPLICATION": 1,
+                "DFCT_CODE" : 1,
+                "ERRC_DESCR" : 1
+            }
+        }
+
+        deftAggregate.extend([deftMatch1, deftGroup1, deftProject1, deftAdd, deftSort])
+        passAggregate.extend([passMatch1, passGroup1, passProject1, passGroup2, passProject2, passAdd, passSort])        
+
+        try:
+            self.getMongoConnection()
+            self.setMongoDb("IAMP")
+            self.setMongoCollection("passHisAndCurrent")
+            pData = self.aggregate(passAggregate)
+            self.setMongoCollection("deftHisAndCurrent")
+            dData = self.aggregate(deftAggregate)
+            self.closeMongoConncetion()
+            returnData = {
+                "pData": pData,
+                "dData": dData
+            }
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
     def _getFPYLV2LINEData(self, OPER, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
@@ -1751,7 +2039,7 @@ class INTLV3(BaseType):
                 oData = {}
         return data
 
-    def _calFPYLV2LINEOPER(self, tempData, OPER, DATARANGE, DATARANGEID):
+    def _calDRLINEOPER(self, tempData, OPER, DATARANGE, DATARANGEID):
         tmpPROD_NBR = self.jsonData["PROD_NBR"]
 
         if tempData != []:
@@ -1832,7 +2120,7 @@ class INTLV3(BaseType):
 
         return returnData
   
-    def _grouptFPYLV2LINE(self, n1d,n2d,n3d,n4d,n5d,n6d,n1w,n2w,n3w,n1m,n2m,n1s): 
+    def _groupDATALINE(self, n1d,n2d,n3d,n4d,n5d,n6d,n1w,n2w,n3w,n1m,n2m,n1s): 
             magerData = [] 
             for d in n1s:   
                 magerData.append(d)
@@ -3041,7 +3329,7 @@ class INTLV3(BaseType):
             n2m_DATA = self._getFPYLINEDatabyDateRange(PROD_NBR, dataRange["n2m"], dataRange["n2m_array"], 1)
             n1s_DATA = self._getFPYLINEDatabyDateRange(PROD_NBR, dataRange["n1s"], dataRange["n1s_array"], 0)
 
-            returnData =  DATASERIES = self._grouptFPYLV2LINE(n1d_DATA,n2d_DATA,n3d_DATA,n4d_DATA,n5d_DATA,
+            returnData =  DATASERIES = self._groupDATALINE(n1d_DATA,n2d_DATA,n3d_DATA,n4d_DATA,n5d_DATA,
                 n6d_DATA,n1w_DATA,n2w_DATA,n3w_DATA,n1m_DATA,n2m_DATA,n1s_DATA)
             
             return returnData
@@ -3563,7 +3851,7 @@ class INTLV3(BaseType):
             n2m_DATA = self._getMSHIPLINEDatabyDateRange(PROD_NBR, dataRange["n2m"], dataRange["n2m_array"], 1)
             n1s_DATA = self._getMSHIPLINEDatabyDateRange(PROD_NBR, dataRange["n1s"], dataRange["n1s_array"], 0)
 
-            returnData =  DATASERIES = self._grouptFPYLV2LINE(n1d_DATA,n2d_DATA,n3d_DATA,n4d_DATA,n5d_DATA,
+            returnData = self._groupDATALINE(n1d_DATA,n2d_DATA,n3d_DATA,n4d_DATA,n5d_DATA,
                 n6d_DATA,n1w_DATA,n2w_DATA,n3w_DATA,n1m_DATA,n2m_DATA,n1s_DATA)
             
             return returnData
@@ -3895,7 +4183,7 @@ class INTLV3(BaseType):
             n2m_DATA = self._getMSHIPSCRAPDatabyDateRange(PROD_NBR, dataRange["n2m"], dataRange["n2m_array"], 1)
             n1s_DATA = self._getMSHIPSCRAPDatabyDateRange(PROD_NBR, dataRange["n1s"], dataRange["n1s_array"], 0)
 
-            returnData =  DATASERIES = self._grouptFPYLV2LINE(n1d_DATA,n2d_DATA,n3d_DATA,n4d_DATA,n5d_DATA,
+            returnData = self._groupDATALINE(n1d_DATA,n2d_DATA,n3d_DATA,n4d_DATA,n5d_DATA,
                 n6d_DATA,n1w_DATA,n2w_DATA,n3w_DATA,n1m_DATA,n2m_DATA,n1s_DATA)
             
             return returnData
@@ -4099,7 +4387,7 @@ class INTLV3(BaseType):
             self.writeLog('processData time elapsed: ' + str(round(end-start, 2)) + ' seconds')
 
             start = time.time()
-            returnData = self._grouptFPYLV2LINE(n1d_DATA,n2d_DATA,n3d_DATA,n4d_DATA,n5d_DATA,
+            returnData = self._groupDATALINE(n1d_DATA,n2d_DATA,n3d_DATA,n4d_DATA,n5d_DATA,
                 n6d_DATA,n1w_DATA,n2w_DATA,n3w_DATA,n1m_DATA,n2m_DATA,n1s_DATA)
             end = time.time()
             self.writeLog('GroupData time elapsed: ' + str(round(end-start, 2)) + ' seconds')
