@@ -76,6 +76,10 @@ os.environ['NLS_LANG'] = 'TRADITIONAL CHINESE_TAIWAN.UTF8'
 from Logger import Logger
 log = Logger('./log/Main.log',level='debug')
 app = Flask(__name__ )
+
+_dbAccount, _dbPassword, _SERVICE_NAME = ReadConfig('config.json',"INT_ORACLEDB_TEST").READ()
+_daoHelper = DaoHelper(_dbAccount, _dbPassword, _SERVICE_NAME)
+_db_pool= _daoHelper.poolCreate()
 # redis路径
 app.config["REDIS_URL"] = "redis://idts-kafka1.cminl.oa"
 # app注册sse的蓝图,并且访问路由是/stream1
@@ -1902,7 +1906,7 @@ class getINTKPI(Resource):
         if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData or "KPITYPE" not in jsonData or "ACCT_DATE" not in jsonData:
             return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
         
-        v = INTKPI(jsonData)
+        v = INTKPI(jsonData, _db_pool)
         return v.getData()
 
 INTLV2Ns = api.namespace('GetINTLV2', description = 'INTLV2')
@@ -1940,7 +1944,7 @@ class getINTLV2(Resource):
         if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData or "KPITYPE" not in jsonData or "ACCT_DATE" not in jsonData or 'PROD_NBR' not in jsonData:
             return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
         
-        v = INTLV2(jsonData)
+        v = INTLV2(jsonData, _db_pool)
         return v.getData()
 
 INTLV3Ns = api.namespace('GetINTLV3', description = 'INTLV3')
@@ -1980,7 +1984,7 @@ class getINTLV3(Resource):
         if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData or "KPITYPE" not in jsonData or "ACCT_DATE" not in jsonData or 'PROD_NBR' not in jsonData or 'OPER' not in jsonData:
             return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
         
-        v = INTLV3(jsonData)
+        v = INTLV3(jsonData, _db_pool)
         return v.getData()
 
 INTTALKNs = api.namespace('GetINTTALK', description = 'INTTALK')
@@ -2068,7 +2072,7 @@ class getINTRelation(Resource):
             or "FUNCTYPE" not in jsonData or "ACCT_DATE" not in jsonData or 'PROD_NBR' not in jsonData \
             or 'OPER' not in jsonData or 'CHECKCODE' not in jsonData:
             return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
-        v = INTRelation(jsonData)
+        v = INTRelation(jsonData, _db_pool)
         return v.getData()
 
 intSDTemp = [
@@ -2210,6 +2214,7 @@ class intSDETL(Resource):
         jsonData = BaseType.validateType(request.json)   
         ins = INTSDETL(DBconfig, jsonData)
         return ins.SetData()
+
 if __name__ == '__main__':
     app.run(threaded=True, use_reloader=True, host='0.0.0.0', port=5001, debug=False)#use_reloader=True,
 

@@ -11,7 +11,7 @@ from BaseType import BaseType
 from decimal import Decimal, ROUND_HALF_UP
 
 class INTLV2(BaseType):
-    def __init__(self, jsonData):
+    def __init__(self, jsonData, _db_pool):
         super().__init__()
         self.writeLog(
             f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
@@ -214,6 +214,7 @@ class INTLV2(BaseType):
             }
         }
         self.__indentity = "INT_ORACLEDB_TEST"
+        self.pool = _db_pool
 
     def getData(self):
         try:
@@ -504,7 +505,6 @@ class INTLV2(BaseType):
         if tmpAPPLICATION != "ALL":
             applicatiionWhere = f"AND dmo.application = '{tmpAPPLICATION}' "        
         try:
-            self.getConnection(self.__indentity)
             passString = f"SELECT \
                             dlo.company_code   AS company_code, \
                             dlo.site_code      AS site, \
@@ -536,7 +536,7 @@ class INTLV2(BaseType):
                             dmo.application, \
                             dop.name \
                         HAVING SUM(fpa.sumqty) > 0 "
-            description , data = self.SelectAndDescription(passString)            
+            description , data = self.pSelectAndDescription(passString)            
             pData = self._zipDescriptionAndData(description, data)  
             deftString = f"SELECT \
                             dlo.company_code   AS company_code, \
@@ -574,9 +574,8 @@ class INTLV2(BaseType):
                             ddf.DEFTCODE, \
                             ddf.DEFTCODE_DESC \
                         HAVING SUM(fdf.sumqty) > 0 "
-            description , data = self.SelectAndDescription(deftString)            
+            description , data = self.pSelectAndDescription(deftString)            
             dData = self._zipDescriptionAndData(description, data)  
-            self.closeConnection()
 
             returnData = {
                 "pData": pData,

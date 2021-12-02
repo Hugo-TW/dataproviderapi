@@ -12,7 +12,7 @@ from BaseType import BaseType
 from Dao import DaoHelper, ReadConfig
 from decimal import Decimal, ROUND_HALF_UP
 class INTRelation(BaseType):
-    def __init__(self, jsonData):
+    def __init__(self, jsonData, _db_pool):
         super().__init__()
         self.writeLog(
             f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
@@ -216,7 +216,8 @@ class INTRelation(BaseType):
                     "denominator": {}
                 }
             }
-        }
+        }        
+        self.pool = _db_pool
 
     def getData(self):
         try:
