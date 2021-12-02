@@ -72,6 +72,11 @@ from GetSingleCollection import singleCollectionFunc
 from SetMongoInserMany import mongoInsertManyFunc
 from CompensateDb2 import compensate
 from GetWayneTestInfo import WayneTestInfo
+from GetTvUpphInfo import TvUpphInfo
+from GetTvUpphLightInfo import TvUpphLightInfo
+from GetTvResignInfo import TvResignInfo
+from GetTvAttendanceInfo import TvAttendanceInfo
+
 os.environ['NLS_LANG'] = 'TRADITIONAL CHINESE_TAIWAN.UTF8'
 from Logger import Logger
 log = Logger('./log/Main.log',level='debug')
@@ -2174,6 +2179,154 @@ class GetWayneTestInfo(Resource):
         log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
         wayneTestInfo = WayneTestInfo(identity)
         return wayneTestInfo.getData()  
+
+tvUpphInfoNS = api.namespace('GetTvUpphInfo', description = 'TvUpphInfo')
+tvUpphInfoML = api.model('GetTvUpphInfo', {
+"COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+"SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
+"START_TIME":fields.String( required = True, description = 'FACTORY_ID', default = '20211123000000', example = '20211123000000'),
+"END_TIME":fields.String( required = True, description = 'FACTORY_ID', default = '20211128000000', example = '20211128000000'),
+})
+@tvUpphInfoNS.route('', methods = ['POST'])
+@tvUpphInfoNS.response(200, 'Sucess')
+@tvUpphInfoNS.response(201, 'Created Sucess')
+@tvUpphInfoNS.response(204, 'No Content')
+@tvUpphInfoNS.response(400, 'Bad Request')
+@tvUpphInfoNS.response(401, 'Unauthorized')
+@tvUpphInfoNS.response(403, 'Forbidden')
+@tvUpphInfoNS.response(404, 'Not Found')
+@tvUpphInfoNS.response(405, 'Method Not Allowed')
+@tvUpphInfoNS.response(409, 'Conflict')
+@tvUpphInfoNS.response(500, 'Internal Server Error')
+class GetUpphInfo(Resource):
+    @tvUpphInfoNS.doc('AppConfSysMain')
+    @tvUpphInfoNS.expect(tvUpphInfoML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        jsonData = BaseType.validateType(request.json)
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData:  
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        identity = jsonData["COMPANY_CODE"] + "-" + jsonData["SITE"] + "-" + jsonData["FACTORY_ID"]
+        start_time = jsonData["START_TIME"]
+        end_time = jsonData["END_TIME"]
+        log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
+        tvUpphInfo = TvUpphInfo(identity, start_time, end_time)
+        return tvUpphInfo.getData()     
+
+tvUpphLightInfoNS = api.namespace('GetTvUpphLightInfo', description = 'TvUpphLightInfo')
+tvUpphLightInfoML = api.model('GetTvUpphLightInfo', {
+"COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+"SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
+"START_TIME":fields.String( required = True, description = 'FACTORY_ID', default = '20211123000000', example = '20211123000000'),
+"END_TIME":fields.String( required = True, description = 'FACTORY_ID', default = '20211128000000', example = '20211128000000'),
+})
+@tvUpphLightInfoNS.route('', methods = ['POST'])
+@tvUpphLightInfoNS.response(200, 'Sucess')
+@tvUpphLightInfoNS.response(201, 'Created Sucess')
+@tvUpphLightInfoNS.response(204, 'No Content')
+@tvUpphLightInfoNS.response(400, 'Bad Request')
+@tvUpphLightInfoNS.response(401, 'Unauthorized')
+@tvUpphLightInfoNS.response(403, 'Forbidden')
+@tvUpphLightInfoNS.response(404, 'Not Found')
+@tvUpphLightInfoNS.response(405, 'Method Not Allowed')
+@tvUpphLightInfoNS.response(409, 'Conflict')
+@tvUpphLightInfoNS.response(500, 'Internal Server Error')
+class GetUpphLightInfo(Resource):
+    @tvUpphLightInfoNS.doc('AppConfSysMain')
+    @tvUpphLightInfoNS.expect(tvUpphLightInfoML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        jsonData = BaseType.validateType(request.json)
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData:  
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        identity = jsonData["COMPANY_CODE"] + "-" + jsonData["SITE"] + "-" + jsonData["FACTORY_ID"]
+        start_time = jsonData["START_TIME"]
+        end_time = jsonData["END_TIME"]
+        log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
+        tvUpphLightInfo = TvUpphLightInfo(identity, start_time, end_time)
+        return tvUpphLightInfo.getData()               
+
+tvResignInfoNS = api.namespace('GetTvResignInfo', description = 'TvResignInfo')
+tvResignInfoML = api.model('GetTvResignInfo', {
+"COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+"SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
+"START_TIME":fields.String( required = True, description = 'FACTORY_ID', default = '20211123000000', example = '20211123000000'),
+"END_TIME":fields.String( required = True, description = 'FACTORY_ID', default = '20211128000000', example = '20211128000000'),
+})
+@tvResignInfoNS.route('', methods = ['POST'])
+@tvResignInfoNS.response(200, 'Sucess')
+@tvResignInfoNS.response(201, 'Created Sucess')
+@tvResignInfoNS.response(204, 'No Content')
+@tvResignInfoNS.response(400, 'Bad Request')
+@tvResignInfoNS.response(401, 'Unauthorized')
+@tvResignInfoNS.response(403, 'Forbidden')
+@tvResignInfoNS.response(404, 'Not Found')
+@tvResignInfoNS.response(405, 'Method Not Allowed')
+@tvResignInfoNS.response(409, 'Conflict')
+@tvResignInfoNS.response(500, 'Internal Server Error')
+class GetResignInfo(Resource):
+    @tvResignInfoNS.doc('AppConfSysMain')
+    @tvResignInfoNS.expect(tvResignInfoML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        jsonData = BaseType.validateType(request.json)
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData:  
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        identity = jsonData["COMPANY_CODE"] + "-" + jsonData["SITE"] + "-" + jsonData["FACTORY_ID"]
+        start_time = jsonData["START_TIME"]
+        end_time = jsonData["END_TIME"]
+        log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
+        tvResignInfo = TvResignInfo(identity, start_time, end_time)
+        return tvResignInfo.getData()
+
+tvAttendanceInfoNS = api.namespace('GetTvAttendanceInfo', description = 'TvAttendanceInfo')
+tvAttendanceInfoML = api.model('GetTvAttendanceInfo', {
+"COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+"SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
+"START_TIME":fields.String( required = True, description = 'FACTORY_ID', default = '20211123000000', example = '20211123000000'),
+"END_TIME":fields.String( required = True, description = 'FACTORY_ID', default = '20211128000000', example = '20211128000000'),
+})
+@tvAttendanceInfoNS.route('', methods = ['POST'])
+@tvAttendanceInfoNS.response(200, 'Sucess')
+@tvAttendanceInfoNS.response(201, 'Created Sucess')
+@tvAttendanceInfoNS.response(204, 'No Content')
+@tvAttendanceInfoNS.response(400, 'Bad Request')
+@tvAttendanceInfoNS.response(401, 'Unauthorized')
+@tvAttendanceInfoNS.response(403, 'Forbidden')
+@tvAttendanceInfoNS.response(404, 'Not Found')
+@tvAttendanceInfoNS.response(405, 'Method Not Allowed')
+@tvAttendanceInfoNS.response(409, 'Conflict')
+@tvAttendanceInfoNS.response(500, 'Internal Server Error')
+class GetAttendanceInfo(Resource):
+    @tvAttendanceInfoNS.doc('AppConfSysMain')
+    @tvAttendanceInfoNS.expect(tvAttendanceInfoML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        jsonData = BaseType.validateType(request.json)
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData:  
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        identity = jsonData["COMPANY_CODE"] + "-" + jsonData["SITE"] + "-" + jsonData["FACTORY_ID"]
+        start_time = jsonData["START_TIME"]
+        end_time = jsonData["END_TIME"]
+        log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
+        tvAttendanceInfo = TvAttendanceInfo(identity, start_time, end_time)
+        return tvAttendanceInfo.getData()        
 
 intSDETLNs = api.namespace('intSDETL', description = 'intSDETL')
 intSDETLML_local = api.model('intSDETLML_local', {
