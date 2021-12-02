@@ -566,7 +566,7 @@ class INTKPI(BaseType):
                             dop.name \
                         HAVING SUM(fpa.sumqty) > 0 "
             description , data = self.pSelectAndDescription(passString)            
-            pData = self._zipDescriptionAndData(description, data)  #Q
+            pData = self._zipDescriptionAndData(description, data)
             deftString = f"SELECT \
                             dlo.company_code   AS company_code, \
                             dlo.site_code      AS site, \
