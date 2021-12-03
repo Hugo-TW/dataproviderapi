@@ -2710,6 +2710,7 @@ class INTKPI(BaseType):
             rank += 1
 
         selectlistData = []
+        selectlistData.append({"value":"","text":"ALL"})
         for x in DATASERIES:
             _pass = f'{round(int(x["QTY"])/1000,1)}k' if int(x["QTY"]) > 99 else f'{int(x["QTY"])}'
             selectlistData.append(

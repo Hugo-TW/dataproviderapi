@@ -3049,6 +3049,160 @@ class INTLV3(BaseType):
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         tmpKPITYPE = self.jsonData["KPITYPE"]
+        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
+
+        """
+        (1)  前廠責：USL、TX LCD、FABX
+        (2)  廠責：MFG、INT、EQP、ER 
+        (3)  來料責：SQE
+        """       
+
+        try:
+            data = {}
+            if tmpSITE == "TN":
+                data =  self._getMSHIPLV2LINEFromMongoDB(getFabData, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE)
+            else:
+                data = self._getMSHIPLV2LINEFromOracle(getFabData, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE)
+
+            returnData = {
+                "scData": data["scrapData"],
+                "shData": data["shipData"]
+            }
+
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+    def _getMSHIPLV2LINEFromOracle(self, getFabData, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpKPITYPE = self.jsonData["KPITYPE"]
+        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
+
+        _ACCT_DATE_ARRAY_LIST = ""
+        for x in ACCT_DATE_ARRAY:
+            _ACCT_DATE_ARRAY_LIST = _ACCT_DATE_ARRAY_LIST + f"'{x}',"
+        if _ACCT_DATE_ARRAY_LIST != "":
+            _ACCT_DATE_ARRAY_LIST = _ACCT_DATE_ARRAY_LIST[:-1]
+
+        applicatiionWhere = ""
+        if tmpAPPLICATION != "ALL":
+            applicatiionWhere = f"AND dmo.application = '{tmpAPPLICATION}' "        
+        try:
+            shipString = f"SELECT \
+                            dlo.company_code   AS company_code, \
+                            dlo.site_code      AS site, \
+                            dlo.factory_code   AS factory_id, \
+                            dmo.code           AS prod_nbr, \
+                            mpa.mfgdate        AS acct_date, \
+                            dmo.application    AS APPLICATION, \
+                            SUM(mpa.sumqty) AS SHIP_SUMQTY \
+                        FROM \
+                            INTMP_DB.fact_mship_pass_sum mpa \
+                            LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = mpa.local_id \
+                            LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = mpa.model_id \
+                            LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = mpa.oper_id \
+                        WHERE \
+                            dlo.company_code = '{tmpCOMPANY_CODE}' \
+                            AND dlo.site_code = '{tmpSITE}' \
+                            AND dlo.factory_code = '{tmpFACTORY_ID}' \
+                            AND mpa.mfgdate in ({_ACCT_DATE_ARRAY_LIST}) \
+                            AND dop.name ='SHIP' \
+                            AND dmo.code = '{PROD_NBR}' \
+                            {applicatiionWhere} \
+                        GROUP BY \
+                            dlo.company_code, \
+                            dlo.site_code, \
+                            dlo.factory_code, \
+                            dmo.code, \
+                            mpa.mfgdate, \
+                            dmo.application \
+                        HAVING SUM(mpa.sumqty) >= 0 "
+            description , data = self.pSelectAndDescription(shipString)            
+            shipData = self._zipDescriptionAndData(description, data)
+
+            scrapString = f"SELECT \
+                            dlo.company_code   AS company_code, \
+                            dlo.site_code      AS site, \
+                            dlo.factory_code   AS factory_id, \
+                            dmo.code           AS prod_nbr, \
+                            '{getFabData['name']}' AS RESP_OWNER, \
+                            '{getFabData['id']}'   AS RESP_OWNER_E, \
+                            dsc.scrapcode        AS SCRAP_DESCR, \
+                            dsc.scrapcode_desc   AS SCRAP_CODE, \
+                            '{DATARANGENAME}' AS DATARANGE, \
+                            {TYPE} AS XVALUE, \
+                            msc.mfgdate        AS acct_date, \
+                            dmo.application    AS APPLICATION, \
+                            SUM(msc.sumqty) AS TOBESCRAP_SUMQTY \
+                        FROM \
+                            INTMP_DB.fact_mship_scrap_sum msc \
+                            LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = msc.local_id \
+                            LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = msc.model_id \
+                            LEFT JOIN INTMP_DB.dime_respcode drc ON drc.respcode = msc.respcode \
+                            LEFT JOIN INTMP_DB.dime_scrapcode dsc ON dsc.scrapcode = msc.scrapcode \
+                        WHERE \
+                            dlo.company_code = '{tmpCOMPANY_CODE}' \
+                            AND dlo.site_code = '{tmpSITE}' \
+                            AND dlo.factory_code = '{tmpFACTORY_ID}' \
+                            AND msc.mfgdate in ({_ACCT_DATE_ARRAY_LIST}) \
+                            and drc.respcode = '{getFabData['name']}' \
+                            AND dmo.code = '{PROD_NBR}' \
+                            {applicatiionWhere} \
+                        GROUP BY \
+                            dlo.company_code, \
+                            dlo.site_code, \
+                            dlo.factory_code, \
+                            dmo.code, \
+                            '{getFabData['name']}',\
+                            '{getFabData['id']}',\
+                            dsc.scrapcode,\
+                            dsc.scrapcode_desc ,\
+                            '{DATARANGENAME}',\
+                                {TYPE} ,\
+                            msc.mfgdate, \
+                            dmo.application \
+                        HAVING SUM(msc.sumqty) >= 0 "
+            description , data = self.pSelectAndDescription(scrapString)            
+            scrapData = self._zipDescriptionAndData(description, data)
+
+            returnData = {
+                "scrapData": scrapData,
+                "shipData": shipData
+            }
+
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+    def _getMSHIPLV2LINEFromMongoDB(self, getFabData, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpKPITYPE = self.jsonData["KPITYPE"]
         tmpAPPLICATION = self.jsonData["APPLICATION"]
 
         scrapAggregate = []
