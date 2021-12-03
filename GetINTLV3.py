@@ -3107,7 +3107,6 @@ class INTLV3(BaseType):
                             dlo.site_code      AS site, \
                             dlo.factory_code   AS factory_id, \
                             dmo.code           AS prod_nbr, \
-                            mpa.mfgdate        AS acct_date, \
                             dmo.application    AS APPLICATION, \
                             SUM(mpa.sumqty) AS SHIP_SUMQTY \
                         FROM \
@@ -3128,7 +3127,6 @@ class INTLV3(BaseType):
                             dlo.site_code, \
                             dlo.factory_code, \
                             dmo.code, \
-                            mpa.mfgdate, \
                             dmo.application \
                         HAVING SUM(mpa.sumqty) >= 0 "
             description , data = self.pSelectAndDescription(shipString)            
@@ -3145,7 +3143,6 @@ class INTLV3(BaseType):
                             dsc.scrapcode_desc   AS SCRAP_CODE, \
                             '{DATARANGENAME}' AS DATARANGE, \
                             {TYPE} AS XVALUE, \
-                            msc.mfgdate        AS acct_date, \
                             dmo.application    AS APPLICATION, \
                             SUM(msc.sumqty) AS TOBESCRAP_SUMQTY \
                         FROM \
@@ -3173,7 +3170,6 @@ class INTLV3(BaseType):
                             dsc.scrapcode_desc ,\
                             '{DATARANGENAME}',\
                                 {TYPE} ,\
-                            msc.mfgdate, \
                             dmo.application \
                         HAVING SUM(msc.sumqty) >= 0 "
             description , data = self.pSelectAndDescription(scrapString)            
@@ -3515,6 +3511,152 @@ class INTLV3(BaseType):
         return magerData
 
     def _getMSHIPLV2LINEDG(self, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpKPITYPE = self.jsonData["KPITYPE"]
+        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
+
+        """
+        (1)  前廠責：USL、TX LCD、FABX
+        (2)  廠責：MFG、INT、EQP、ER 
+        (3)  來料責：SQE
+        """       
+
+        try:
+            data = {}
+            if tmpSITE == "TN":
+                data =  self._getMSHIPLV2LINEDGFromMongoDB(PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE)
+            else:
+                data = self._getMSHIPLV2LINEDGFromOracle(PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE)
+
+            returnData = {
+                "pData": data["pData"],
+                "dData": data["dData"],
+                "fData": data["fData"]
+            }
+
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+    def _getMSHIPLV2LINEDGFromOracle(self, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpKPITYPE = self.jsonData["KPITYPE"]
+        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
+
+        _ACCT_DATE_ARRAY_LIST = ""
+        for x in ACCT_DATE_ARRAY:
+            _ACCT_DATE_ARRAY_LIST = _ACCT_DATE_ARRAY_LIST + f"'{x}',"
+        if _ACCT_DATE_ARRAY_LIST != "":
+            _ACCT_DATE_ARRAY_LIST = _ACCT_DATE_ARRAY_LIST[:-1]
+
+        applicatiionWhere = ""
+        if tmpAPPLICATION != "ALL":
+            applicatiionWhere = f"AND dmo.application = '{tmpAPPLICATION}' "        
+        try:
+            shipString = f"SELECT \
+                            dlo.company_code   AS company_code, \
+                            dlo.site_code      AS site, \
+                            dlo.factory_code   AS factory_id, \
+                            dmo.code           AS prod_nbr, \
+                            dmo.application    AS APPLICATION, \
+                            SUM(mpa.sumqty) AS PASS_QTY \
+                        FROM \
+                            INTMP_DB.fact_mship_pass_sum mpa \
+                            LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = mpa.local_id \
+                            LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = mpa.model_id \
+                            LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = mpa.oper_id \
+                        WHERE \
+                            dlo.company_code = '{tmpCOMPANY_CODE}' \
+                            AND dlo.site_code = '{tmpSITE}' \
+                            AND dlo.factory_code = '{tmpFACTORY_ID}' \
+                            AND mpa.mfgdate in ({_ACCT_DATE_ARRAY_LIST}) \
+                            AND dop.name ='DOWNGRADE' \
+                            AND dmo.code = '{PROD_NBR}' \
+                            {applicatiionWhere} \
+                        GROUP BY \
+                            dlo.company_code, \
+                            dlo.site_code, \
+                            dlo.factory_code, \
+                            dmo.code, \
+                            dmo.application \
+                        HAVING SUM(mpa.sumqty) >= 0 "
+            description , data = self.pSelectAndDescription(shipString)            
+            pData = self._zipDescriptionAndData(description, data)
+
+            scrapString = f"SELECT \
+                            dlo.company_code   AS company_code, \
+                            dlo.site_code      AS site, \
+                            dlo.factory_code   AS factory_id, \
+                            dmo.code           AS prod_nbr, \
+                            ddf.deftcode        AS DFCT_CODE, \
+                            ddf.deftcode_desc   AS ERRC_DESCR, \
+                            '{DATARANGENAME}' AS DATARANGE, \
+                            {TYPE} AS XVALUE, \
+                            dmo.application    AS APPLICATION, \
+                            SUM(msd.sumqty) AS DEFT_QTY \
+                        FROM \
+                            INTMP_DB.fact_mship_dg_sum msd \
+                            LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = msd.local_id \
+                            LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = msd.model_id \
+                            LEFT JOIN INTMP_DB.dime_deftcode ddf ON ddf.deftcode = msd.deftcode \
+                        WHERE \
+                            dlo.company_code = '{tmpCOMPANY_CODE}' \
+                            AND dlo.site_code = '{tmpSITE}' \
+                            AND dlo.factory_code = '{tmpFACTORY_ID}' \
+                            AND msd.mfgdate in ({_ACCT_DATE_ARRAY_LIST}) \
+                            AND dmo.code = '{PROD_NBR}' \
+                            {applicatiionWhere} \
+                        GROUP BY \
+                            dlo.company_code, \
+                            dlo.site_code, \
+                            dlo.factory_code, \
+                            dmo.code, \
+                            ddf.deftcode,\
+                            ddf.deftcode_desc ,\
+                            '{DATARANGENAME}',\
+                            {TYPE} ,\
+                            dmo.application \
+                        HAVING SUM(msd.sumqty) >= 0 "
+            description , data = self.pSelectAndDescription(scrapString)            
+            dData = self._zipDescriptionAndData(description, data)
+
+            returnData = {
+                "pData": pData,
+                "dData": dData,
+                "fData": []
+            }
+
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+    def _getMSHIPLV2LINEDGFromMongoDB(self, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
