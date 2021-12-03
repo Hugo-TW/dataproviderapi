@@ -1250,6 +1250,208 @@ class INTKPI(BaseType):
         tmpKPITYPE = self.jsonData["KPITYPE"]
         tmpACCT_DATE = self.jsonData["ACCT_DATE"]
         tmpAPPLICATION = self.jsonData["APPLICATION"]
+        try:
+            data = {}
+            if tmpSITE == "TN":
+                data = self._getMSHIPDataFromMongoDB()
+            else:
+                data = self._getMSHIPDataFromOracle()
+
+            returnData = {
+                "scrapData": data["scrapData"],
+                "shipData": data["shipData"],
+                "gradeData": data["gradeData"]
+            }
+
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+    def _getMSHIPDataFromOracle(self):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpKPITYPE = self.jsonData["KPITYPE"]
+        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
+
+        applicatiionWhere = ""
+        if tmpAPPLICATION != "ALL":
+            applicatiionWhere = f"AND dmo.application = '{tmpAPPLICATION}' "        
+        try:
+            shipString = f"SELECT \
+                            dlo.company_code   AS company_code, \
+                            dlo.site_code      AS site, \
+                            dlo.factory_code   AS factory_id, \
+                            dmo.code           AS prod_nbr, \
+                            mpa.mfgdate        AS acct_date, \
+                            dmo.application    AS APPLICATION, \
+                            SUM(mpa.sumqty) AS SHIP_SUMQTY \
+                        FROM \
+                            INTMP_DB.fact_mship_pass_sum mpa \
+                            LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = mpa.local_id \
+                            LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = mpa.model_id \
+                            LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = mpa.oper_id \
+                        WHERE \
+                            dlo.company_code = '{tmpCOMPANY_CODE}' \
+                            AND dlo.site_code = '{tmpSITE}' \
+                            AND dlo.factory_code = '{tmpFACTORY_ID}' \
+                            AND mpa.mfgdate = '{tmpACCT_DATE}' \
+                            AND dop.name ='SHIP' \
+                            {applicatiionWhere} \
+                        GROUP BY \
+                            dlo.company_code, \
+                            dlo.site_code, \
+                            dlo.factory_code, \
+                            dmo.code, \
+                            mpa.mfgdate, \
+                            dmo.application \
+                        HAVING SUM(mpa.sumqty) >= 0 "
+            description , data = self.pSelectAndDescription(shipString)            
+            shipData = self._zipDescriptionAndData(description, data)
+
+            scrapString = f"SELECT \
+                            dlo.company_code   AS company_code, \
+                            dlo.site_code      AS site, \
+                            dlo.factory_code   AS factory_id, \
+                            dmo.code           AS prod_nbr, \
+                            msc.mfgdate        AS acct_date, \
+                            dmo.application    AS APPLICATION, \
+                            SUM(msc.sumqty) AS TOBESCRAP_SUMQTY \
+                        FROM \
+                            INTMP_DB.fact_mship_scrap_sum msc \
+                            LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = msc.local_id \
+                            LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = msc.model_id \
+                        WHERE \
+                            dlo.company_code = '{tmpCOMPANY_CODE}' \
+                            AND dlo.site_code = '{tmpSITE}' \
+                            AND dlo.factory_code = '{tmpFACTORY_ID}' \
+                            AND msc.mfgdate = '{tmpACCT_DATE}' \
+                            {applicatiionWhere} \
+                        GROUP BY \
+                            dlo.company_code, \
+                            dlo.site_code, \
+                            dlo.factory_code, \
+                            dmo.code, \
+                            msc.mfgdate, \
+                            dmo.application \
+                        HAVING SUM(msc.sumqty) >= 0 "
+            description , data = self.pSelectAndDescription(scrapString)            
+            scrapData = self._zipDescriptionAndData(description, data)
+
+            gradeString = f"with ps as( \
+                                SELECT \
+                                dlo.company_code   AS company_code, \
+                                dlo.site_code      AS site, \
+                                dlo.factory_code   AS factory_id, \
+                                dmo.code           AS prod_nbr, \
+                                mpa.mfgdate        AS acct_date, \
+                                dmo.application    AS APPLICATION, \
+                                SUM(mpa.sumqty) AS TOTAL_SUMQTY \
+                            FROM \
+                                INTMP_DB.fact_mship_pass_sum mpa \
+                                LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = mpa.local_id \
+                                LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = mpa.model_id \
+                                LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = mpa.oper_id \
+                            WHERE \
+                                dlo.company_code = '{tmpCOMPANY_CODE}' \
+                                AND dlo.site_code = '{tmpSITE}' \
+                                AND dlo.factory_code = '{tmpFACTORY_ID}' \
+                                AND mpa.mfgdate = '{tmpACCT_DATE}' \
+                                AND dop.name ='DOWNGRADE' \
+                                {applicatiionWhere} \
+                            GROUP BY \
+                                dlo.company_code, \
+                                dlo.site_code, \
+                                dlo.factory_code, \
+                                dmo.code, \
+                                mpa.mfgdate, \
+                                dmo.application \
+                            HAVING SUM(mpa.sumqty) >= 0 ), \
+                            dg as ( \
+                            SELECT \
+                                dlo.company_code   AS company_code, \
+                                dlo.site_code      AS site, \
+                                dlo.factory_code   AS factory_id, \
+                                dmo.code           AS prod_nbr, \
+                                mdg.mfgdate        AS acct_date, \
+                                dmo.application    AS APPLICATION, \
+                                SUM(mdg.sumqty) AS DOWNGRADE_SUMQTY \
+                            FROM \
+                                INTMP_DB.fact_mship_dg_sum mdg \
+                                LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = mdg.local_id \
+                                LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = mdg.model_id \
+                                LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = mdg.oper_id \
+                            WHERE \
+                                dlo.company_code = '{tmpCOMPANY_CODE}' \
+                                AND dlo.site_code = '{tmpSITE}' \
+                                AND dlo.factory_code = '{tmpFACTORY_ID}' \
+                                AND mdg.mfgdate = '{tmpACCT_DATE}' \
+                                AND dop.name ='DOWNGRADE' \
+                                {applicatiionWhere} \
+                            GROUP BY \
+                                dlo.company_code, \
+                                dlo.site_code, \
+                                dlo.factory_code, \
+                                dmo.code, \
+                                mdg.mfgdate, \
+                                dmo.application \
+                            HAVING SUM(mdg.sumqty) >= 0) \
+                            select   \
+                            ps.company_code, \
+                            ps.site, \
+                            ps.prod_nbr, \
+                            ps.acct_date, \
+                            ps.APPLICATION, \
+                            nvl(dg.DOWNGRADE_SUMQTY,0) as DOWNGRADE_SUMQTY, \
+                            nvl(ps.TOTAL_SUMQTY,0) as TOTAL_SUMQTY \
+                            from ps left join dg \
+                            on ps.company_code = dg.company_code \
+                            and ps.site = dg.site \
+                            and ps.prod_nbr = dg.prod_nbr \
+                            and ps.acct_date = dg.acct_date \
+                            and ps.APPLICATION = dg.APPLICATION "
+            description , data = self.pSelectAndDescription(gradeString)            
+            gradeData = self._zipDescriptionAndData(description, data)
+
+            returnData = {
+                "scrapData": scrapData,
+                "shipData": shipData,
+                "gradeData": gradeData
+            }
+
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+
+    def _getMSHIPDataFromMongoDB(self):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpKPITYPE = self.jsonData["KPITYPE"]
+        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
 
         scrapAggregate = []
         shipAggregate = []
@@ -1542,7 +1744,8 @@ class INTKPI(BaseType):
 
     def _calMSHIPData(self, groupMSHIPData):
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
-        getLimitData = self.operSetData[tmpFACTORY_ID]["M-SHIP"]["limit"]
+        tmpSITE = self.jsonData["SITE"]
+        getLimitData = self.operSetData[tmpFACTORY_ID]["M-SHIP"]["limit"] if tmpSITE == "TN" else {}
 
         GREEN_VALUE = 0
         YELLOW_VALUE = 0
