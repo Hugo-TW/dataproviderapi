@@ -3066,8 +3066,8 @@ class INTLV3(BaseType):
                 data = self._getMSHIPLV2LINEFromOracle(getFabData, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE)
 
             returnData = {
-                "scData": data["scrapData"],
-                "shData": data["shipData"]
+                "scData": data["scData"],
+                "shData": data["shData"]
             }
 
             return returnData
@@ -3180,8 +3180,8 @@ class INTLV3(BaseType):
             scrapData = self._zipDescriptionAndData(description, data)
 
             returnData = {
-                "scrapData": scrapData,
-                "shipData": shipData
+                "scData": scrapData,
+                "shData": shipData
             }
 
             return returnData
