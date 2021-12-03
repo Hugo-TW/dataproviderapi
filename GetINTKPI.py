@@ -1778,7 +1778,8 @@ class INTKPI(BaseType):
     def _calPRODMSHIPData(self, PRODMSHIPBaseData):
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         tmpAPPLICATION = self.jsonData["APPLICATION"]
-        getLimitData = self.operSetData[tmpFACTORY_ID]["M-SHIP"]["limit"]
+        tmpSITE = self.jsonData["SITE"]
+        getLimitData = self.operSetData[tmpFACTORY_ID]["M-SHIP"]["limit"] if tmpSITE == "TN" else {}
 
         COLOR = "#118AB2"
         SYMBOL = "undefined"
