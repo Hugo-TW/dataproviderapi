@@ -1139,7 +1139,7 @@ class INTKPI(BaseType):
             selectlistData.append(
                 {
                     "value": x["PROD_NBR"],
-                    "text": f'({x["RANK"]}){x["PROD_NBR"]}-FPY:{float("{0:.4f}".format(x["YIELD"]))*100}%-'\
+                    "text": f'({x["RANK"]}){x["PROD_NBR"]}-FPY:{round(decimal.Decimal(x["YIELD"])*100,2)}%-'\
                         f'Pass:{_pass}'
                 }
             )
@@ -2716,7 +2716,7 @@ class INTKPI(BaseType):
             selectlistData.append(
                 {
                     "value": x["PROD_NBR"],
-                    "text": f'({x["RANK"]}){x["PROD_NBR"]}-DEFT RATE:{round(x["YIELD"],4)*100}%-'\
+                    "text": f'({x["RANK"]}){x["PROD_NBR"]}-DEFT RATE:{round(decimal.Decimal(x["YIELD"])*100,2)}%-'\
                         f'Pass:{_pass}'
                 }
             )
@@ -2727,7 +2727,6 @@ class INTKPI(BaseType):
         }
 
         return returnData
-
 
     def _zipDescriptionAndData(self, description, data):
         """ 取得 description和data壓縮後資料
