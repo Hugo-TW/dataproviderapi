@@ -1678,6 +1678,8 @@ class INTKPI(BaseType):
         # PRODList
         PRODList = []
         for x in shipData:
+            if "APPLICATION" not in x:
+                x["APPLICATION"] = "ALL"
             if {"PROD_NBR": x["PROD_NBR"], "APPLICATION": x["APPLICATION"]} not in PRODList:
                 PRODList.append(
                     {"PROD_NBR": x["PROD_NBR"], "APPLICATION": x["APPLICATION"]})
