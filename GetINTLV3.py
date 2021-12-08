@@ -5120,11 +5120,15 @@ class INTLV3(BaseType):
 
     def _getEFALV2DATA(self, OPER, tmpPROD_NBR, dataRange):
         try:
+            tmpSITE = self.jsonData["SITE"]
             start = time.time()
             e_date = dataRange["n1d_array"][0]
             s_date = dataRange["n1s_array"][0]
-            _tempData = self._getEFALV2DATAbyALLDate(
-                OPER, tmpPROD_NBR, s_date, e_date)
+            _tempData = None
+            if tmpSITE == "TN":
+                _tempData = self._getEFALV2DATAbyALLDateFromMongoDB(OPER, tmpPROD_NBR, s_date, e_date)
+            else:
+                _tempData = self._getEFALV2DATAbyALLDateFromOracle(OPER, tmpPROD_NBR, s_date, e_date)
             tempData = []
             for d in _tempData:
                 tempData.append(d)
@@ -5181,8 +5185,92 @@ class INTLV3(BaseType):
             self.writeError(
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
+    
+    def _getEFALV2DATAbyALLDateFromOracle(self, OPER, PROD_NBR, s_date, e_date):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpKPITYPE = self.jsonData["KPITYPE"]
+        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
 
-    def _getEFALV2DATAbyALLDate(self, OPER, PROD_NBR, s_date, e_date):
+        whereString = ""
+        if tmpAPPLICATION != "ALL":
+            whereString += f" AND dmo.application = '{tmpAPPLICATION}' "
+        if PROD_NBR != '':
+            whereString += f" AND dmo.code = '{PROD_NBR}' "
+        try:
+            efaString = f"with pass as( \
+                            SELECT \
+                                dlo.factory_code    AS FACTORY_ID, \
+                                fpa.mfgdate as ACCT_DATE,\
+                                SUM(fpa.sumqty) AS PASSQTY \
+                            FROM \
+                                INTMP_DB.fact_fpy_pass_sum fpa \
+                                LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = fpa.local_id \
+                                LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = fpa.model_id \
+                                LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = fpa.oper_id \
+                            WHERE \
+                                dlo.company_code = '{tmpCOMPANY_CODE}' \
+                                AND dlo.site_code = '{tmpSITE}' \
+                                AND dlo.factory_code = '{tmpFACTORY_ID}' \
+                                AND dop.name = '{OPER}' \
+                                AND TO_DATE(fpa.mfgdate, 'YYYYMMDD') >= TO_DATE({s_date}, 'YYYYMMDD') \
+                                AND TO_DATE(fpa.mfgdate, 'YYYYMMDD') <= TO_DATE({e_date}, 'YYYYMMDD') \
+                                {whereString} \
+                            GROUP BY \
+                                dlo.factory_code, \
+                                fpa.mfgdate \
+                            HAVING SUM(fpa.sumqty) > 0 ), \
+                            deft as ( \
+                            SELECT \
+                                dlo.factory_code    AS FACTORY_ID, \
+                                fdf.mfgdate as ACCT_DATE,\
+                                SUM(fdf.sumqty) AS DEFTQTY \
+                            FROM \
+                                INTMP_DB.fact_fpy_deft_sum fdf \
+                                LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = fdf.local_id \
+                                LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = fdf.model_id \
+                                LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = fdf.oper_id    \
+                            WHERE \
+                                dlo.company_code = '{tmpCOMPANY_CODE}' \
+                                AND dlo.site_code = '{tmpSITE}' \
+                                AND dlo.factory_code = '{tmpFACTORY_ID}' \
+                                AND dop.name = '{OPER}' \
+                                AND TO_DATE(fdf.mfgdate, 'YYYYMMDD') >= TO_DATE({s_date}, 'YYYYMMDD') \
+                                AND TO_DATE(fdf.mfgdate, 'YYYYMMDD') <= TO_DATE({e_date}, 'YYYYMMDD') \
+                                AND fdf.deftcode in (select code from INTMP_DB.codefilter where type = 'DEFT') \
+                                {whereString} \
+                            GROUP BY \
+                                dlo.factory_code, \
+                                fdf.mfgdate \
+                            HAVING SUM(fdf.sumqty) > 0 ) \
+                            select   \
+                            pa.FACTORY_ID, \
+                            pa.ACCT_DATE, \
+                            nvl(df.DEFTQTY,0) as DEFTQTY, \
+                            pa.PASSQTY as PASSQTY \
+                            from pass pa left join deft df \
+                            on df.FACTORY_ID = pa.FACTORY_ID \
+                            and df.ACCT_DATE = pa.ACCT_DATE \
+                            order by pa.acct_date"
+            description, data = self.pSelectAndDescription(efaString)
+            rData = self._zipDescriptionAndData(description, data)
+            return rData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+    def _getEFALV2DATAbyALLDateFromMongoDB(self, OPER, PROD_NBR, s_date, e_date):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]

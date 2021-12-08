@@ -1995,7 +1995,8 @@ class INTKPI(BaseType):
                 "SITE": tmpSITE,
                 "FACTORY_ID": tmpFACTORY_ID,
                 "ACCT_DATE": tmpACCT_DATE,
-                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]}
+                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]},
+                "LCM_OWNER": {"$in": ["INT0","LCM0", "LCME", "PROD", "QTAP", "RES0"]}
             }
         }
         passGroup1 = {
@@ -2043,7 +2044,8 @@ class INTKPI(BaseType):
                 "SITE": tmpSITE,
                 "FACTORY_ID": tmpFACTORY_ID,
                 "ACCT_DATE": tmpACCT_DATE,
-                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]}
+                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]},
+                "LCM_OWNER": {"$in": ["INT0","LCM0", "LCME", "PROD", "QTAP", "RES0"]}
             }
         }
         deftlookup1 = {
@@ -2319,7 +2321,7 @@ class INTKPI(BaseType):
                             AND dlo.factory_code = '{tmpFACTORY_ID}' \
                             AND dop.name in ({OPERList}) \
                             AND edf.mfgdate = '{tmpACCT_DATE}' \
-                            AND edf.deftcode in (select code from codefilter where type = 'DEFT')\
+                            AND edf.deftcode in (select code from INTMP_DB.codefilter where type = 'DEFT')\
                             {applicatiionWhere} \
                         GROUP BY \
                             dlo.company_code, \
@@ -2367,7 +2369,8 @@ class INTKPI(BaseType):
                 "COMPANY_CODE": tmpCOMPANY_CODE,
                 "SITE": tmpSITE,
                 "FACTORY_ID": tmpFACTORY_ID,
-                "ACCT_DATE": tmpACCT_DATE,                
+                "ACCT_DATE": tmpACCT_DATE,      
+                "LCM_OWNER": {"$in": ["INT0","LCM0", "LCME", "PROD", "QTAP", "RES0"]},      
                 "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]}
             }
         }
@@ -2419,6 +2422,7 @@ class INTKPI(BaseType):
                 "SITE": tmpSITE,
                 "FACTORY_ID": tmpFACTORY_ID,
                 "ACCT_DATE": tmpACCT_DATE,
+                "LCM_OWNER": {"$in": ["INT0","LCM0", "LCME", "PROD", "QTAP", "RES0"]}, 
                 "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]}
             }
         }
@@ -2710,7 +2714,8 @@ class INTKPI(BaseType):
                 "ACCT_DATE": tmpACCT_DATE,
                 "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]},
                 "PROD_NBR" : Prod,
-                "DFCT_REASON": {"$in": REASON}
+                "DFCT_REASON": {"$in": REASON},
+                "LCM_OWNER": {"$in": ["INT0","LCM0", "LCME", "PROD", "QTAP", "RES0"]}
             }
         }
         reasonGroup1 = {
@@ -2780,7 +2785,7 @@ class INTKPI(BaseType):
 
     def _getEFA_impReason(self):
         try:
-            """self.getMongoConnection()
+            self.getMongoConnection()
             self.setMongoDb("IAMP")
             self.setMongoCollection("excelToJson")
             reqParm={
@@ -2791,10 +2796,19 @@ class INTKPI(BaseType):
                 "DATA": True
             }
             deftData = self.getMongoFind(reqParm,projectionFields)
-            self.closeMongoConncetion()"""
+            self.closeMongoConncetion()
+            returnData = []
+            for d in deftData:    
+                for x in d["DATA"]:                  
+                    returnData.append(x["REASON_CODE"])
+
+            """
             sString = f"select code as REASON_CODE from INTMP_DB.codefilter where type = 'REASON'"
             description , data = self.pSelectAndDescription(sString)            
-            returnData = self._zipDescriptionAndData(description, data)
+            deftData = self._zipDescriptionAndData(description, data)            
+            for x in deftData:                  
+                yellowList.append(x["REASON_CODE"])
+            """
             return returnData
         except Exception as e:
             error_class = e.__class__.__name__  # 取得錯誤類型
@@ -2813,9 +2827,7 @@ class INTKPI(BaseType):
         tmpSITE = self.jsonData["SITE"]
         getLimitData = self.operSetData[tmpFACTORY_ID]["EFA"]["limit"] if tmpSITE == "TN" else {}
 
-        yellowList = []
-        for x in self._getEFA_impReason():                  
-            yellowList.append(x["REASON_CODE"])
+        yellowList = self._getEFA_impReason()
 
         PRODList = []
         for x in EFAData:
@@ -2890,9 +2902,7 @@ class INTKPI(BaseType):
         tmpSITE = self.jsonData["SITE"]
         getLimitData = self.operSetData[tmpFACTORY_ID]["EFA"]["limit"] if tmpSITE == "TN" else {}
 
-        yellowList = []
-        for x in self._getEFA_impReason():    
-            yellowList.append(x["REASON_CODE"])
+        yellowList = self._getEFA_impReason()
 
         PRODList = []
         for x in EFAData:
@@ -2994,9 +3004,7 @@ class INTKPI(BaseType):
         tmpSITE = self.jsonData["SITE"]
         getLimitData = self.operSetData[tmpFACTORY_ID]["EFA"]["limit"] if tmpSITE == "TN" else {}
 
-        yellowList = []
-        for x in self._getEFA_impReason():                  
-            yellowList.append(x["REASON_CODE"])
+        yellowList = self._getEFA_impReason()
 
         PRODList = []
         for x in EFAData:
