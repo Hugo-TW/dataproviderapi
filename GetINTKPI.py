@@ -20,6 +20,14 @@ class INTKPI(BaseType):
         # M011 => MOD1
         # J001 => MOD2
         # J003 => MOD3
+        self.EFAOPERDATA = {
+                        "BONDING":{"OPER": [1300,1301]},
+                        "LAM":{"OPER": [1340,1370]},
+                        "AAFC":{"OPER": [1419,1420]},
+                        "TPI":{"OPER": [1510]},
+                        "OTPC":{"OPER": [1590]},
+                        "CKEN":{"OPER": [1600]}   
+                    }  
         self.operSetData = {
             "M011": {
                 "FPY": {
@@ -411,20 +419,7 @@ class INTKPI(BaseType):
             # 一階 EFA KPI API
             elif tmpKPITYPE == "EFA":
                 expirTimeKey = tmpFACTORY_ID + '_PASS'
-
-                OPERDATA = {
-                        "BONDING":{"OPER": [1300,1301]},
-                        "LAM":{"OPER": [1340,1370]},
-                        "AAFC":{"OPER": [1419,1420]},
-                        "TPI":{"OPER": [1510]},
-                        "OTPC":{"OPER": [1590]},
-                        "CKEN":{"OPER": [1600]}   
-                    }      
-                OPERList = []           
-                for key, value in OPERDATA.items():
-                    OPERList.extend(value.get("OPER"))
-
-                efaData = self._getEFAData(OPERList)
+                efaData = self._getEFAData(tmpOPER)
                 groupEFAData = self._groupEFAData(
                     efaData["dData"], efaData["pData"])
                 returnData = self._calEFAData(groupEFAData)
@@ -442,60 +437,38 @@ class INTKPI(BaseType):
 
             # 二階 EFA 泡泡圖 API
             elif tmpKPITYPE == "PRODEFA":                            
-                expirTimeKey = tmpFACTORY_ID + '_DEFT'
-                OPERDATA = {
-                        "BONDING":{"OPER": [1300,1301]},
-                        "LAM":{"OPER": [1340,1370]},
-                        "AAFC":{"OPER": [1419,1420]},
-                        "TPI":{"OPER": [1510]},
-                        "OTPC":{"OPER": [1590]},
-                        "CKEN":{"OPER": [1600]}                         
-                    }         
-                OPERList = []
-                if tmpOPER == "ALL":
-                    for key, value in OPERDATA.items():
-                        OPERList.extend(value.get("OPER"))
-                else:
-                    OPERList.extend(OPERDATA[tmpOPER]["OPER"])
+                expirTimeKey = tmpFACTORY_ID + '_DEFT'   
 
-                efaData = self._getEFADatabyDeft(OPERList)
+                efaData = self._getEFADatabyDeft(tmpOPER)
                 groupEFAData = self._groupEFADatabyDeft(
                     efaData["dData"], efaData["pData"], tmpOPER)
-                returnData = self._calPRODEFAData(groupEFAData, tmpOPER, OPERList)
+                returnData = self._calPRODEFAData(groupEFAData, tmpOPER)
 
 
                 # 存到 redis 暫存
-                """self.getRedisConnection()
+                self.getRedisConnection()
                 if self.searchRedisKeys(redisKey):
                     self.setRedisData(redisKey, json.dumps(
                         returnData, sort_keys=True, indent=2), self.getKeyExpirTime(expirTimeKey))
                 else:
                     self.setRedisData(redisKey, json.dumps(
-                        returnData, sort_keys=True, indent=2), 60)"""
+                        returnData, sort_keys=True, indent=2), 60)
 
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
             elif tmpKPITYPE == "PRODEFALIST":                            
-                expirTimeKey = tmpFACTORY_ID + '_DEFT'
-                OPERDATA = {
-                        "BONDING":{"OPER": [1300,1301]},
-                        "LAM":{"OPER": [1340,1370]},
-                        "AAFC":{"OPER": [1419,1420]},
-                        "TPI":{"OPER": [1510]},
-                        "OTPC":{"OPER": [1590]},
-                        "CKEN":{"OPER": [1600]}                         
-                    }         
+                expirTimeKey = tmpFACTORY_ID + '_DEFT'    
                 OPERList = []
                 if tmpOPER == "ALL":
-                    for key, value in OPERDATA.items():
+                    for key, value in self.EFAOPERDATA.items():
                         OPERList.extend(value.get("OPER"))
                 else:
-                    OPERList.extend(OPERDATA[tmpOPER]["OPER"])
+                    OPERList.extend(self.EFAOPERDATA[tmpOPER]["OPER"])
 
-                efaData = self._getEFADatabyDeft(OPERList)
+                efaData = self._getEFADatabyDeft(tmpOPER)
                 groupEFAData = self._groupEFADatabyDeft(
                     efaData["dData"], efaData["pData"], tmpOPER)
-                returnData = self._calPRODEFAListData(groupEFAData, tmpOPER, OPERList)
+                returnData = self._calPRODEFAListData(groupEFAData, tmpOPER)
 
                 # 存到 redis 暫存
                 self.getRedisConnection()
@@ -1861,7 +1834,151 @@ class INTKPI(BaseType):
 
         return returnData
 
-    def _getEFADatabyDeft(self, OPERList):
+    def _getEFADatabyDeft(self, tmpOPER):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpKPITYPE = self.jsonData["KPITYPE"]
+        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]      
+
+        OPERCODEList = []   
+        OPERNAMEList = ""  
+        if tmpOPER == "ALL":
+            for key, value in self.EFAOPERDATA.items():
+                OPERCODEList.extend(value.get("OPER"))
+            for key, value in self.EFAOPERDATA.items():
+                OPERNAMEList = OPERNAMEList + f"'{key}',"
+        else:
+            OPERCODEList.extend(self.EFAOPERDATA[tmpOPER]["OPER"])
+            OPERNAMEList = f"'{tmpOPER}',"        
+        if OPERNAMEList != "":
+            OPERNAMEList = OPERNAMEList[:-1]
+
+        try:
+            data = {}
+            if tmpSITE == "TN":
+                data = self._getEFADatabyDeftFromMongoDB(OPERCODEList)
+            else:
+                data = self._getEFADatabyDeftFromOracle(OPERNAMEList)
+            returnData = {
+                "pData": data["pData"],
+                "dData": data["dData"]
+            }
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+    
+    def _getEFADatabyDeftFromOracle(self, OPERList):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpKPITYPE = self.jsonData["KPITYPE"]
+        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
+
+        applicatiionWhere = ""
+        if tmpAPPLICATION != "ALL":
+            applicatiionWhere = f"AND dmo.application = '{tmpAPPLICATION}' "        
+        try:
+            passString = f"SELECT \
+                            dlo.company_code   AS company_code, \
+                            dlo.site_code      AS site, \
+                            dlo.factory_code   AS factory_id, \
+                            dmo.code           AS prod_nbr, \
+                            epa.mfgdate        AS acct_date, \
+                            dmo.application    AS APPLICATION, \
+                            dop.name           AS MAIN_WC, \
+                            SUM(epa.sumqty) AS PASS_QTY \
+                        FROM \
+                            INTMP_DB.fact_efa_pass_sum epa \
+                            LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = epa.local_id \
+                            LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = epa.model_id \
+                            LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = epa.oper_id \
+                        WHERE \
+                            dlo.company_code = '{tmpCOMPANY_CODE}' \
+                            AND dlo.site_code = '{tmpSITE}' \
+                            AND dlo.factory_code = '{tmpFACTORY_ID}' \
+                            AND dop.name in ({OPERList}) \
+                            AND epa.mfgdate = '{tmpACCT_DATE}' \
+                            {applicatiionWhere} \
+                        GROUP BY \
+                            dlo.company_code, \
+                            dlo.site_code, \
+                            dlo.factory_code, \
+                            dmo.code, \
+                            epa.mfgdate, \
+                            dmo.application, \
+                            dop.name \
+                        HAVING SUM(epa.sumqty) > 0 "
+            description , data = self.pSelectAndDescription(passString)            
+            pData = self._zipDescriptionAndData(description, data)
+            deftString = f"SELECT \
+                            dlo.company_code   AS company_code, \
+                            dlo.site_code      AS site, \
+                            dlo.factory_code   AS factory_id, \
+                            dmo.code           AS prod_nbr, \
+                            edf.mfgdate        AS acct_date, \
+                            dmo.application    AS APPLICATION, \
+                            dop.name           AS MAIN_WC, \
+                            edf.deftcode    AS DFCT_CODE, \
+                            SUM(edf.sumqty) AS DEFT_QTY \
+                        FROM \
+                            INTMP_DB.fact_efa_deft_sum edf \
+                            LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = edf.local_id \
+                            LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = edf.model_id \
+                            LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = edf.oper_id \
+                        WHERE \
+                            dlo.company_code =  '{tmpCOMPANY_CODE}' \
+                            AND dlo.site_code = '{tmpSITE}' \
+                            AND dlo.factory_code = '{tmpFACTORY_ID}' \
+                            AND dop.name in ({OPERList}) \
+                            AND edf.mfgdate = '{tmpACCT_DATE}' \
+                            AND edf.deftcode in (select code from INTMP_DB.codefilter where type = 'DEFT') \
+                            {applicatiionWhere} \
+                        GROUP BY \
+                            dlo.company_code, \
+                            dlo.site_code, \
+                            dlo.factory_code, \
+                            dmo.code, \
+                            edf.mfgdate, \
+                            dmo.application, \
+                            dop.name, \
+                            edf.deftcode \
+                        HAVING SUM(edf.sumqty) > 0 "
+            description , data = self.pSelectAndDescription(deftString)            
+            dData = self._zipDescriptionAndData(description, data)  
+
+            returnData = {
+                "pData": pData,
+                "dData": dData
+            }
+
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+    def _getEFADatabyDeftFromMongoDB(self, OPERList):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
@@ -2093,7 +2210,149 @@ class INTKPI(BaseType):
                     oData = {}
         return data
 
-    def _getEFAData(self, OPERList):
+    def _getEFAData(self, tmpOPER):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpKPITYPE = self.jsonData["KPITYPE"]
+        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]      
+
+        OPERCODEList = []   
+        OPERNAMEList = ""  
+        if tmpOPER == "ALL":
+            for key, value in self.EFAOPERDATA.items():
+                OPERCODEList.extend(value.get("OPER"))
+            for key, value in self.EFAOPERDATA.items():
+                OPERNAMEList = OPERNAMEList + f"'{key}',"
+        else:
+            OPERCODEList.extend(self.EFAOPERDATA[tmpOPER]["OPER"])
+            OPERNAMEList = f"'{tmpOPER}',"        
+        if OPERNAMEList != "":
+            OPERNAMEList = OPERNAMEList[:-1]
+
+        try:
+            data = {}
+            if tmpSITE == "TN":
+                data = self._getEFADataFromMongoDB(OPERCODEList)
+            else:
+                data = self._getEFADataFromOracle(OPERNAMEList)
+            returnData = {
+                "pData": data["pData"],
+                "dData": data["dData"]
+            }
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+    
+    def _getEFADataFromOracle(self, OPERList):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpKPITYPE = self.jsonData["KPITYPE"]
+        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
+
+        applicatiionWhere = ""
+        if tmpAPPLICATION != "ALL":
+            applicatiionWhere = f"AND dmo.application = '{tmpAPPLICATION}' "        
+        try:
+            passString = f"SELECT \
+                            dlo.company_code   AS company_code, \
+                            dlo.site_code      AS site, \
+                            dlo.factory_code   AS factory_id, \
+                            dmo.code           AS prod_nbr, \
+                            epa.mfgdate        AS acct_date, \
+                            dmo.application    AS APPLICATION, \
+                            dop.name           AS MAIN_WC, \
+                            SUM(epa.sumqty) AS PASS_QTY \
+                        FROM \
+                            INTMP_DB.fact_efa_pass_sum epa \
+                            LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = epa.local_id \
+                            LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = epa.model_id \
+                            LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = epa.oper_id \
+                        WHERE \
+                            dlo.company_code = '{tmpCOMPANY_CODE}' \
+                            AND dlo.site_code = '{tmpSITE}' \
+                            AND dlo.factory_code = '{tmpFACTORY_ID}' \
+                            AND dop.name in ({OPERList}) \
+                            AND epa.mfgdate = '{tmpACCT_DATE}' \
+                            {applicatiionWhere} \
+                        GROUP BY \
+                            dlo.company_code, \
+                            dlo.site_code, \
+                            dlo.factory_code, \
+                            dmo.code, \
+                            epa.mfgdate, \
+                            dmo.application, \
+                            dop.name \
+                        HAVING SUM(epa.sumqty) > 0 "
+            description , data = self.pSelectAndDescription(passString)            
+            pData = self._zipDescriptionAndData(description, data)
+            deftString = f"SELECT \
+                            dlo.company_code   AS company_code, \
+                            dlo.site_code      AS site, \
+                            dlo.factory_code   AS factory_id, \
+                            dmo.code           AS prod_nbr, \
+                            edf.mfgdate        AS acct_date, \
+                            dmo.application    AS APPLICATION, \
+                            dop.name           AS MAIN_WC, \
+                            SUM(edf.sumqty) AS DEFT_QTY \
+                        FROM \
+                            INTMP_DB.fact_efa_deft_sum edf \
+                            LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = edf.local_id \
+                            LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = edf.model_id \
+                            LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = edf.oper_id \
+                        WHERE \
+                            dlo.company_code =  '{tmpCOMPANY_CODE}' \
+                            AND dlo.site_code = '{tmpSITE}' \
+                            AND dlo.factory_code = '{tmpFACTORY_ID}' \
+                            AND dop.name in ({OPERList}) \
+                            AND edf.mfgdate = '{tmpACCT_DATE}' \
+                            AND edf.deftcode in (select code from codefilter where type = 'DEFT')\
+                            {applicatiionWhere} \
+                        GROUP BY \
+                            dlo.company_code, \
+                            dlo.site_code, \
+                            dlo.factory_code, \
+                            dmo.code, \
+                            edf.mfgdate, \
+                            dmo.application, \
+                            dop.name \
+                        HAVING SUM(edf.sumqty) > 0 "
+            description , data = self.pSelectAndDescription(deftString)            
+            dData = self._zipDescriptionAndData(description, data)  
+
+            returnData = {
+                "pData": pData,
+                "dData": dData
+            }
+
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+    
+    def _getEFADataFromMongoDB(self, OPERList):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
@@ -2323,7 +2582,120 @@ class INTKPI(BaseType):
                     oData = {}
         return data
 
-    def _getProdReasonData(self, Prod, REASON, OPERList):
+    def _getProdReasonData(self, Prod, REASON, tmpOPER):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpKPITYPE = self.jsonData["KPITYPE"]
+        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]        
+    
+        OPERCODEList = []   
+        OPERNAMEList = ""  
+        if tmpOPER == "ALL":
+            for key, value in self.EFAOPERDATA.items():
+                OPERCODEList.extend(value.get("OPER"))
+            for key, value in self.EFAOPERDATA.items():
+                OPERNAMEList = OPERNAMEList + f"'{key}',"
+        else:
+            OPERCODEList.extend(self.EFAOPERDATA[tmpOPER]["OPER"])
+            OPERNAMEList = f"'{tmpOPER}',"        
+        if OPERNAMEList != "":
+            OPERNAMEList = OPERNAMEList[:-1]
+
+        try:
+            data = {}
+            if tmpSITE == "TN":
+                data = self._getProdReasonDataFromMongoDB(Prod, REASON, OPERCODEList)
+            else:
+                data = self._getProdReasonDataFromOracle(Prod, REASON, OPERNAMEList)
+
+            returnData = data
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+    def _getProdReasonDataFromOracle(self, Prod, REASON, OPERList):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpKPITYPE = self.jsonData["KPITYPE"]
+        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
+
+        _REASON_ARRAY_LIST = ""
+        for x in REASON:
+            _REASON_ARRAY_LIST = _REASON_ARRAY_LIST + f"'{x}',"
+        if _REASON_ARRAY_LIST != "":
+            _REASON_ARRAY_LIST = _REASON_ARRAY_LIST[:-1]
+
+        applicatiionWhere = ""
+        if tmpAPPLICATION != "ALL":
+            applicatiionWhere = f"AND dmo.application = '{tmpAPPLICATION}' "        
+        try:
+            reasonString = f"SELECT \
+                            dlo.company_code   AS company_code, \
+                            dlo.site_code      AS site, \
+                            dlo.factory_code   AS factory_id, \
+                            dmo.code           AS prod_nbr, \
+                            ers.mfgdate        AS acct_date, \
+                            dmo.application    AS APPLICATION, \
+                            dop.name           AS MAIN_WC, \
+                            ers.reasoncode     AS DFCT_REASON,\
+                            SUM(ers.sumqty) AS REASON_QTY \
+                        FROM \
+                            INTMP_DB.fact_efa_reason_sum ers \
+                            LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = ers.local_id \
+                            LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = ers.model_id \
+                            LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = ers.oper_id \
+                        WHERE \
+                            dlo.company_code = '{tmpCOMPANY_CODE}' \
+                            AND dlo.site_code = '{tmpSITE}' \
+                            AND dlo.factory_code = '{tmpFACTORY_ID}' \
+                            AND dop.name in ({OPERList}) \
+                            AND ers.mfgdate = '{tmpACCT_DATE}' \
+                            AND ers.reasoncode in ({_REASON_ARRAY_LIST}) \
+                            AND dmo.code  = '{Prod}' \
+                            {applicatiionWhere} \
+                        GROUP BY \
+                            dlo.company_code, \
+                            dlo.site_code, \
+                            dlo.factory_code, \
+                            dmo.code, \
+                            ers.mfgdate, \
+                            dmo.application, \
+                            dop.name, \
+                            ers.reasoncode \
+                        HAVING SUM(ers.sumqty) > 0 "
+            description , data = self.pSelectAndDescription(reasonString)            
+            rData = self._zipDescriptionAndData(description, data)
+            
+            returnData = rData
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+    def _getProdReasonDataFromMongoDB(self, Prod, REASON, OPERList):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
@@ -2408,7 +2780,7 @@ class INTKPI(BaseType):
 
     def _getEFA_impReason(self):
         try:
-            self.getMongoConnection()
+            """self.getMongoConnection()
             self.setMongoDb("IAMP")
             self.setMongoCollection("excelToJson")
             reqParm={
@@ -2419,8 +2791,10 @@ class INTKPI(BaseType):
                 "DATA": True
             }
             deftData = self.getMongoFind(reqParm,projectionFields)
-            self.closeMongoConncetion()
-            returnData = deftData
+            self.closeMongoConncetion()"""
+            sString = f"select code as REASON_CODE from INTMP_DB.codefilter where type = 'REASON'"
+            description , data = self.pSelectAndDescription(sString)            
+            returnData = self._zipDescriptionAndData(description, data)
             return returnData
         except Exception as e:
             error_class = e.__class__.__name__  # 取得錯誤類型
@@ -2440,9 +2814,8 @@ class INTKPI(BaseType):
         getLimitData = self.operSetData[tmpFACTORY_ID]["EFA"]["limit"] if tmpSITE == "TN" else {}
 
         yellowList = []
-        for d in self._getEFA_impReason():    
-            for x in d["DATA"]:                  
-                yellowList.append(x["REASON_CODE"])
+        for x in self._getEFA_impReason():                  
+            yellowList.append(x["REASON_CODE"])
 
         PRODList = []
         for x in EFAData:
@@ -2473,7 +2846,7 @@ class INTKPI(BaseType):
                 filter(lambda d: d["DEFECT_RATE"] >= targrt, d1))            
             if len(checkTargrt) > 0:
                 oper1600 = list(
-                    filter(lambda d: d["MAIN_WC"] in "1600", d1))
+                    filter(lambda d: d["MAIN_WC"] in ["1600","CKEN"], d1))
                 if len(oper1600) > 0:
                     checkRed = list(
                         filter(lambda d: d["DEFECT_RATE"] >= targrt, oper1600))
@@ -2487,7 +2860,7 @@ class INTKPI(BaseType):
             else:
                 rCheck = True            
             
-            _ReasonData = self._getProdReasonData(prod["PROD_NBR"],yellowList,[1600])
+            _ReasonData = self._getProdReasonData(prod["PROD_NBR"],yellowList,"CKEN")
             checkYellow = []
             for x in _ReasonData:
                 checkYellow.append(x)
@@ -2511,16 +2884,15 @@ class INTKPI(BaseType):
 
         return returnData
 
-    def _calPRODEFAData(self, EFAData, OPER, OPERList):
+    def _calPRODEFAData(self, EFAData, OPER):
         tmpACCT_DATE = self.jsonData["ACCT_DATE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         tmpSITE = self.jsonData["SITE"]
         getLimitData = self.operSetData[tmpFACTORY_ID]["EFA"]["limit"] if tmpSITE == "TN" else {}
 
         yellowList = []
-        for d in self._getEFA_impReason():    
-            for x in d["DATA"]:                  
-                yellowList.append(x["REASON_CODE"])
+        for x in self._getEFA_impReason():    
+            yellowList.append(x["REASON_CODE"])
 
         PRODList = []
         for x in EFAData:
@@ -2555,7 +2927,7 @@ class INTKPI(BaseType):
                 tdCheck = False if sumPASSQTY >= targrtQTY and DEFECT_RATE >= targrt else True
 
                 rCheck = False #潛在不良(REASON CODE)
-                _ReasonData = self._getProdReasonData(prod["PROD_NBR"],yellowList, OPERList)
+                _ReasonData = self._getProdReasonData(prod["PROD_NBR"],yellowList, OPER)
                 checkYellow = []
                 for x in _ReasonData:
                     checkYellow.append(x)
@@ -2616,16 +2988,15 @@ class INTKPI(BaseType):
 
         return returnData
 
-    def _calPRODEFAListData(self, EFAData, OPER, OPERList):
+    def _calPRODEFAListData(self, EFAData, OPER):
         tmpACCT_DATE = self.jsonData["ACCT_DATE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         tmpSITE = self.jsonData["SITE"]
         getLimitData = self.operSetData[tmpFACTORY_ID]["EFA"]["limit"] if tmpSITE == "TN" else {}
 
         yellowList = []
-        for d in self._getEFA_impReason():    
-            for x in d["DATA"]:                  
-                yellowList.append(x["REASON_CODE"])
+        for x in self._getEFA_impReason():                  
+            yellowList.append(x["REASON_CODE"])
 
         PRODList = []
         for x in EFAData:
@@ -2660,7 +3031,7 @@ class INTKPI(BaseType):
                 tdCheck = False if sumPASSQTY >= targrtQTY and DEFECT_RATE >= targrt else True
 
                 rCheck = False #潛在不良(REASON CODE)
-                _ReasonData = self._getProdReasonData(prod["PROD_NBR"],yellowList, OPERList)
+                _ReasonData = self._getProdReasonData(prod["PROD_NBR"],yellowList, OPER)
                 checkYellow = []
                 for x in _ReasonData:
                     checkYellow.append(x)

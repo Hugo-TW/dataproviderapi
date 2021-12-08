@@ -21,7 +21,7 @@ class DaoHelper():
     def poolCreate(self):
         try:
             self.pool = cx_Oracle.SessionPool(self.dbAccount, self.dbPassword,
-                            self.SERVICE_NAME, min=2, max=30, increment=1, threaded=True, encoding="UTF-8")
+                            self.SERVICE_NAME, min=3, max=30, increment=1, threaded=True, encoding="UTF-8")
             return self.pool
         except cx_Oracle.DatabaseError  as e:         
             error_class = e.__class__.__name__ #取得錯誤類型
