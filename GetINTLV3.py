@@ -5203,48 +5203,48 @@ class INTLV3(BaseType):
             efaString = f"with pass as( \
                             SELECT \
                                 dlo.factory_code    AS FACTORY_ID, \
-                                fpa.mfgdate as ACCT_DATE,\
-                                SUM(fpa.sumqty) AS PASSQTY \
+                                epa.mfgdate as ACCT_DATE,\
+                                SUM(epa.sumqty) AS PASSQTY \
                             FROM \
-                                INTMP_DB.fact_fpy_pass_sum fpa \
-                                LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = fpa.local_id \
-                                LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = fpa.model_id \
-                                LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = fpa.oper_id \
+                                INTMP_DB.fact_efa_pass_sum epa \
+                                LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = epa.local_id \
+                                LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = epa.model_id \
+                                LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = epa.oper_id \
                             WHERE \
                                 dlo.company_code = '{tmpCOMPANY_CODE}' \
                                 AND dlo.site_code = '{tmpSITE}' \
                                 AND dlo.factory_code = '{tmpFACTORY_ID}' \
                                 AND dop.name = '{OPER}' \
-                                AND TO_DATE(fpa.mfgdate, 'YYYYMMDD') >= TO_DATE({s_date}, 'YYYYMMDD') \
-                                AND TO_DATE(fpa.mfgdate, 'YYYYMMDD') <= TO_DATE({e_date}, 'YYYYMMDD') \
+                                AND TO_DATE(epa.mfgdate, 'YYYYMMDD') >= TO_DATE({s_date}, 'YYYYMMDD') \
+                                AND TO_DATE(epa.mfgdate, 'YYYYMMDD') <= TO_DATE({e_date}, 'YYYYMMDD') \
                                 {whereString} \
                             GROUP BY \
                                 dlo.factory_code, \
-                                fpa.mfgdate \
-                            HAVING SUM(fpa.sumqty) > 0 ), \
+                                epa.mfgdate \
+                            HAVING SUM(epa.sumqty) > 0 ), \
                             deft as ( \
                             SELECT \
                                 dlo.factory_code    AS FACTORY_ID, \
-                                fdf.mfgdate as ACCT_DATE,\
-                                SUM(fdf.sumqty) AS DEFTQTY \
+                                edf.mfgdate as ACCT_DATE,\
+                                SUM(edf.sumqty) AS DEFTQTY \
                             FROM \
-                                INTMP_DB.fact_fpy_deft_sum fdf \
-                                LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = fdf.local_id \
-                                LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = fdf.model_id \
-                                LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = fdf.oper_id    \
+                                INTMP_DB.fact_efa_deft_sum edf \
+                                LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = edf.local_id \
+                                LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = edf.model_id \
+                                LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = edf.oper_id    \
                             WHERE \
                                 dlo.company_code = '{tmpCOMPANY_CODE}' \
                                 AND dlo.site_code = '{tmpSITE}' \
                                 AND dlo.factory_code = '{tmpFACTORY_ID}' \
                                 AND dop.name = '{OPER}' \
-                                AND TO_DATE(fdf.mfgdate, 'YYYYMMDD') >= TO_DATE({s_date}, 'YYYYMMDD') \
-                                AND TO_DATE(fdf.mfgdate, 'YYYYMMDD') <= TO_DATE({e_date}, 'YYYYMMDD') \
-                                AND fdf.deftcode in (select code from INTMP_DB.codefilter where type = 'DEFT') \
+                                AND TO_DATE(edf.mfgdate, 'YYYYMMDD') >= TO_DATE({s_date}, 'YYYYMMDD') \
+                                AND TO_DATE(edf.mfgdate, 'YYYYMMDD') <= TO_DATE({e_date}, 'YYYYMMDD') \
+                                AND edf.deftcode in (select code from INTMP_DB.codefilter where type = 'DEFT') \
                                 {whereString} \
                             GROUP BY \
                                 dlo.factory_code, \
-                                fdf.mfgdate \
-                            HAVING SUM(fdf.sumqty) > 0 ) \
+                                edf.mfgdate \
+                            HAVING SUM(edf.sumqty) > 0 ) \
                             select   \
                             pa.FACTORY_ID, \
                             pa.ACCT_DATE, \
