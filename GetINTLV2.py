@@ -19,6 +19,14 @@ class INTLV2(BaseType):
         #M011 => MOD1
         #J001 => MOD2
         #J003 => MOD3
+        self.EFAOPERDATA = {
+                "BONDING":{"OPER": [1300,1301]},
+                "LAM":{"OPER": [1340,1370]},
+                "AAFC":{"OPER": [1419,1420]},
+                "TPI":{"OPER": [1510]},
+                "OTPC":{"OPER": [1590]},
+                "CKEN":{"OPER": [1600]}   
+            }  
         self.operSetData = {
             "M011": {
                 "FPY": {
@@ -355,22 +363,14 @@ class INTLV2(BaseType):
 
             #二階 MSHIP PIE API
             elif tmpKPITYPE == "EFALV2_3":    
-                OPERDATA = {
-                        "BONDING":{"OPER": [1300,1301]},
-                        "LAM":{"OPER": [1340,1370]},
-                        "AAFC":{"OPER": [1419,1420]},
-                        "TPI":{"OPER": [1510]},
-                        "OTPC":{"OPER": [1590]},
-                        "CKEN":{"OPER": [1600]}                         
-                    }         
                 OPERList = []
                 if tmpOPER == "ALL":
-                    for key, value in OPERDATA.items():
+                    for key, value in self.EFAOPERDATA.items():
                         OPERList.extend(value.get("OPER"))
                 else:
-                    OPERList.extend(OPERDATA[tmpOPER]["OPER"])
+                    OPERList.extend(self.EFAOPERDATA[tmpOPER]["OPER"])
 
-                data = self._getEFALV2_3_Data(OPERList)
+                data = self._getEFALV2_3_Data(tmpOPER, tmpPROD_NBR, tmpCHECKCODE)
 
                 DATASERIES = self._calEFALV2_3_Data(data["rData"], data["pData"])
 
@@ -392,20 +392,12 @@ class INTLV2(BaseType):
             elif tmpKPITYPE == "EFALV2_21":    
                 expirTimeKey = tmpFACTORY_ID + '_DEFT'
 
-                OPERDATA = {
-                        "BONDING":{"OPER": [1300,1301]},
-                        "LAM":{"OPER": [1340,1370]},
-                        "AAFC":{"OPER": [1419,1420]},
-                        "TPI":{"OPER": [1510]},
-                        "OTPC":{"OPER": [1590]},
-                        "CKEN":{"OPER": [1600]}                         
-                    }         
                 OPERList = []
                 if tmpOPER == "ALL":
-                    for key, value in OPERDATA.items():
+                    for key, value in self.EFAOPERDATA.items():
                         OPERList.extend(value.get("OPER"))
                 else:
-                    OPERList.extend(OPERDATA[tmpOPER]["OPER"])
+                    OPERList.extend(self.EFAOPERDATA[tmpOPER]["OPER"])
 
                 data = self._getEFALV2_21_Data(OPERList)
 
@@ -1377,14 +1369,132 @@ class INTLV2(BaseType):
                 fileName, lineNum, funcName, error_class, detail))
             return None
 
-    def _getEFALV2_3_Data(self, OPERList):
+    def _getEFALV2_3_Data(self, tmpOPER, PROD_NBR, CHECKCODE):
+        tmpSITE = self.jsonData["SITE"] 
+        OPERCODEList = []   
+        OPERNAMEList = ""  
+        if tmpOPER == "ALL":
+            for key, value in self.EFAOPERDATA.items():
+                OPERCODEList.extend(value.get("OPER"))
+            for key, value in self.EFAOPERDATA.items():
+                OPERNAMEList = OPERNAMEList + f"'{key}',"
+        else:
+            OPERCODEList.extend(self.EFAOPERDATA[tmpOPER]["OPER"])
+            OPERNAMEList = f"'{tmpOPER}',"        
+        if OPERNAMEList != "":
+            OPERNAMEList = OPERNAMEList[:-1]
+
+        try:
+            data = {}
+            if tmpSITE == "TN":
+                data = self._getEFALV2_3_DataFromMongoDB(OPERCODEList, PROD_NBR, CHECKCODE)
+            else:
+                data = self._getEFALV2_3_DataFromOracle(OPERNAMEList, PROD_NBR, CHECKCODE)
+            returnData = {
+                "pData": data["pData"],
+                "rData": data["rData"]
+            }
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+    
+    def _getEFALV2_3_DataFromOracle(self, OPERList, PROD_NBR, CHECKCODE):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpKPITYPE = self.jsonData["KPITYPE"]
+        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
+
+        whereString = ""
+        if tmpAPPLICATION != "ALL":
+            whereString += f" AND dmo.application = '{tmpAPPLICATION}' "
+        if PROD_NBR != '':
+            whereString += f" AND dmo.code = '{PROD_NBR}' "
+        
+        try:
+            passString = f"SELECT \
+                            dmo.code        AS PROD_NBR, \
+                            SUM(epa.sumqty) AS PASSQTY \
+                        FROM \
+                            INTMP_DB.fact_efa_pass_sum epa \
+                            LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = epa.local_id \
+                            LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = epa.model_id \
+                            LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = epa.oper_id \
+                        WHERE \
+                            dlo.company_code = '{tmpCOMPANY_CODE}' \
+                            AND dlo.site_code = '{tmpSITE}' \
+                            AND dlo.factory_code = '{tmpFACTORY_ID}' \
+                            AND dop.name in ({OPERList}) \
+                            AND epa.mfgdate = '{tmpACCT_DATE}' \
+                            {whereString} \
+                        GROUP BY \
+                            dmo.code \
+                        HAVING SUM(epa.sumqty) > 0 "
+            description , data = self.pSelectAndDescription(passString)            
+            pData = self._zipDescriptionAndData(description, data)
+
+            if CHECKCODE != '':
+                whereString += f" AND ers.deftcode = '{CHECKCODE}' "
+            reasonString = f"SELECT \
+                            ers.reasoncode     AS DFCT_REASON, \
+                            drc.reasoncode_desc   AS REASON_DESC, \
+                            SUM(ers.sumqty) AS REASONQTY \
+                        FROM \
+                            INTMP_DB.fact_efa_reason_sum ers \
+                            LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = ers.local_id \
+                            LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = ers.model_id \
+                            LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = ers.oper_id \
+                            LEFT JOIN INTMP_DB.dime_reasoncode drc ON drc.reasoncode = ers.reasoncode \
+                        WHERE \
+                            dlo.company_code =  '{tmpCOMPANY_CODE}' \
+                            AND dlo.site_code = '{tmpSITE}' \
+                            AND dlo.factory_code = '{tmpFACTORY_ID}' \
+                            AND dop.name in ({OPERList}) \
+                            AND ers.mfgdate = '{tmpACCT_DATE}' \
+                            {whereString} \
+                        GROUP BY \
+                            ers.reasoncode, \
+                            drc.reasoncode_desc \
+                        HAVING SUM(ers.sumqty) > 0 "
+            description , data = self.pSelectAndDescription(reasonString)            
+            rData = self._zipDescriptionAndData(description, data)  
+
+            returnData = {
+                "pData": pData,
+                "rData": rData
+            }
+
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+    def _getEFALV2_3_DataFromMongoDB(self, OPERList, PROD_NBR, CHECKCODE):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         tmpACCT_DATE = self.jsonData["ACCT_DATE"]
         tmpAPPLICATION = self.jsonData["APPLICATION"]
-        tmpPROD_NBR = self.jsonData["PROD_NBR"]
-        tmpCHECKCODE = self.jsonData["CHECKCODE"] if "CHECKCODE" in self.jsonData else ""
 
         passAggregate =[
                   {
@@ -1506,14 +1616,14 @@ class INTLV2(BaseType):
                   }
                 ]
         
-        if tmpPROD_NBR != '':
-            reasonAggregate[0]["$match"]["PROD_NBR"] = tmpPROD_NBR
-            passAggregate[0]["$match"]["PROD_NBR"] = tmpPROD_NBR
+        if PROD_NBR != '':
+            reasonAggregate[0]["$match"]["PROD_NBR"] = PROD_NBR
+            passAggregate[0]["$match"]["PROD_NBR"] = PROD_NBR
         if tmpAPPLICATION != 'ALL':
             reasonAggregate[0]["$match"]["APPLICATION"] = tmpAPPLICATION
             passAggregate[0]["$match"]["APPLICATION"] = tmpAPPLICATION
-        if tmpCHECKCODE != '':
-            reasonAggregate[0]["$match"]["DFCT_CODE"] = tmpCHECKCODE
+        if CHECKCODE != '':
+            reasonAggregate[0]["$match"]["DFCT_CODE"] = CHECKCODE
 
         try:
             self.getMongoConnection()
@@ -1542,6 +1652,7 @@ class INTLV2(BaseType):
             self.writeError(
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
+
 
     def _calEFALV2_3_Data(self, rdata, pdata):
         tmpPROD_NBR = self.jsonData["PROD_NBR"]
