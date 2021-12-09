@@ -265,38 +265,20 @@ class INTRelation(BaseType):
             """
             # region 準備數據
             # comm data: DEFTCODE
-            sql = "select DEFTCODE, DEFTCODE_DESC from INTMP_DB.DEFTCODE"
-            self.getConnection(self.DBconfig)
-            commData_DEFTCODE = self.Select(sql)
-            self.closeConnection()
+            sql = "select DEFTCODE as CODE, DEFTCODE_DESC as cDESC from INTMP_DB.DEFTCODE"
             self.DEFTCODEData = []
-            if(len(commData_DEFTCODE) != 0):
-                for da in commData_DEFTCODE:
-                    self.DEFTCODEData.append({"CODE": da[0],"DESC": da[1]})
-            del commData_DEFTCODE
-            gc.collect()
+            description , data = self.pSelectAndDescription(sql)            
+            self.DEFTCODEData = self._zipDescriptionAndData(description, data)
             # comm data: REASONCODE數據
-            sql = "select REASONCODE, REASONCODE_DESC from INTMP_DB.REASONCODE"
-            self.getConnection(self.DBconfig)
-            commData_REASONCODE = self.Select(sql)
-            self.closeConnection()
+            sql = "select REASONCODE as CODE, REASONCODE_DESC as cDESC from INTMP_DB.REASONCODE"
             self.REASONCODEData = []
-            if(len(commData_REASONCODE) != 0):
-                for da in commData_REASONCODE:
-                    self.REASONCODEData.append({"CODE": da[0],"DESC": da[1]})
-            del commData_REASONCODE
-            gc.collect()
+            description , data = self.pSelectAndDescription(sql)            
+            self.REASONCODEData = self._zipDescriptionAndData(description, data)
             # comm data: MAT4數據
-            sql = "select MAT4, MAT_DESC from INTMP_DB.MAT"
-            self.getConnection(self.DBconfig)
-            commData_MAT4 = self.Select(sql)
-            self.closeConnection()
+            sql = "select MAT4 as CODE, MAT_DESC as cDESC from INTMP_DB.MAT"
             self.MAT4Data = []
-            if(len(commData_MAT4) != 0):
-                for da in commData_MAT4:
-                    self.MAT4Data.append({"CODE": da[0],"DESC": da[1]})
-            del commData_MAT4
-            gc.collect()
+            description , data = self.pSelectAndDescription(sql)            
+            self.MAT4Data = self._zipDescriptionAndData(description, data)
 
             if tmpFuncType == "FPY_TEST":
                 nodes = [
@@ -412,9 +394,7 @@ class INTRelation(BaseType):
                 sql = "select DEFTCODE, COMPARECODE, WEIGHT from INTMP_DB.DEFT_WEIGHT " \
                       f"where {whereString} " \
                       "order by DEFTCODE, COMPARECODE "
-                self.getConnection(self.DBconfig)
-                commData = self.Select(sql)
-                self.closeConnection()
+                commData = self.pSelect(sql)
                 weightData = {}
                 if(len(commData) != 0):
                     for da in commData:
@@ -438,9 +418,7 @@ class INTRelation(BaseType):
                       f"{whereString} " \
                       "group by PROD_NBR, DEFT, MFGDATE, MAIN_OPER, PANELID, RW_COUNT " \
                       "order by PANELID "
-                self.getConnection(self.DBconfig)
-                idData = self.Select(sql)
-                self.closeConnection()
+                idData = self.pSelect(sql)
                 panelData = []
                 if(len(idData) != 0):
                     for da in idData:
@@ -473,9 +451,7 @@ class INTRelation(BaseType):
                         "select PROD_NBR, MFGDATE, PANELID, OPER, TRANSDT, OPERATOR, EQPID, RW_COUNT, " \
                         "OUTPUT_FG from panel_his_daily order by PANELID, TRANSDT asc"
 
-                    self.getConnection(self.DBconfig)
-                    data1 = self.Select(sql)
-                    self.closeConnection()
+                    data1 = self.pSelect(sql)
                     hisData = []
                     if(len(data1) != 0):
                         for da in data1:
@@ -506,9 +482,7 @@ class INTRelation(BaseType):
                         "select PROD_NBR, MFGDATE, PANELID, OPER, MAT_ID, MAT_LOTID from panel_his_mat " \
                         "order by MAT_ID, MAT_LOTID asc"
 
-                    self.getConnection(self.DBconfig)
-                    data2 = self.Select(sql)
-                    self.closeConnection()
+                    data2 = self.pSelect(sql)
                     matData = []
                     if(len(data2) != 0):
                         for da in data2:
@@ -727,9 +701,7 @@ class INTRelation(BaseType):
                 sql = "select REASONCODE, COMPARECODE, WEIGHT from INTMP_DB.REASON_WEIGHT " \
                       f"where {whereString} " \
                       "order by REASONCODE, COMPARECODE "
-                self.getConnection(self.DBconfig)
-                commData = self.Select(sql)
-                self.closeConnection()
+                commData = self.pSelect(sql)
                 weightData = {}
                 if(len(commData) != 0):
                     for da in commData:
@@ -745,9 +717,7 @@ class INTRelation(BaseType):
                       f"{whereString} " \
                       "group by PROD_NBR, DEFT_REASON, MFGDATE, MAIN_OPER, PANELID, RW_COUNT " \
                       "order by PANELID "
-                self.getConnection(self.DBconfig)
-                idData = self.Select(sql)
-                self.closeConnection()
+                idData = self.pSelect(sql)
                 panelData = []
                 if(len(idData) != 0):
                     for da in idData:
@@ -778,10 +748,7 @@ class INTRelation(BaseType):
                 sql = f"with panel_his_daily as (select * from INTMP_DB.PANELHISDAILY {whereString} ) " \
                       "select PROD_NBR, MFGDATE, PANELID, OPER, TRANSDT, OPERATOR, EQPID, RW_COUNT, " \
                       "OUTPUT_FG from panel_his_daily order by PANELID, TRANSDT asc"
-
-                self.getConnection(self.DBconfig)
-                data1 = self.Select(sql)
-                self.closeConnection()
+                data1 = self.pSelect(sql)
                 hisData = []
                 if(len(data1) != 0):
                     for da in data1:
@@ -811,10 +778,7 @@ class INTRelation(BaseType):
                 sql = f"with panel_his_mat as (select * from INTMP_DB.PANELHISDAILY_MAT where {whereString}) " \
                       "select PROD_NBR, MFGDATE, PANELID, OPER, MAT_ID, MAT_LOTID from panel_his_mat " \
                       "order by MAT_ID, MAT_LOTID asc"
-
-                self.getConnection(self.DBconfig)
-                data2 = self.Select(sql)
-                self.closeConnection()
+                data2 = self.pSelect(sql)
                 matData = []
                 if(len(data2) != 0):
                     for da in data2:
@@ -1024,9 +988,7 @@ class INTRelation(BaseType):
                 sql = "select REASONCODE, COMPARECODE, WEIGHT from INTMP_DB.REASON_WEIGHT " \
                       f"where {whereString} " \
                       "order by REASONCODE, COMPARECODE "
-                self.getConnection(self.DBconfig)
-                commData = self.Select(sql)
-                self.closeConnection()
+                commData = self.pSelect(sql)
                 weightData = {}
                 if(len(commData) != 0):
                     for da in commData:
@@ -1042,9 +1004,7 @@ class INTRelation(BaseType):
                       f"{whereString} " \
                       "group by PROD_NBR, DEFT_REASON, MFGDATE, MAIN_OPER, PANELID, RW_COUNT " \
                       "order by PANELID "
-                self.getConnection(self.DBconfig)
-                idData = self.Select(sql)
-                self.closeConnection()
+                idData = self.pSelect(sql)
                 panelData = []
                 if(len(idData) != 0):
                     for da in idData:
@@ -1076,10 +1036,7 @@ class INTRelation(BaseType):
                     sql = f"with panel_his_daily as (select * from INTMP_DB.PANELHISDAILY {whereString} ) " \
                         "select PROD_NBR, MFGDATE, PANELID, OPER, TRANSDT, OPERATOR, EQPID, RW_COUNT, " \
                         "OUTPUT_FG from panel_his_daily order by PANELID, TRANSDT asc"
-
-                    self.getConnection(self.DBconfig)
-                    data1 = self.Select(sql)
-                    self.closeConnection()
+                    data1 = self.pSelect(sql)
                     hisData = []
                     if(len(data1) != 0):
                         for da in data1:
@@ -1109,10 +1066,7 @@ class INTRelation(BaseType):
                     sql = f"with panel_his_mat as (select * from INTMP_DB.PANELHISDAILY_MAT where {whereString}) " \
                         "select PROD_NBR, MFGDATE, PANELID, OPER, MAT_ID, MAT_LOTID from panel_his_mat " \
                         "order by MAT_ID, MAT_LOTID asc"
-
-                    self.getConnection(self.DBconfig)
-                    data2 = self.Select(sql)
-                    self.closeConnection()
+                    data2 = self.pSelect(sql)
                     matData = []
                     if(len(data2) != 0):
                         for da in data2:
@@ -1329,7 +1283,7 @@ class INTRelation(BaseType):
             DataSet = self.MAT4Data
         d = [dd for dd in DataSet if dd["CODE"] == C_CODE]
         if d != []:
-            returnString = d[0]["DESC"]         
+            returnString = d[0]["CDESC"]         
         return returnString
 
     def _Group_PANELID_List(self):
@@ -1955,3 +1909,26 @@ class INTRelation(BaseType):
             }
         ]
         return returnData
+
+    def _zipDescriptionAndData(self, description, data):
+        """ 取得 description和data壓縮後資料
+            description :row column description 
+            data : row data 
+            回傳 [{key:value}]
+        """
+        try:
+            col_names = [row[0] for row in description]
+            dictdatan = [dict(zip(col_names, da)) for da in data]
+            return dictdatan
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError("File:[{0}] , Line:{1} , in {2} : [{3}] {4}".format(
+                fileName, lineNum, funcName, error_class, detail))
+            return None
+

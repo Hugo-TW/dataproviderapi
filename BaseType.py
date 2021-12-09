@@ -105,6 +105,28 @@ class BaseType ( metaclass = ABCMeta ):
         self.__log.logger.critical(text)
     """Oracle DB https://www.oracle.com/tw/database/technologies/oracle19c-windows-downloads.html"""
 
+    def pSelect( self, sql ):
+        """ 取的 row data 跟 row column description
+            sql : sql語法
+            回傳 : row column description、row data
+        """
+        try:
+            conn = DaoHelper.poolAcquire(self)
+            self.__data = DaoHelper.Select(self, sql)
+            DaoHelper.poolRelease(self, conn)
+            return self.__data
+        except Exception as e:
+            DaoHelper.poolRelease(self, conn)
+            error_class = e.__class__.__name__ #取得錯誤類型
+            detail = e.args[0] #取得詳細內容
+            cl, exc, tb = sys.exc_info() #取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1] #取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0] #取得發生的檔案名稱
+            lineNum = lastCallStack[1] #取得發生的行號
+            funcName = lastCallStack[2] #取得發生的函數名稱
+            self.writeError("File:[{0}] , Line:{1} , in {2} : [{3}] {4}".format(fileName, lineNum, funcName, error_class, detail))
+            return None
+    
     def pSelectAndDescription( self, sql ):
         """ 取的 row data 跟 row column description
             sql : sql語法
@@ -116,6 +138,7 @@ class BaseType ( metaclass = ABCMeta ):
             DaoHelper.poolRelease(self, conn)
             return self.__description, self.__data
         except Exception as e:
+            DaoHelper.poolRelease(self, conn)
             error_class = e.__class__.__name__ #取得錯誤類型
             detail = e.args[0] #取得詳細內容
             cl, exc, tb = sys.exc_info() #取得Call Stack

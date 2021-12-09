@@ -1550,7 +1550,7 @@ class INTLV3(BaseType):
                 "FACTORY_ID": tmpFACTORY_ID,
                 "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
                 "PROD_NBR": PROD_NBR,
-                "LCM_OWNER": {"$in": ["LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                "LCM_OWNER": {"$in": ["INT0","LCM0", "LCME", "PROD", "QTAP", "RES0"]},
                 "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]}
             }
         }
@@ -1631,7 +1631,7 @@ class INTLV3(BaseType):
                 "SITE": tmpSITE,
                 "FACTORY_ID": tmpFACTORY_ID,
                 "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
-                "LCM_OWNER": {"$in": ["LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                "LCM_OWNER": {"$in": ["INT0","LCM0", "LCME", "PROD", "QTAP", "RES0"]},
                 "PROD_NBR": PROD_NBR,
                 "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]},
                 "DFCT_CODE": {"$in": yellowList}
@@ -1772,7 +1772,8 @@ class INTLV3(BaseType):
                     "FACTORY_ID": tmpFACTORY_ID,
                     "PROD_NBR": tmpPROD_NBR,
                     "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
-                    "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]}
+                    "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]},
+                    "LCM_OWNER": {"$in": ["INT0","LCM0", "LCME", "PROD", "QTAP", "RES0"]}
                 }
             },
             {
@@ -1820,6 +1821,7 @@ class INTLV3(BaseType):
                     "WORK_CTR": "2110",
                     "TRANS_TYPE": "RWMO",
                     "PROD_NBR": tmpPROD_NBR,
+                    "LCM_OWNER": {"$in": ["INT0","LCM0", "LCME", "PROD", "QTAP", "RES0"]},
                     "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
                     "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]},
                     "DFCT_REASON": {
@@ -5301,7 +5303,8 @@ class INTLV3(BaseType):
                         "$lte": e_date
                     },
                     "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERARRAY]},
-                    "DFCT_CODE": {"$in": yellowList}
+                    "DFCT_CODE": {"$in": yellowList},
+                    "LCM_OWNER": {"$in": ["INT0","LCM0", "LCME", "PROD", "QTAP", "RES0"]}
                 }
             },
             {
@@ -5341,7 +5344,8 @@ class INTLV3(BaseType):
                                     "$gte": s_date,
                                     "$lte": e_date
                                 },
-                                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERARRAY]}
+                                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERARRAY]},
+                                "LCM_OWNER": {"$in": ["INT0","LCM0", "LCME", "PROD", "QTAP", "RES0"]}
                             }
                         },
                         {
@@ -5558,7 +5562,7 @@ class INTLV3(BaseType):
                         "$gte": s_date,
                         "$lte": e_date
                     },
-                    "LCM_OWNER": {"$in": ["LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                    "LCM_OWNER": {"$in": ["INT0","LCM0", "LCME", "PROD", "QTAP", "RES0"]},
                     "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]},
                     "WORK_CTR": "2110",
                     "PROD_NBR": PROD_NBR
@@ -5605,7 +5609,8 @@ class INTLV3(BaseType):
                                             "$lte": e_date
                                         },
                                         "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]},
-                                        "PROD_NBR": PROD_NBR
+                                        "PROD_NBR": PROD_NBR,
+                                        "LCM_OWNER": {"$in": ["INT0","LCM0", "LCME", "PROD", "QTAP", "RES0"]}
                                     }
                                 },
                                 {

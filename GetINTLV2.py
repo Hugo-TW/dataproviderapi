@@ -429,7 +429,7 @@ class INTLV2(BaseType):
             elif tmpKPITYPE == "EFALV2_WIP_1":    
                 expirTimeKey = tmpFACTORY_ID + '_WIP'
 
-                data = self._getEFALV2_WIP_1_Data()
+                data = self._getEFALV2_WIP_1_Data(tmpPROD_NBR)
 
                 DATASERIES = self._calEFALV2_WIP_1_Data(data["faWip"], data["prodNbrWip"])
 
@@ -587,7 +587,6 @@ class INTLV2(BaseType):
             self.writeError(
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
-
 
     def _getFPYLV2PIEDataFromMongo(self, OPER, PROD_NBR):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
@@ -1503,7 +1502,8 @@ class INTLV2(BaseType):
                       "SITE": tmpSITE,
                       "FACTORY_ID": tmpFACTORY_ID,
                       "ACCT_DATE": tmpACCT_DATE,
-                      "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]}
+                      "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]},
+                       "LCM_OWNER": {"$in": ["INT0","LCM0", "LCME", "PROD", "QTAP", "RES0"]}
                     }
                   },
                   {
@@ -1545,6 +1545,7 @@ class INTLV2(BaseType):
                       "ACCT_DATE": tmpACCT_DATE,
                       "WORK_CTR": "2110",
                       "TRANS_TYPE": "RWMO",
+                       "LCM_OWNER": {"$in": ["INT0","LCM0", "LCME", "PROD", "QTAP", "RES0"]},
                       "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]},
                       "DFCT_REASON": {
                         "$nin": [
@@ -1652,7 +1653,6 @@ class INTLV2(BaseType):
             self.writeError(
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
-
 
     def _calEFALV2_3_Data(self, rdata, pdata):
         tmpPROD_NBR = self.jsonData["PROD_NBR"]
@@ -1850,7 +1850,8 @@ class INTLV2(BaseType):
                 "SITE": tmpSITE,
                 "FACTORY_ID": tmpFACTORY_ID,
                 "ACCT_DATE": tmpACCT_DATE,                
-                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]}
+                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]},
+                 "LCM_OWNER": {"$in": ["INT0","LCM0", "LCME", "PROD", "QTAP", "RES0"]}
             }
         }
         passGroup1 = {
@@ -1901,7 +1902,8 @@ class INTLV2(BaseType):
                 "SITE": tmpSITE,
                 "FACTORY_ID": tmpFACTORY_ID,
                 "ACCT_DATE": tmpACCT_DATE,
-                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]}
+                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]},
+                 "LCM_OWNER": {"$in": ["INT0","LCM0", "LCME", "PROD", "QTAP", "RES0"]}
             }
         }
         deftlookup1 = {
@@ -2082,14 +2084,113 @@ class INTLV2(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
-    def _getEFALV2_WIP_1_Data(self):
+    def _getEFALV2_WIP_1_Data(self, PROD_NBR):
+        tmpSITE = self.jsonData["SITE"] 
+        try:
+            data = {}
+            if tmpSITE == "TN":
+                data = self._getEFALV2_WIP_1_DataFromMongoDB(PROD_NBR)
+            else:
+                data = self._getEFALV2_WIP_1_DataFromOracle(PROD_NBR)
+
+            returnData = {
+                "faWip": data["faWip"],
+                "prodNbrWip": data["prodNbrWip"]
+            }
+
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+    def _getEFALV2_WIP_1_DataFromOracle(self, PROD_NBR):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpKPITYPE = self.jsonData["KPITYPE"]
+        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
+
+        whereString = ""
+        if tmpAPPLICATION != "ALL":
+            whereString += f" AND dmo.application = '{tmpAPPLICATION}' "
+        
+        try:
+            faWipString = f"SELECT \
+                            NVL(SUM(ewp.QTY),0) AS TOTALQTY \
+                        FROM \
+                            INTMP_DB.fact_efa_wip_sum ewp \
+                            LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = ewp.local_id \
+                            LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = ewp.model_id \
+                        WHERE \
+                            dlo.company_code = '{tmpCOMPANY_CODE}' \
+                            AND dlo.site_code = '{tmpSITE}' \
+                            AND dlo.factory_code = '{tmpFACTORY_ID}' \
+                            AND ewp.mfgdate = '{tmpACCT_DATE}' \
+                            {whereString} "
+            description , data = self.pSelectAndDescription(faWipString)            
+            faWip = self._zipDescriptionAndData(description, data)
+
+            prodNbrWipString = f"SELECT \
+                            NVL(SUM(ewp.QTY),0) AS TOTALQTY, \
+                            NVL(SUM(ewp.QTY1),0) AS QTY1, \
+                            NVL(SUM(ewp.QTY2),0) AS QTY2, \
+                            NVL(SUM(ewp.QTY3),0) AS QTY3, \
+                            NVL(SUM(ewp.QTY5),0) AS QTY5, \
+                            NVL(SUM(ewp.QTY7),0) AS QTY7, \
+                            NVL(SUM(ewp.QTY15),0) AS QTY15, \
+                            NVL(SUM(ewp.QTY30),0) AS QTY30, \
+                            NVL(SUM(ewp.QTY31),0) AS QTY31, \
+                            NVL(SUM(ewp.QTY45),0) AS QTY45 \
+                        FROM \
+                            INTMP_DB.fact_efa_wip_sum ewp \
+                            LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = ewp.local_id \
+                            LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = ewp.model_id \
+                            LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = ewp.oper_id \
+                        WHERE \
+                            dlo.company_code =  '{tmpCOMPANY_CODE}' \
+                            AND dlo.site_code = '{tmpSITE}' \
+                            AND dlo.factory_code = '{tmpFACTORY_ID}' \
+                            AND ewp.mfgdate = '{tmpACCT_DATE}' \
+                            AND dmo.code = '{PROD_NBR}' \
+                            {whereString} "
+            description , data = self.pSelectAndDescription(prodNbrWipString)            
+            prodNbrWip = self._zipDescriptionAndData(description, data)  
+
+            returnData = {
+                "faWip": faWip,
+                "prodNbrWip": prodNbrWip
+            }
+
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+    def _getEFALV2_WIP_1_DataFromMongoDB(self, PROD_NBR):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         tmpACCT_DATE = self.jsonData["ACCT_DATE"]
         tmpAPPLICATION = self.jsonData["APPLICATION"]
-        tmpPROD_NBR = self.jsonData["PROD_NBR"]
-        tmpCHECKCODE = self.jsonData["CHECKCODE"] if "CHECKCODE" in self.jsonData else ""
 
         faWipAggregate =[
                   {
@@ -2125,7 +2226,7 @@ class INTLV2(BaseType):
                       "SITE": tmpSITE,
                       "FACTORY_ID": tmpFACTORY_ID,
                       "ACCT_DATE": tmpACCT_DATE,
-                      "PROD_NBR": tmpPROD_NBR,
+                      "PROD_NBR": PROD_NBR,
                       "WORK_CTR": "2110"
                     }
                   },
@@ -2295,6 +2396,92 @@ class INTLV2(BaseType):
         return returnData
 
     def _getEFALV2_WIP_2_Data(self):
+        tmpSITE = self.jsonData["SITE"] 
+        try:
+            data = {}
+            if tmpSITE == "TN":
+                data = self._getEFALV2_WIP_2_DataFromMongoDB()
+            else:
+                data = self._getEFALV2_WIP_2_DataFromOracle()
+            returnData = data
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+    def _getEFALV2_WIP_2_DataFromOracle(self):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpKPITYPE = self.jsonData["KPITYPE"]
+        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
+
+        whereString = ""
+        if tmpAPPLICATION != "ALL":
+            whereString += f" AND dmo.application = '{tmpAPPLICATION}' "
+        
+        try:
+            faWipString = f"SELECT \
+                            dlo.company_code   AS company_code, \
+                            dlo.site_code      AS site, \
+                            dlo.factory_code   AS factory_id, \
+                            dop.name           AS WORK_CTR, \
+                            dmo.code           AS prod_nbr, \
+                            NVL(SUM(ewp.QTY),0) AS TOTALQTY, \
+                            NVL(SUM(ewp.QTY1),0) AS QTY1, \
+                            NVL(SUM(ewp.QTY2),0) AS QTY2, \
+                            NVL(SUM(ewp.QTY3),0) AS QTY3, \
+                            NVL(SUM(ewp.QTY5),0) AS QTY5, \
+                            NVL(SUM(ewp.QTY7),0) AS QTY7, \
+                            NVL(SUM(ewp.QTY15),0) AS QTY15, \
+                            NVL(SUM(ewp.QTY30),0) AS QTY30, \
+                            NVL(SUM(ewp.QTY31),0) AS QTY31, \
+                            NVL(SUM(ewp.QTY45),0) AS QTY45 \
+                        FROM \
+                            INTMP_DB.fact_efa_wip_sum ewp \
+                            LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = ewp.local_id \
+                            LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = ewp.model_id \
+                            LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = ewp.oper_id \
+                        WHERE \
+                            dlo.company_code =  '{tmpCOMPANY_CODE}' \
+                            AND dlo.site_code = '{tmpSITE}' \
+                            AND dlo.factory_code = '{tmpFACTORY_ID}' \
+                            AND ewp.mfgdate = '{tmpACCT_DATE}' \
+                            {whereString} \
+                         GROUP BY \
+                            dlo.company_code, \
+                            dlo.site_code, \
+                            dlo.factory_code, \
+                            dop.name, \
+                            dmo.code "
+            description , data = self.pSelectAndDescription(faWipString)            
+            faWip = self._zipDescriptionAndData(description, data)  
+            returnData = faWip
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+    def _getEFALV2_WIP_2_DataFromMongoDB(self):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
