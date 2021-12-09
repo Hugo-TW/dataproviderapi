@@ -1683,7 +1683,10 @@ class INTLV2(BaseType):
                 "COLOR": COLOR,
                 "PROD_NBR": tmpPROD_NBR,
                 "OPER": tmpOPER
-            })        
+            })   
+        
+        returnData.sort(key=operator.itemgetter("REASONQTY"), reverse=True)
+
         return returnData
 
     def _getEFALV2_21_Data(self, OPERList):
@@ -1841,6 +1844,273 @@ class INTLV2(BaseType):
         if tmpPROD_NBR != '':
             passMatch1["$match"]["PROD_NBR"] = tmpPROD_NBR
             deftMatch1["$match"]["PROD_NBR"] = tmpPROD_NBR
+
+        passAggregate.extend([passMatch1, passGroup1, passProject1, passSort])
+        deftAggregate.extend(
+            [deftMatch1, deftlookup1, deftunwind1, deftGroup1, deftProject1, deftSort])
+
+        try:
+            self.getMongoConnection()
+            self.setMongoDb("IAMP")
+            self.setMongoCollection("passHisAndCurrent")
+            pData = self.aggregate(passAggregate)
+            self.setMongoCollection("deftHisAndCurrent")
+            dData = self.aggregate(deftAggregate)
+            self.closeMongoConncetion()
+
+            returnData = {
+                "pData": pData,
+                "dData": dData
+            }
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+    def _getEFALV2_21_DataFromOracle(self, OPERList, PROD_NBR):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpKPITYPE = self.jsonData["KPITYPE"]
+        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
+
+        whereString = ""
+        if tmpAPPLICATION != "ALL":
+            whereString += f" AND dmo.application = '{tmpAPPLICATION}' "
+        if PROD_NBR != '':
+            whereString += f" AND dmo.code = '{PROD_NBR}' "
+        
+        try:
+            passString = f"SELECT \
+                            dmo.code        AS PROD_NBR, \
+                            SUM(epa.sumqty) AS PASSQTY \
+                        FROM \
+                            INTMP_DB.fact_efa_pass_sum epa \
+                            LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = epa.local_id \
+                            LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = epa.model_id \
+                            LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = epa.oper_id \
+                        WHERE \
+                            dlo.company_code = '{tmpCOMPANY_CODE}' \
+                            AND dlo.site_code = '{tmpSITE}' \
+                            AND dlo.factory_code = '{tmpFACTORY_ID}' \
+                            AND dop.name in ({OPERList}) \
+                            AND epa.mfgdate = '{tmpACCT_DATE}' \
+                            {whereString} \
+                        GROUP BY \
+                            dmo.code \
+                        HAVING SUM(epa.sumqty) > 0 "
+            description , data = self.pSelectAndDescription(passString)            
+            pData = self._zipDescriptionAndData(description, data)
+
+            if CHECKCODE != '':
+                whereString += f" AND ers.deftcode = '{CHECKCODE}' "
+            reasonString = f"SELECT \
+                            ers.reasoncode     AS DFCT_REASON, \
+                            drc.reasoncode_desc   AS REASON_DESC, \
+                            SUM(ers.sumqty) AS REASONQTY \
+                        FROM \
+                            INTMP_DB.fact_efa_reason_sum ers \
+                            LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = ers.local_id \
+                            LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = ers.model_id \
+                            LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = ers.oper_id \
+                            LEFT JOIN INTMP_DB.dime_reasoncode drc ON drc.reasoncode = ers.reasoncode \
+                        WHERE \
+                            dlo.company_code =  '{tmpCOMPANY_CODE}' \
+                            AND dlo.site_code = '{tmpSITE}' \
+                            AND dlo.factory_code = '{tmpFACTORY_ID}' \
+                            AND dop.name in ({OPERList}) \
+                            AND ers.mfgdate = '{tmpACCT_DATE}' \
+                            {whereString} \
+                        GROUP BY \
+                            ers.reasoncode, \
+                            drc.reasoncode_desc \
+                        HAVING SUM(ers.sumqty) > 0 "
+            description , data = self.pSelectAndDescription(reasonString)            
+            rData = self._zipDescriptionAndData(description, data)  
+
+            returnData = {
+                "pData": pData,
+                "rData": rData
+            }
+
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+    def _getEFALV2_21_DataFromMongoDB(self, OPERList, PROD_NBR):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]   
+        passAggregate = []
+        deftAggregate = []        
+
+        # pass
+        passMatch1 = {
+            "$match": {
+                "COMPANY_CODE": tmpCOMPANY_CODE,
+                "SITE": tmpSITE,
+                "FACTORY_ID": tmpFACTORY_ID,
+                "ACCT_DATE": tmpACCT_DATE,                
+                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]}
+            }
+        }
+        passGroup1 = {
+            "$group": {
+                "_id": {
+                    "COMPANY_CODE": "$COMPANY_CODE",
+                    "SITE": "$SITE",
+                    "FACTORY_ID": "$FACTORY_ID",
+                    "PROD_NBR": "$PROD_NBR",
+                    "ACCT_DATE": "$ACCT_DATE",
+                    "APPLICATION": "$APPLICATION",
+                    "MAIN_WC": "$MAIN_WC"
+                },
+                "PASS_QTY": {
+                    "$sum": {"$toInt": "$QTY"}
+                }
+            }
+        }
+        passProject1 = {
+            "$project": {
+                "_id": 0,
+                "COMPANY_CODE": "$_id.COMPANY_CODE",
+                "SITE": "$_id.SITE",
+                "FACTORY_ID": "$_id.FACTORY_ID",
+                "PROD_NBR": "$_id.PROD_NBR",
+                "ACCT_DATE": "$_id.ACCT_DATE",
+                "APPLICATION": "$_id.APPLICATION",
+                "MAIN_WC": "$_id.MAIN_WC",
+                "PASS_QTY": "$PASS_QTY"
+            }
+        }
+        passSort = {
+            "$sort": {
+                "COMPANY_CODE": 1,
+                "SITE": 1,
+                "FACTORY_ID": 1,
+                "PROD_NBR": 1,
+                "ACCT_DATE": 1,
+                "MAIN_WC": 1,
+                "APPLICATION": 1
+            }
+        }
+
+        # deft
+        deftMatch1 = {
+            "$match": {
+                "COMPANY_CODE": tmpCOMPANY_CODE,
+                "SITE": tmpSITE,
+                "FACTORY_ID": tmpFACTORY_ID,
+                "ACCT_DATE": tmpACCT_DATE,
+                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]}
+            }
+        }
+        deftlookup1 = {
+            "$lookup": {
+                "from": "deftCodeView",
+                "as": "deftCodeList",
+                "let": {
+                        "dfctCode": "$DFCT_CODE"
+                },
+                "pipeline": [
+                    {
+                        "$match": {
+                            "$expr": {
+                                "$and": [
+                                    {
+                                        "$eq": [
+                                            "$$dfctCode",
+                                            "$DEFECT_CODE"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "$project": {
+                            "DEFECT_CODE": 1
+                        }
+                    }
+                ]
+            }
+        }
+        deftunwind1 = {
+            "$unwind": "$deftCodeList"
+        }
+        deftGroup1 = {
+            "$group": {
+                "_id": {
+                    "COMPANY_CODE": "$COMPANY_CODE",
+                    "SITE": "$SITE",
+                    "FACTORY_ID": "$FACTORY_ID",
+                    "PROD_NBR": "$PROD_NBR",
+                    "ACCT_DATE": "$ACCT_DATE",
+                    "APPLICATION": "$APPLICATION",
+                    "MAIN_WC": "$MAIN_WC",
+                    "DFCT_CODE": "$DFCT_CODE",
+                    "ERRC_DESCR": "$ERRC_DESCR"
+                },
+                "DEFT_QTY": {
+                    "$sum": {"$toInt": "$QTY"}
+                }
+            }
+        }
+        deftProject1 = {
+            "$project": {
+                "_id": 0,
+                "COMPANY_CODE": "$_id.COMPANY_CODE",
+                "SITE": "$_id.SITE",
+                "FACTORY_ID": "$_id.FACTORY_ID",
+                "PROD_NBR": "$_id.PROD_NBR",
+                "ACCT_DATE": "$_id.ACCT_DATE",
+                "APPLICATION": "$_id.APPLICATION",
+                "MAIN_WC": "$_id.MAIN_WC",                
+                "DFCT_CODE": "$_id.DFCT_CODE",
+                "ERRC_DESCR": "$_id.ERRC_DESCR",
+                "DEFT_QTY": "$DEFT_QTY"
+            }
+        }
+        deftSort = {
+            "$sort": {
+                "COMPANY_CODE": 1,
+                "SITE": 1,
+                "FACTORY_ID": 1,
+                "PROD_NBR": 1,
+                "ACCT_DATE": 1,
+                "MAIN_WC": 1,
+                "APPLICATION": 1
+            }
+        }
+
+        if tmpAPPLICATION != "ALL":
+            passMatch1["$match"]["APPLICATION"] = tmpAPPLICATION
+            deftMatch1["$match"]["APPLICATION"] = tmpAPPLICATION
+        if PROD_NBR != '':
+            passMatch1["$match"]["PROD_NBR"] = PROD_NBR
+            deftMatch1["$match"]["PROD_NBR"] = PROD_NBR
 
         passAggregate.extend([passMatch1, passGroup1, passProject1, passSort])
         deftAggregate.extend(
