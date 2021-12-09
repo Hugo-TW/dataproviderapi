@@ -399,7 +399,7 @@ class INTLV2(BaseType):
                 else:
                     OPERList.extend(self.EFAOPERDATA[tmpOPER]["OPER"])
 
-                data = self._getEFALV2_21_Data(OPERList)
+                data = self._getEFALV2_21_Data(tmpOPER, tmpPROD_NBR)
 
                 DATASERIES = self._calEFALV2_21_Data(data["dData"], data["pData"])
 
@@ -1689,178 +1689,30 @@ class INTLV2(BaseType):
 
         return returnData
 
-    def _getEFALV2_21_Data(self, OPERList):
-        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
-        tmpSITE = self.jsonData["SITE"]
-        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
-        tmpACCT_DATE = self.jsonData["ACCT_DATE"]
-        tmpAPPLICATION = self.jsonData["APPLICATION"]        
-        tmpPROD_NBR = self.jsonData["PROD_NBR"]
-        passAggregate = []
-        deftAggregate = []        
-
-        # pass
-        passMatch1 = {
-            "$match": {
-                "COMPANY_CODE": tmpCOMPANY_CODE,
-                "SITE": tmpSITE,
-                "FACTORY_ID": tmpFACTORY_ID,
-                "ACCT_DATE": tmpACCT_DATE,                
-                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]}
-            }
-        }
-        passGroup1 = {
-            "$group": {
-                "_id": {
-                    "COMPANY_CODE": "$COMPANY_CODE",
-                    "SITE": "$SITE",
-                    "FACTORY_ID": "$FACTORY_ID",
-                    "PROD_NBR": "$PROD_NBR",
-                    "ACCT_DATE": "$ACCT_DATE",
-                    "APPLICATION": "$APPLICATION",
-                    "MAIN_WC": "$MAIN_WC"
-                },
-                "PASS_QTY": {
-                    "$sum": {"$toInt": "$QTY"}
-                }
-            }
-        }
-        passProject1 = {
-            "$project": {
-                "_id": 0,
-                "COMPANY_CODE": "$_id.COMPANY_CODE",
-                "SITE": "$_id.SITE",
-                "FACTORY_ID": "$_id.FACTORY_ID",
-                "PROD_NBR": "$_id.PROD_NBR",
-                "ACCT_DATE": "$_id.ACCT_DATE",
-                "APPLICATION": "$_id.APPLICATION",
-                "MAIN_WC": "$_id.MAIN_WC",
-                "PASS_QTY": "$PASS_QTY"
-            }
-        }
-        passSort = {
-            "$sort": {
-                "COMPANY_CODE": 1,
-                "SITE": 1,
-                "FACTORY_ID": 1,
-                "PROD_NBR": 1,
-                "ACCT_DATE": 1,
-                "MAIN_WC": 1,
-                "APPLICATION": 1
-            }
-        }
-
-        # deft
-        deftMatch1 = {
-            "$match": {
-                "COMPANY_CODE": tmpCOMPANY_CODE,
-                "SITE": tmpSITE,
-                "FACTORY_ID": tmpFACTORY_ID,
-                "ACCT_DATE": tmpACCT_DATE,
-                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]}
-            }
-        }
-        deftlookup1 = {
-            "$lookup": {
-                "from": "deftCodeView",
-                "as": "deftCodeList",
-                "let": {
-                        "dfctCode": "$DFCT_CODE"
-                },
-                "pipeline": [
-                    {
-                        "$match": {
-                            "$expr": {
-                                "$and": [
-                                    {
-                                        "$eq": [
-                                            "$$dfctCode",
-                                            "$DEFECT_CODE"
-                                        ]
-                                    }
-                                ]
-                            }
-                        }
-                    },
-                    {
-                        "$project": {
-                            "DEFECT_CODE": 1
-                        }
-                    }
-                ]
-            }
-        }
-        deftunwind1 = {
-            "$unwind": "$deftCodeList"
-        }
-        deftGroup1 = {
-            "$group": {
-                "_id": {
-                    "COMPANY_CODE": "$COMPANY_CODE",
-                    "SITE": "$SITE",
-                    "FACTORY_ID": "$FACTORY_ID",
-                    "PROD_NBR": "$PROD_NBR",
-                    "ACCT_DATE": "$ACCT_DATE",
-                    "APPLICATION": "$APPLICATION",
-                    "MAIN_WC": "$MAIN_WC",
-                    "DFCT_CODE": "$DFCT_CODE",
-                    "ERRC_DESCR": "$ERRC_DESCR"
-                },
-                "DEFT_QTY": {
-                    "$sum": {"$toInt": "$QTY"}
-                }
-            }
-        }
-        deftProject1 = {
-            "$project": {
-                "_id": 0,
-                "COMPANY_CODE": "$_id.COMPANY_CODE",
-                "SITE": "$_id.SITE",
-                "FACTORY_ID": "$_id.FACTORY_ID",
-                "PROD_NBR": "$_id.PROD_NBR",
-                "ACCT_DATE": "$_id.ACCT_DATE",
-                "APPLICATION": "$_id.APPLICATION",
-                "MAIN_WC": "$_id.MAIN_WC",                
-                "DFCT_CODE": "$_id.DFCT_CODE",
-                "ERRC_DESCR": "$_id.ERRC_DESCR",
-                "DEFT_QTY": "$DEFT_QTY"
-            }
-        }
-        deftSort = {
-            "$sort": {
-                "COMPANY_CODE": 1,
-                "SITE": 1,
-                "FACTORY_ID": 1,
-                "PROD_NBR": 1,
-                "ACCT_DATE": 1,
-                "MAIN_WC": 1,
-                "APPLICATION": 1
-            }
-        }
-
-        if tmpAPPLICATION != "ALL":
-            passMatch1["$match"]["APPLICATION"] = tmpAPPLICATION
-            deftMatch1["$match"]["APPLICATION"] = tmpAPPLICATION
-        if tmpPROD_NBR != '':
-            passMatch1["$match"]["PROD_NBR"] = tmpPROD_NBR
-            deftMatch1["$match"]["PROD_NBR"] = tmpPROD_NBR
-
-        passAggregate.extend([passMatch1, passGroup1, passProject1, passSort])
-        deftAggregate.extend(
-            [deftMatch1, deftlookup1, deftunwind1, deftGroup1, deftProject1, deftSort])
+    def _getEFALV2_21_Data(self, tmpOPER, PROD_NBR):
+        tmpSITE = self.jsonData["SITE"] 
+        OPERCODEList = []   
+        OPERNAMEList = ""  
+        if tmpOPER == "ALL":
+            for key, value in self.EFAOPERDATA.items():
+                OPERCODEList.extend(value.get("OPER"))
+            for key, value in self.EFAOPERDATA.items():
+                OPERNAMEList = OPERNAMEList + f"'{key}',"
+        else:
+            OPERCODEList.extend(self.EFAOPERDATA[tmpOPER]["OPER"])
+            OPERNAMEList = f"'{tmpOPER}',"        
+        if OPERNAMEList != "":
+            OPERNAMEList = OPERNAMEList[:-1]
 
         try:
-            self.getMongoConnection()
-            self.setMongoDb("IAMP")
-            self.setMongoCollection("passHisAndCurrent")
-            pData = self.aggregate(passAggregate)
-            self.setMongoCollection("deftHisAndCurrent")
-            dData = self.aggregate(deftAggregate)
-            self.closeMongoConncetion()
-
+            data = {}
+            if tmpSITE == "TN":
+                data = self._getEFALV2_21_DataFromMongoDB(OPERCODEList, PROD_NBR)
+            else:
+                data = self._getEFALV2_21_DataFromOracle(OPERNAMEList, PROD_NBR)
             returnData = {
-                "pData": pData,
-                "dData": dData
+                "pData": data["pData"],
+                "dData": data["dData"]
             }
             return returnData
 
@@ -1892,8 +1744,14 @@ class INTLV2(BaseType):
         
         try:
             passString = f"SELECT \
-                            dmo.code        AS PROD_NBR, \
-                            SUM(epa.sumqty) AS PASSQTY \
+                            dlo.company_code   AS company_code, \
+                            dlo.site_code      AS site, \
+                            dlo.factory_code   AS factory_id, \
+                            dmo.code           AS prod_nbr, \
+                            epa.mfgdate        AS acct_date, \
+                            dmo.application    AS APPLICATION, \
+                            dop.name           AS MAIN_WC, \
+                            SUM(epa.sumqty) AS PASS_QTY \
                         FROM \
                             INTMP_DB.fact_efa_pass_sum epa \
                             LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = epa.local_id \
@@ -1907,40 +1765,59 @@ class INTLV2(BaseType):
                             AND epa.mfgdate = '{tmpACCT_DATE}' \
                             {whereString} \
                         GROUP BY \
-                            dmo.code \
+                            dlo.company_code, \
+                            dlo.site_code, \
+                            dlo.factory_code, \
+                            dmo.code, \
+                            epa.mfgdate, \
+                            dmo.application, \
+                            dop.name \
                         HAVING SUM(epa.sumqty) > 0 "
             description , data = self.pSelectAndDescription(passString)            
             pData = self._zipDescriptionAndData(description, data)
 
-            if CHECKCODE != '':
-                whereString += f" AND ers.deftcode = '{CHECKCODE}' "
-            reasonString = f"SELECT \
-                            ers.reasoncode     AS DFCT_REASON, \
-                            drc.reasoncode_desc   AS REASON_DESC, \
-                            SUM(ers.sumqty) AS REASONQTY \
+            deftString = f"SELECT \
+                            dlo.company_code   AS company_code, \
+                            dlo.site_code      AS site, \
+                            dlo.factory_code   AS factory_id, \
+                            dmo.code           AS prod_nbr, \
+                            edf.mfgdate        AS acct_date, \
+                            dmo.application    AS APPLICATION, \
+                            dop.name           AS MAIN_WC, \
+                            edf.deftcode    AS DFCT_CODE, \
+                            ddc.deftcode_desc  AS ERRC_DESCR, \
+                            SUM(edf.sumqty) AS DEFT_QTY \
                         FROM \
-                            INTMP_DB.fact_efa_reason_sum ers \
-                            LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = ers.local_id \
-                            LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = ers.model_id \
-                            LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = ers.oper_id \
-                            LEFT JOIN INTMP_DB.dime_reasoncode drc ON drc.reasoncode = ers.reasoncode \
+                            INTMP_DB.fact_efa_deft_sum edf \
+                            LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = edf.local_id \
+                            LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = edf.model_id \
+                            LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = edf.oper_id \
+                            LEFT JOIN INTMP_DB.dime_deftcode ddc ON ddc.deftcode = edf.deftcode \
                         WHERE \
                             dlo.company_code =  '{tmpCOMPANY_CODE}' \
                             AND dlo.site_code = '{tmpSITE}' \
                             AND dlo.factory_code = '{tmpFACTORY_ID}' \
                             AND dop.name in ({OPERList}) \
-                            AND ers.mfgdate = '{tmpACCT_DATE}' \
+                            AND edf.mfgdate = '{tmpACCT_DATE}' \
+                            AND edf.deftcode in (select code from INTMP_DB.codefilter where type = 'DEFT') \
                             {whereString} \
                         GROUP BY \
-                            ers.reasoncode, \
-                            drc.reasoncode_desc \
-                        HAVING SUM(ers.sumqty) > 0 "
-            description , data = self.pSelectAndDescription(reasonString)            
-            rData = self._zipDescriptionAndData(description, data)  
+                            dlo.company_code, \
+                            dlo.site_code, \
+                            dlo.factory_code, \
+                            dmo.code, \
+                            edf.mfgdate, \
+                            dmo.application, \
+                            dop.name, \
+                            edf.deftcode, \
+                            ddc.deftcode_desc \
+                        HAVING SUM(edf.sumqty) > 0 "
+            description , data = self.pSelectAndDescription(deftString)            
+            dData = self._zipDescriptionAndData(description, data)  
 
             returnData = {
                 "pData": pData,
-                "rData": rData
+                "dData": dData
             }
 
             return returnData
