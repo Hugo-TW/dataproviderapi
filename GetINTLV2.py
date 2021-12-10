@@ -1098,7 +1098,7 @@ class INTLV2(BaseType):
         mshipDATA = {
             "formerfab":{"in":"usl|lcd|fab","name": "前廠責"},
             "fab":{"in":"mfg|int|eqp|er","name": "廠責"},
-            "incoming":{"in":"sqe","name": "SQE來料責"},
+            "incoming":{"in":"sqe","name": "來料責"},
         }
         getFabData = mshipDATA[type]["name"]
 
@@ -1174,7 +1174,7 @@ class INTLV2(BaseType):
         mshipDATA = {
             "formerfab":{"in":"usl|lcd|fab","name": "前廠責"},
             "fab":{"in":"mfg|int|eqp|er","name": "廠責"},
-            "incoming":{"in":"sqe","name": "SQE來料責"},
+            "incoming":{"in":"sqe","name": "來料責"},
         }
         getFabData = mshipDATA[type]   
 
