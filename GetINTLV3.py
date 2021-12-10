@@ -5620,14 +5620,17 @@ class INTLV3(BaseType):
                                 ers.mfgdate \
                             HAVING SUM(ers.sumqty) > 0 ) \
                             select   \
-                            pa.FACTORY_ID, \
+                            pa.APPLICATION, \
+                            pa.PROD_NBR, \
                             pa.ACCT_DATE, \
+                            '{OPER}' as OPER, \
                             nvl(rs.REASONQTY,0) as REASONQTY, \
-                            pa.PASSQTY as PASSQTY, \
-                            (nvl(rs.REASONQTY,0)/pa.PASSQTY) as DEFECT_YIELD\
+                            pa.PASSQTY as  PASSQTY, \
+                            (nvl(rs.REASONQTY,0)/pa.PASSQTY) as DEFECT_YIELD \
                             from pass pa left join reason rs \
-                            on rs.FACTORY_ID = pa.FACTORY_ID \
-                            and rs.ACCT_DATE = pa.ACCT_DATE \
+                            on rs.application = pa.application \
+                            AND rs.prod_nbr = pa.prod_nbr \
+                            AND rs.acct_date = pa.acct_date \
                             order by pa.acct_date"
             description, data = self.pSelectAndDescription(efaString)
             rData = self._zipDescriptionAndData(description, data)
