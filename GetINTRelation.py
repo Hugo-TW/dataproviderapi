@@ -691,7 +691,6 @@ class INTRelation(BaseType):
                     """
                     return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
                 else:
-                    self.closeConnection()
                     return {'Result': 'Fail', 'Reason': 'No Panel ID LSIT'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
   
             elif tmpFuncType == "REASON_PROD":
@@ -1248,15 +1247,12 @@ class INTRelation(BaseType):
                     """
                     return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
                 else:
-                    self.closeConnection()
                     return {'Result': 'Fail', 'Reason': 'No Panel ID LSIT'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
   
             else:
-                self.closeConnection()
                 return {'Result': 'Fail', 'Reason': 'Parametes[KPITYPE] not in Rule'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
         except Exception as e:
-            self.closeConnection()
             error_class = e.__class__.__name__  # 取得錯誤類型
             detail = e.args[0]  # 取得詳細內容
             cl, exc, tb = sys.exc_info()  # 取得Call Stack
