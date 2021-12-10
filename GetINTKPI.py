@@ -1692,7 +1692,7 @@ class INTKPI(BaseType):
                         _scrapdata[0]["TOBESCRAP_SUMQTY"])
                 oData["SHIP_SUMQTY"] = copy.deepcopy(
                     _shipData[0]["SHIP_SUMQTY"])
-                if oData["TOBESCRAP_SUMQTY"] == 0:
+                if oData["TOBESCRAP_SUMQTY"] == 0 or oData["SHIP_SUMQTY"] == 0:
                     oData["TOTAL_YIELD"] = 1
                 else:
                     oData["TOTAL_YIELD"] = 1 - \
@@ -1703,7 +1703,7 @@ class INTKPI(BaseType):
                 oData["TOTAL_SUMQTY"] = copy.deepcopy(
                     _gradeData[0]["TOTAL_SUMQTY"])
 
-                if oData["DOWNGRADE_SUMQTY"] == 0:
+                if oData["DOWNGRADE_SUMQTY"] == 0 or oData["TOTAL_SUMQTY"] == 0 :
                     oData["GRADW_YIELD"] = 1
                 else:
                     oData["GRADW_YIELD"] = 1 - \
@@ -2969,7 +2969,8 @@ class INTKPI(BaseType):
                         "DEFECT_RATE": DEFECT_RATE,
                         "COLOR": COLOR,
                         "SYMBOL": SYMBOL,
-                        "QTY": sumPASSQTY
+                        "QTY": sumPASSQTY,
+                        "SHOWLABEL": True if COLOR != "#ef476f" else False
                     })
 
         # red ef476f
