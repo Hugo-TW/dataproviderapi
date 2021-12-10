@@ -691,7 +691,7 @@ class INTRelation(BaseType):
                     """
                     return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
                 else:
-                    return {'Result': 'Fail', 'Reason': 'No Panel ID LSIT'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+                    return {'Result': 'Fail', 'Reason': 'No Panel ID LSIT'}, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
   
             elif tmpFuncType == "REASON_PROD":
                 # region 準備數據
