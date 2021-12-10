@@ -2970,7 +2970,7 @@ class INTKPI(BaseType):
                         "COLOR": COLOR,
                         "SYMBOL": SYMBOL,
                         "QTY": sumPASSQTY,
-                        "SHOWLABEL": True if COLOR != "#ef476f" else False
+                        "SHOWLABEL": True if COLOR != "#06d6a0" else False
                     })
 
         # red ef476f
