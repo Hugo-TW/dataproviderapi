@@ -61,6 +61,7 @@ class AgvInfo(BaseType):
                         from TRX_WBS t, (select * from mcs_dispatch_command_log t where t.event_code = 3) t1, TICKET_MAPPING_AGV_INFO t2
                         where t.trx_sub_job_id = t1.ticket_id(+)
                         and t.trx_job_id = t2.trx_job_id (+) 
+                        and t.from_identity not like '%_02'
                     ) t
                     where t.from_identity not like '%STK%' 
                     and t.from_identity not like '%_02'
@@ -76,6 +77,7 @@ class AgvInfo(BaseType):
                         where t.trx_sub_job_id = t1.ticket_id(+)
                         and t.trx_job_id = t2.trx_job_id (+)  
                         and t1.create_date is not null
+                        and t.from_identity not like '%_02'
                     ) t
                     where t.from_identity not like '%STK%' 
                     and t.from_identity not like '%_02'
