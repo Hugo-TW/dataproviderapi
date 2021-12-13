@@ -87,7 +87,7 @@ class AgvInfo(BaseType):
                     t.agv_id,'#'||t1.line||' ('||t.agv_oper_id_to||')' as to_identity, 
                     nvl(lag(t.create_date,1) over (partition by t.agv_id order by t.trx_sub_job_id asc),t.create_date) as Statr_Time ,
                     nvl(lag(t.create_date,1) over (partition by t.agv_id order by t.trx_sub_job_id asc),t.create_date) + ((t1.s + nvl(lag(t1.s,1) over (partition by t.agv_id order by t.trx_sub_job_id asc),0))/86400) as to_step_time,
-                    t1.s + nvl(lag(t1.s,1) over (partition by t.agv_id order by t.trx_sub_job_id asc),0) as s,t2.create_date
+                    t1.s + nvl(lag(t1.s,1) over (partition by t.agv_id order by t.trx_sub_job_id asc),0) as s,t2.create_date as end_date
                     from DISPATCH_INFO_START t, runtime_mapping t1, DISPATCH_INFO_END t2
                     where t.agv_oper_id_from = t1.agv_oper_id_from
                     and t.agv_oper_id_to = t1.agv_oper_id_to
@@ -99,7 +99,7 @@ class AgvInfo(BaseType):
                     from Result_Data t
                     where 1=1
                     and t.Statr_Time + (t.s/86400) > sysdate 
-                    --and t.create_date is null
+                    and t.end_date is null
                     and t.Statr_Time is not null
                     order by t.agv_id,t.to_step_time"""
 
