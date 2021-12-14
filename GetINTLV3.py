@@ -3392,11 +3392,14 @@ class INTLV3(BaseType):
                 if oData["TOBESCRAP_SUMQTY"] == 0:
                     oData["SCRAP_YIELD"] = 1
                 else:
-                    ds = Decimal(oData["TOBESCRAP_SUMQTY"])
-                    ps = Decimal(oData["SHIP_SUMQTY"])
-                    dr = self._DecimaltoFloat(
-                        (ds / ps).quantize(Decimal('.00000000'), ROUND_HALF_UP))
-                    oData["SCRAP_YIELD"] = dr
+                    if oData["SHIP_SUMQTY"] != 0:
+                        ds = Decimal(oData["TOBESCRAP_SUMQTY"])
+                        ps = Decimal(oData["SHIP_SUMQTY"])
+                        dr = self._DecimaltoFloat(
+                            (ds / ps).quantize(Decimal('.00000000'), ROUND_HALF_UP))
+                        oData["SCRAP_YIELD"] = dr
+                    else:
+                        oData["SCRAP_YIELD"] = 0
                 if oData["SHIP_SUMQTY"] > oData["TOBESCRAP_SUMQTY"] > 0:
                     data.append(copy.deepcopy(oData))
                 oData = {}
