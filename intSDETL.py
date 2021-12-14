@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 import json
-import operator
 from re import X
 import sys
 import traceback
-import time
-import datetime
-import copy
-import decimal
+import requests
 from Dao import DaoHelper,ReadConfig
 from Logger import Logger
+from BaseType import BaseType
+import datetime
+from confluent_kafka import Producer, KafkaException
 
 class INTSDETL():
     def __init__(self, DBconfig, jsonData):
@@ -18,6 +17,11 @@ class INTSDETL():
         self.writeLog(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
         self.DBconfig = "INT_ORACLEDB_TEST"
         self.jsonData = jsonData
+        self.baseConfig = {
+            "server":{'bootstrap.servers': 'idts-kafka1.cminl.oa','message.max.bytes':15728640},
+            "topic":"intsdetl",
+            "headers":{'Content-type':'application/json','Connection':'close'},
+        }
 
     def SetData(self):
         try:
@@ -29,6 +33,7 @@ class INTSDETL():
             #一階 FPY KPI API
             if tmpDATATYPE == "FPY" or tmpDATATYPE == "MSHIP" or tmpDATATYPE == "EFA":                   
                 returnData= self._insertData(self.jsonData) 
+                returnData = self._sendDataToKafka(self.jsonData)
                 return returnData, returnData["status_code"], {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
             else:
                 return {'status': 'Fail','message': f'DATATYPE:{tmpDATATYPE} not Sup'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
@@ -164,3 +169,64 @@ class INTSDETL():
         self.__log.logger.debug(text)
     def writeCritical( self, text ):
         self.__log.logger.critical(text)
+
+    def callMongoApi( self ,url, data, headers ):
+        #self.writeLog('%s %s() ' %
+        #(self.__class__.__name__,sys._getframe().f_code.co_name))
+        response = requests.post(url, data = json.dumps(data), headers = headers)
+        response.close()
+        return response
+
+    def _sendDataToKafka(self, DATA): 
+        self.writeLog(f'Data1 Length:{len(DATA)}')        
+        d = datetime.datetime
+        dString = d.strftime(datetime.datetime.now(), '%Y/%m/%d %H:%M:%S')
+        DATA["JobFinishTime"] = dString
+        self._producerSend(DATA) 
+        _COMPANY_CODE = DATA["local"]["COMPANY_CODE"]
+        _SITE= DATA["local"]["SITE"]
+        _FACTORY_ID = DATA["local"]["FACTORY_ID"]
+        _ACCT_DATE = DATA["ACCT_DATE"]
+        _DATATYPE = DATA["DATATYPE"]
+        _DATA = f'{DATA}'.encode()
+        returnData = {
+                        "status_code": 201,
+                        "status": "success",
+                        "data": f'get {len(DATA["modeldata"])} record in modeldata',
+                        "message": ""
+                    }  
+        self.writeLog(f'{_COMPANY_CODE}-{_SITE}-{_FACTORY_ID}-{_ACCT_DATE}-{_DATATYPE}: {returnData}')
+        DATA = []
+        return returnData
+        
+    
+    def _producerSend( self, data ):
+        """
+            送KAFKA
+            topic: 通道
+            data: 值
+            partition:分區，預設 -1
+            format:格式，預設UTF-8
+        """
+        try:
+            server = self.baseConfig["server"]
+            topic = self.baseConfig["topic"]
+            producer = Producer(server)
+            producer.poll(0)
+            producer.produce(topic, json.dumps(data).encode("utf-8"), partition = -1 ,callback = self.delivery_report)
+            producer.flush()
+        except KafkaException as e:
+            error_class = e.__class__.__name__ #取得錯誤類型
+            detail = e.args[0] #取得詳細內容
+            cl, exc, tb = sys.exc_info() #取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1] #取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0] #取得發生的檔案名稱
+            lineNum = lastCallStack[1] #取得發生的行號
+            funcName = lastCallStack[2] #取得發生的函數名稱
+            self.writeError("File:[{0}] , Line:{1} , in {2} : [{3}] {4}".format(fileName, lineNum, funcName, error_class, detail))
+    
+    def delivery_report( self,err, msg ):
+        if err is not None:
+            self.writeLog(f'Message delivery failed: {err}')
+        else:
+            self.writeLog(f'Message delivered to {msg.topic()} [{msg.partition()}]')
