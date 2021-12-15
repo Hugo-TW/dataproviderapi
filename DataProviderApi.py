@@ -2366,7 +2366,7 @@ class intSDETL(Resource):
         DBconfig = "INT_ORACLEDB_TEST"
         jsonData = BaseType.validateType(request.json)   
         ins = INTSDETL(DBconfig, jsonData)
-        return ins.SetData()
+        return ins.getData()
 
 if __name__ == '__main__':
     app.run(threaded=True, use_reloader=True, host='0.0.0.0', port=5001, debug=False)#use_reloader=True,

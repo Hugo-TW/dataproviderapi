@@ -8,9 +8,8 @@ from Dao import DaoHelper,ReadConfig
 from Logger import Logger
 from BaseType import BaseType
 import datetime
-from confluent_kafka import Producer, KafkaException
 
-class INTSDETL():
+class INTSDETL(BaseType):
     def __init__(self, DBconfig, jsonData):
         super().__init__()     
         self.__log = Logger('./log/' + self.__class__.__name__ + '.log',level='debug')
@@ -23,17 +22,21 @@ class INTSDETL():
             "headers":{'Content-type':'application/json','Connection':'close'},
         }
 
-    def SetData(self):
+    def getData(self):
         try:
             self.writeLog(
                 f'{self.__class__.__name__} {sys._getframe().f_code.co_name} Start')
-            className = f"{self.__class__.__name__}"           
-            tmpDATATYPE = self.jsonData["DATATYPE"]
+            className = f"{self.__class__.__name__}"   
 
+            cData = self._dict_to_capital(self.jsonData)
+            if cData["DATATYPE"] != "" and len(cData["MODELDATA"]) == 0:
+                return {'status': 'Fail','message': f'Input Data format error'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+
+            tmpDATATYPE = cData["DATATYPE"]
             #一階 FPY KPI API
             if tmpDATATYPE == "FPY" or tmpDATATYPE == "MSHIP" or tmpDATATYPE == "EFA":                   
-                returnData= self._insertData(self.jsonData) 
-                returnData = self._sendDataToKafka(self.jsonData)
+                returnData= self._insertData(cData) 
+                returnData = self._sendDataToKafka(cData)
                 return returnData, returnData["status_code"], {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
             else:
                 return {'status': 'Fail','message': f'DATATYPE:{tmpDATATYPE} not Sup'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
@@ -53,52 +56,41 @@ class INTSDETL():
     
     def _insertData(self,DATA):
         try:
-            _COMPANY_CODE = DATA["local"]["COMPANY_CODE"]
-            _SITE= DATA["local"]["SITE"]
-            _FACTORY_ID = DATA["local"]["FACTORY_ID"]
+            _COMPANY_CODE = DATA["LOCAL"]["COMPANY_CODE"]
+            _SITE= DATA["LOCAL"]["SITE"]
+            _FACTORY_ID = DATA["LOCAL"]["FACTORY_ID"]
             _ACCT_DATE = DATA["ACCT_DATE"]
             _DATATYPE = DATA["DATATYPE"]
-            _DATA = f'{DATA}'.encode()
-            insertData = []
-            oData = (
-                    _COMPANY_CODE,
-                    _SITE,
-                    _FACTORY_ID, 
-                    _ACCT_DATE,
-                    _DATATYPE,
-                    _DATA
-                )
-            insertData.append(oData)
-            """
-            CREATEDATA	DATE
-            COMPANY_CODE	VARCHAR2(20 BYTE)
-            SITE	VARCHAR2(20 BYTE)
-            FACTORY_ID	VARCHAR2(20 BYTE)
-            ACCT_DATE	VARCHAR2(20 BYTE)
-            ORIGDATA	BLOB
-            DATATYPE	VARCHAR2(20 BYTE)
-            """
-            delString = f"delete from INTMP_DB.SDETLUPLOADLOG where COMPANY_CODE = '{_COMPANY_CODE}' \
-                and SITE = '{_SITE}' and FACTORY_ID = '{_FACTORY_ID}' and ACCT_DATE = '{_ACCT_DATE}' \
-                and DATATYPE = '{_DATATYPE}' "
-            insertString = "insert into INTMP_DB.SDETLUPLOADLOG("\
-                "COMPANY_CODE,SITE,FACTORY_ID,ACCT_DATE,DATATYPE, ORIGDATA) "\
-                "values (:1, :2, :3, :4, :5, :6)"
-            self._getConnection(self.DBconfig)
-            self._daoHelper.Delete(delString)
-            self.writeLog(f'DEL: {_COMPANY_CODE}-{_SITE}-{_FACTORY_ID}-{_ACCT_DATE}-{_DATATYPE}')
-            self._daoHelper.InserMany(insertString,insertData)
-            self.writeLog(f'INS: {_COMPANY_CODE}-{_SITE}-{_FACTORY_ID}-{_ACCT_DATE}-{_DATATYPE}')
-            selString = f"Select * from INTMP_DB.SDETLUPLOADLOG where COMPANY_CODE = '{_COMPANY_CODE}' \
-                and SITE = '{_SITE}' and FACTORY_ID = '{_FACTORY_ID}' and ACCT_DATE = '{_ACCT_DATE}' \
-                and DATATYPE = '{_DATATYPE}' "
-            data = self._daoHelper.Select(selString)
-            cc = data[0][5]
-            check = eval(cc.read().decode())            
+            dData = {
+                "COMPANY_CODE": _COMPANY_CODE,
+                "SITE": _SITE,
+                "FACTORY_ID": _FACTORY_ID,
+                "ACCT_DATE": _ACCT_DATE,
+                "DATATYPE": _DATATYPE
+            }
+            d = datetime.datetime
+            dString = d.strftime(datetime.datetime.now(), '%Y/%m/%d %H:%M:%S')
+            iData = {
+                "COMPANY_CODE": _COMPANY_CODE,
+                "SITE": _SITE,
+                "FACTORY_ID": _FACTORY_ID,
+                "ACCT_DATE": _ACCT_DATE,
+                "DATATYPE": _DATATYPE,                
+                "DATAGETTIME": dString,
+                "ORIGDATA": DATA
+            }
+
+            self.getMongoConnection()
+            self.setMongoDb("IAMP")
+            self.setMongoCollection("SDETLUPLOADLOG")
+            count = self.deleteToMongo(dData)
+            self.inserOneToMongo(iData)
+            self.closeMongoConncetion()
+
             returnData = {
                         "status_code": 201,
                         "status": "success",
-                        "data": f'get {len(check["modeldata"])} record in modeldata',
+                        "data": f'get {len(DATA["MODELDATA"])} record in modeldata',
                         "message": ""
                     }  
             self.writeLog(f'{_COMPANY_CODE}-{_SITE}-{_FACTORY_ID}-{_ACCT_DATE}-{_DATATYPE}: {returnData}')
@@ -115,48 +107,48 @@ class INTSDETL():
             self.writeError("File:[{0}] , Line:{1} , in {2} : [{3}] {4}".format(fileName, lineNum, funcName, error_class, detail))
             returnData = {"status_code": 400,'status': 'error', 'message': f'{funcName} error'}
             return returnData
+   
+    def _sendDataToKafka(self, DATA): 
+        self.writeLog(f'Data1 Length:{len(DATA)}')        
+        d = datetime.datetime
+        dString = d.strftime(datetime.datetime.now(), '%Y/%m/%d %H:%M:%S')
+        DATA["DATAGETTIME"] = dString
+        server = self.baseConfig["server"]
+        topic = self.baseConfig["topic"]
+        self.producer = self.createProducer(server)
+        self.producerSend(topic, DATA) 
+        _COMPANY_CODE = DATA["LOCAL"]["COMPANY_CODE"]
+        _SITE= DATA["LOCAL"]["SITE"]
+        _FACTORY_ID = DATA["LOCAL"]["FACTORY_ID"]
+        _ACCT_DATE = DATA["ACCT_DATE"]
+        _DATATYPE = DATA["DATATYPE"]
+        returnData = {
+                        "status_code": 201,
+                        "status": "success",
+                        "data": f'get {len(DATA["MODELDATA"])} record in modeldata',
+                        "message": ""
+                    }  
+        self.writeLog(f'{_COMPANY_CODE}-{_SITE}-{_FACTORY_ID}-{_ACCT_DATE}-{_DATATYPE}: {returnData}')
+        DATA = []
+        return returnData
 
-    """Oracle DB"""
-    def _getConnection( self, identity ):
-        """連接資料庫
-        identity : 資料庫名稱
-        """
-        try:
-            self._getDbAccount(identity)
-            self._daoHelper = DaoHelper(self._dbAccount, self._dbPassword,self._SERVICE_NAME)
-            self._connect = self._daoHelper.Connect()
-            #return self.__dbAccount, self.__dbPassword, self.__SERVICE_NAME
-        except Exception as e:
-            self._closeConnection()
-            error_class = e.__class__.__name__ #取得錯誤類型
-            detail = e.args[0] #取得詳細內容
-            cl, exc, tb = sys.exc_info() #取得Call Stack
-            lastCallStack = traceback.extract_tb(tb)[-1] #取得Call Stack的最後一筆資料
-            fileName = lastCallStack[0] #取得發生的檔案名稱
-            lineNum = lastCallStack[1] #取得發生的行號
-            funcName = lastCallStack[2] #取得發生的函數名稱
-            self.writeError("File:[{0}] , Line:{1} , in {2} : [{3}] {4}".format(fileName, lineNum, funcName, error_class, detail))
-        
-    def _getDbAccount( self, identity ):
-        """ 取得資料庫帳密
-            identity : 資料庫名稱
-            回傳 : dbAccount、dbPassword、SERVICE_NAME
-        """
-        try:
-            self._dbAccount, self._dbPassword, self._SERVICE_NAME = ReadConfig('config.json',identity).READ()
-        except Exception as e:
-            error_class = e.__class__.__name__ #取得錯誤類型
-            detail = e.args[0] #取得詳細內容
-            cl, exc, tb = sys.exc_info() #取得Call Stack
-            lastCallStack = traceback.extract_tb(tb)[-1] #取得Call Stack的最後一筆資料
-            fileName = lastCallStack[0] #取得發生的檔案名稱
-            lineNum = lastCallStack[1] #取得發生的行號
-            funcName = lastCallStack[2] #取得發生的函數名稱
-            self.writeError("File:[{0}] , Line:{1} , in {2} : [{3}] {4}".format(fileName, lineNum, funcName, error_class, detail))  
-    def _closeConnection( self ):
-        """關閉資料庫連線"""
-        self._daoHelper.Close()
-
+    def _dict_to_capital(self, dict_info):
+        new_dict = {}
+        if type(dict_info) != dict:
+            return dict_info
+        else:
+            for i, j in dict_info.items():
+                if type(j) == list:
+                    new_dict2 = []
+                    for x in j:
+                        new_dict2.append(self._dict_to_capital(x))
+                    new_dict[i.upper()] = new_dict2
+                elif type(j) == dict:
+                    new_dict[i.upper()] = self._dict_to_capital(j)
+                else:
+                    new_dict[i.upper()] = j
+            return new_dict
+             
     def writeLog( self,text ):
         """Info Log"""
         self.__log.logger.info(text)
@@ -169,64 +161,3 @@ class INTSDETL():
         self.__log.logger.debug(text)
     def writeCritical( self, text ):
         self.__log.logger.critical(text)
-
-    def callMongoApi( self ,url, data, headers ):
-        #self.writeLog('%s %s() ' %
-        #(self.__class__.__name__,sys._getframe().f_code.co_name))
-        response = requests.post(url, data = json.dumps(data), headers = headers)
-        response.close()
-        return response
-
-    def _sendDataToKafka(self, DATA): 
-        self.writeLog(f'Data1 Length:{len(DATA)}')        
-        d = datetime.datetime
-        dString = d.strftime(datetime.datetime.now(), '%Y/%m/%d %H:%M:%S')
-        DATA["JobFinishTime"] = dString
-        self._producerSend(DATA) 
-        _COMPANY_CODE = DATA["local"]["COMPANY_CODE"]
-        _SITE= DATA["local"]["SITE"]
-        _FACTORY_ID = DATA["local"]["FACTORY_ID"]
-        _ACCT_DATE = DATA["ACCT_DATE"]
-        _DATATYPE = DATA["DATATYPE"]
-        _DATA = f'{DATA}'.encode()
-        returnData = {
-                        "status_code": 201,
-                        "status": "success",
-                        "data": f'get {len(DATA["modeldata"])} record in modeldata',
-                        "message": ""
-                    }  
-        self.writeLog(f'{_COMPANY_CODE}-{_SITE}-{_FACTORY_ID}-{_ACCT_DATE}-{_DATATYPE}: {returnData}')
-        DATA = []
-        return returnData
-        
-    
-    def _producerSend( self, data ):
-        """
-            送KAFKA
-            topic: 通道
-            data: 值
-            partition:分區，預設 -1
-            format:格式，預設UTF-8
-        """
-        try:
-            server = self.baseConfig["server"]
-            topic = self.baseConfig["topic"]
-            producer = Producer(server)
-            producer.poll(0)
-            producer.produce(topic, json.dumps(data).encode("utf-8"), partition = -1 ,callback = self.delivery_report)
-            producer.flush()
-        except KafkaException as e:
-            error_class = e.__class__.__name__ #取得錯誤類型
-            detail = e.args[0] #取得詳細內容
-            cl, exc, tb = sys.exc_info() #取得Call Stack
-            lastCallStack = traceback.extract_tb(tb)[-1] #取得Call Stack的最後一筆資料
-            fileName = lastCallStack[0] #取得發生的檔案名稱
-            lineNum = lastCallStack[1] #取得發生的行號
-            funcName = lastCallStack[2] #取得發生的函數名稱
-            self.writeError("File:[{0}] , Line:{1} , in {2} : [{3}] {4}".format(fileName, lineNum, funcName, error_class, detail))
-    
-    def delivery_report( self,err, msg ):
-        if err is not None:
-            self.writeLog(f'Message delivery failed: {err}')
-        else:
-            self.writeLog(f'Message delivered to {msg.topic()} [{msg.partition()}]')
