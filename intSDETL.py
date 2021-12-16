@@ -43,8 +43,7 @@ class INTSDETL(BaseType):
                 returnData= self._insertData_REL(cData) 
                 returnData = self._sendDataToKafka_REL(cData)
                 return returnData, returnData["status_code"], {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
-            
-            
+                        
             else:
                 return {'status': 'Fail','message': f'DATATYPE:{tmpDATATYPE} not Sup'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
