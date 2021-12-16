@@ -997,7 +997,7 @@ class INTRelation(BaseType):
 
                 # step0: 取得 與 defect / Reason 相關的 panel id
                 whereString = f"where PROD_NBR = '{tmpPROD_NBR}' and  DEFT_REASON = '{tmpCHECKCODE}' "\
-                    f" and MAIN_OPER in {_OPERList_LIST}  and MFGDATE = '{tmpACCT_DATE}' "
+                    f" and MAIN_OPER in ({_OPERList_LIST})  and MFGDATE = '{tmpACCT_DATE}' "
                 sql = "select PROD_NBR, DEFT_REASON, MFGDATE, MAIN_OPER, PANELID, RW_COUNT "\
                       " from INTMP_DB.PANELHISDAILY_REASON " \
                       f"{whereString} " \
@@ -1171,8 +1171,6 @@ class INTRelation(BaseType):
                     notInOPER5 = ["1050", "1100", "2110"]
                     OPER_OPERATOR_Count = self._Count_OPERATOR_OPER_List(
                         notInOPER5, OPERATOR_OPER_PANELID_Group)
-                    OPER_Count = self._Count_OPER_List(
-                        notInOPER5, OPERATOR_OPER_Count)
                     node_cal_OPER_OPERATOR = self._calNode_OPER_OPERATOR(
                         OPER_OPERATOR_Count, PANEL_TOTAL_COUNT, o_A_Limit, o_T_Limit, weightData)
                     link_cal_OPER_OPERATOR = self._calLink_OPER_OPERATOR(
