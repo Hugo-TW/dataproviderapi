@@ -39,7 +39,7 @@ class INTSDETL(BaseType):
                 returnData = self._sendDataToKafka(cData)
                 return returnData, returnData["status_code"], {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
             #一階 FPY KPI API
-            elif tmpDATATYPE == "DEFTREL" or tmpDATATYPE == "RESONREL":                   
+            elif tmpDATATYPE == "DEFTREL" or tmpDATATYPE == "REASONREL":                   
                 returnData= self._insertData_REL(cData) 
                 returnData = self._sendDataToKafka_REL(cData)
                 return returnData, returnData["status_code"], {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
