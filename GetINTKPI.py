@@ -3045,13 +3045,12 @@ class INTKPI(BaseType):
         # midGreen 073b4c
 
         checkRankType = 0
-        length = len(DATASERIES)
-        for x in range(length):
+        for x in DATASERIES:
             if x["QTY"] >= 3000 and  x["YIELD"] >= 0.003:
-                DATASERIES[x]["QUADRANT"] = 1
+                x["QUADRANT"] = 1
                 checkRankType = 1
             else:
-                DATASERIES[x]["QUADRANT"] = 0
+                x["QUADRANT"] = 0
         
         # 因為使用 operator.itemgetter 方法 排序順序要反過來執行
         # 不同欄位key 排序方式不同時 需要 3 - 2 - 1  反順序去寫code
@@ -3062,7 +3061,8 @@ class INTKPI(BaseType):
             DATASERIES.sort(key=operator.itemgetter("YIELD"), reverse=True)        
             DATASERIES.sort(key=operator.itemgetter("QUADRANT"), reverse=True)
 
-        rank = 1
+        rank = 1        
+        length = len(DATASERIES)
         for x in range(length):
             DATASERIES[x]["RANK"] = rank
             rank += 1
