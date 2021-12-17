@@ -29,17 +29,23 @@ class INTSDETL(BaseType):
             className = f"{self.__class__.__name__}"   
 
             cData = self._dict_to_capital(self.jsonData)
-            if cData["DATATYPE"] != "" and len(cData["MODELDATA"]) == 0:
+            if cData["DATATYPE"] == "":
                 return {'status': 'Fail','message': f'Input Data format error'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
             tmpDATATYPE = cData["DATATYPE"]
             #一階 FPY KPI API
-            if tmpDATATYPE == "FPY" or tmpDATATYPE == "MSHIP" or tmpDATATYPE == "EFA":                   
+            if tmpDATATYPE == "FPY" or tmpDATATYPE == "MSHIP" or tmpDATATYPE == "EFA":   
+                if len(cData["MODELDATA"]) == 0:
+                    return {'status': 'Fail','message': f'Input Data format error'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+                
                 returnData= self._insertData(cData) 
                 returnData = self._sendDataToKafka(cData)
                 return returnData, returnData["status_code"], {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
             #一階 FPY KPI API
-            elif tmpDATATYPE == "DEFTREL" or tmpDATATYPE == "REASONREL":                   
+            elif tmpDATATYPE == "DEFTREL" or tmpDATATYPE == "REASONREL":   
+                if len(cData["RELDATA"]) == 0:
+                    return {'status': 'Fail','message': f'Input Data format error'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+                
                 returnData= self._insertData_REL(cData) 
                 returnData = self._sendDataToKafka_REL(cData)
                 return returnData, returnData["status_code"], {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
