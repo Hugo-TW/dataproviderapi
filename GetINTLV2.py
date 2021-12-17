@@ -10,28 +10,29 @@ import copy
 from BaseType import BaseType
 from decimal import Decimal, ROUND_HALF_UP
 
+
 class INTLV2(BaseType):
     def __init__(self, jsonData, _db_pool):
         super().__init__()
         self.writeLog(
             f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
         self.jsonData = jsonData
-        #M011 => MOD1
-        #J001 => MOD2
-        #J003 => MOD3
+        # M011 => MOD1
+        # J001 => MOD2
+        # J003 => MOD3
         self.operSetData = {
             "M011": {
                 "FPY": {
                     "limit": {
-                        "CE": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.94},
-                        "TABLET": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.89},
-                        "NB": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.93},
-                        "TV": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.90},
-                        "AA": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95},
-                        "IAVM": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95},
-                        "AUTO": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95},
-                        "mLED": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95},
-                        "TFT Sensor": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95}
+                        "CE": {"qytlim2": 1500, "qytlim": 1000, "FPY": 0.94},
+                        "TABLET": {"qytlim2": 1500, "qytlim": 1000, "FPY": 0.89},
+                        "NB": {"qytlim2": 1500, "qytlim": 1000, "FPY": 0.93},
+                        "TV": {"qytlim2": 1500, "qytlim": 1000, "FPY": 0.90},
+                        "AA": {"qytlim2": 1500, "qytlim": 1000, "FPY": 0.95},
+                        "IAVM": {"qytlim2": 1500, "qytlim": 1000, "FPY": 0.95},
+                        "AUTO": {"qytlim2": 1500, "qytlim": 1000, "FPY": 0.95},
+                        "mLED": {"qytlim2": 1500, "qytlim": 1000, "FPY": 0.95},
+                        "TFT Sensor": {"qytlim2": 1500, "qytlim": 1000, "FPY": 0.95}
                     },
                     "numerator": {  # 分子
                         "PCBI": {"fromt": 1050, "tot": 1310},
@@ -75,10 +76,10 @@ class INTLV2(BaseType):
                 "FPY": {
                     "limit": {
                         "CE": {"qytlim2": 1500, "qytlim": 500, "FPY": 0.94},
-                        "TABLET": {"qytlim2": 1500,"qytlim": 500, "FPY": 0.89},
-                        "NB": {"qytlim2": 1500,"qytlim": 500, "FPY": 0.93},
-                        "TV": {"qytlim2": 1500,"qytlim": 500, "FPY": 0.90},
-                        "AA": {"qytlim2": 1500,"qytlim": 500, "FPY": 0.95}
+                        "TABLET": {"qytlim2": 1500, "qytlim": 500, "FPY": 0.89},
+                        "NB": {"qytlim2": 1500, "qytlim": 500, "FPY": 0.93},
+                        "TV": {"qytlim2": 1500, "qytlim": 500, "FPY": 0.90},
+                        "AA": {"qytlim2": 1500, "qytlim": 500, "FPY": 0.95}
                     },
                     "numerator": {  # 分子
                         "PCBI": {"fromt": 1050, "tot": 1310},
@@ -121,11 +122,11 @@ class INTLV2(BaseType):
             "J003": {
                 "FPY": {
                     "limit": {
-                        "CE": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.94},
-                        "TABLET": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.89},
-                        "NB": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.93},
-                        "TV": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.90},
-                        "AA": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95}
+                        "CE": {"qytlim2": 1500, "qytlim": 1000, "FPY": 0.94},
+                        "TABLET": {"qytlim2": 1500, "qytlim": 1000, "FPY": 0.89},
+                        "NB": {"qytlim2": 1500, "qytlim": 1000, "FPY": 0.93},
+                        "TV": {"qytlim2": 1500, "qytlim": 1000, "FPY": 0.90},
+                        "AA": {"qytlim2": 1500, "qytlim": 1000, "FPY": 0.95}
                     },
                     "numerator": {  # 分子
                         "PCBI": {"fromt": 1050, "tot": 1310},
@@ -168,11 +169,11 @@ class INTLV2(BaseType):
             "J004": {
                 "FPY": {
                     "limit": {
-                        "CE": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.94},
-                        "TABLET": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.89},
-                        "NB": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.93},
-                        "TV": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.90},
-                        "AA": {"qytlim2": 1500,"qytlim": 1000, "FPY": 0.95}
+                        "CE": {"qytlim2": 1500, "qytlim": 1000, "FPY": 0.94},
+                        "TABLET": {"qytlim2": 1500, "qytlim": 1000, "FPY": 0.89},
+                        "NB": {"qytlim2": 1500, "qytlim": 1000, "FPY": 0.93},
+                        "TV": {"qytlim2": 1500, "qytlim": 1000, "FPY": 0.90},
+                        "AA": {"qytlim2": 1500, "qytlim": 1000, "FPY": 0.95}
                     },
                     "numerator": {  # 分子
                         "PCBI": {"fromt": 1050, "tot": 1310},
@@ -233,11 +234,11 @@ class INTLV2(BaseType):
             tmpKPITYPE = self.jsonData["KPITYPE"]
             tmpACCT_DATE = self.jsonData["ACCT_DATE"]
             tmpPROD_NBR = self.jsonData["PROD_NBR"]
-            tmpOPER = self.jsonData["OPER"] if "OPER" in self.jsonData else "CKEN"              
+            tmpOPER = self.jsonData["OPER"] if "OPER" in self.jsonData else "CKEN"
             tmpCHECKCODE = self.jsonData["CHECKCODE"] if "CHECKCODE" in self.jsonData else ""
             expirTimeKey = tmpFACTORY_ID + '_PASS'
 
-            #redisKey
+            # redisKey
             tmp.append(className)
             tmp.append(tmpCOMPANY_CODE)
             tmp.append(tmpSITE)
@@ -258,7 +259,7 @@ class INTLV2(BaseType):
             if self.searchRedisKeys(redisKey):
                 self.writeLog(f"Cache Data From Redis")
                 return json.loads(self.getRedisData(redisKey)), 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type', "Access-Control-Expose-Headers": "Expires,DataSource", "Expires": time.mktime((datetime.datetime.now() + datetime.timedelta(seconds=self.getKeyExpirTime(expirTimeKey))).timetuple()), "DataSource": "Redis"}
-            
+
             if tmpKPITYPE == "FPYLV2PIE":
                 expirTimeKey = tmpFACTORY_ID + '_PASS'
 
@@ -272,11 +273,12 @@ class INTLV2(BaseType):
                 CKENResult = self._groupFPYLV2PIEOPER(CKENData["dData"])
                 DKENData = self._getFPYLV2PIEData("DKEN", tmpPROD_NBR)
                 DKENResult = self._groupFPYLV2PIEOPER(DKENData["dData"])
-                
-                returnData = self._calFPYLV2PIEData(PCBIResult,LAMResult,AAFCResult,CKENResult,DKENResult)
-                
+
+                returnData = self._calFPYLV2PIEData(
+                    PCBIResult, LAMResult, AAFCResult, CKENResult, DKENResult)
+
                 self.getRedisConnection()
-                if self.searchRedisKeys(redisKey):     
+                if self.searchRedisKeys(redisKey):
                     self.setRedisData(redisKey, json.dumps(
                         returnData, sort_keys=True, indent=2), self.getKeyExpirTime(expirTimeKey))
                 else:
@@ -287,11 +289,11 @@ class INTLV2(BaseType):
             elif tmpKPITYPE == "FPYLV2HISTO":
                 expirTimeKey = tmpFACTORY_ID + '_PASS'
 
-                _PCBIData = self._getFPYLV2PIEData("PCBI", tmpPROD_NBR)                
+                _PCBIData = self._getFPYLV2PIEData("PCBI", tmpPROD_NBR)
                 PCBIResult = self._groupPassDeftByPRODandOPER(
                     _PCBIData["dData"], _PCBIData["pData"])
                 PCBIData = self._calFPYLV2HISTObyOPER(PCBIResult)
-                _LAMData = self._getFPYLV2PIEData("LAM", tmpPROD_NBR) 
+                _LAMData = self._getFPYLV2PIEData("LAM", tmpPROD_NBR)
                 LAMResult = self._groupPassDeftByPRODandOPER(
                     _LAMData["dData"], _LAMData["pData"])
                 LAMData = self._calFPYLV2HISTObyOPER(LAMResult)
@@ -308,9 +310,10 @@ class INTLV2(BaseType):
                     _DKENData["dData"], _DKENData["pData"])
                 DKENData = self._calFPYLV2HISTObyOPER(DKENResult)
 
-                tempData = self._groupFPYLV2HISTOOPER(PCBIData, LAMData, AAFCData, CKENData, DKENData)
+                tempData = self._groupFPYLV2HISTOOPER(
+                    PCBIData, LAMData, AAFCData, CKENData, DKENData)
 
-                returnData = {                    
+                returnData = {
                     "KPITYPE": tmpKPITYPE,
                     "COMPANY_CODE": tmpCOMPANY_CODE,
                     "SITE": tmpSITE,
@@ -320,9 +323,9 @@ class INTLV2(BaseType):
                     "PROD_NBR": tmpPROD_NBR,
                     "DATASERIES": tempData
                 }
-                
+
                 self.getRedisConnection()
-                if self.searchRedisKeys(redisKey):     
+                if self.searchRedisKeys(redisKey):
                     self.setRedisData(redisKey, json.dumps(
                         returnData, sort_keys=True, indent=2), self.getKeyExpirTime(expirTimeKey))
                 else:
@@ -330,22 +333,26 @@ class INTLV2(BaseType):
                         returnData, sort_keys=True, indent=2), 60)
 
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
-            
-            #二階 MSHIP PIE API
+
+            # 二階 MSHIP PIE API
             elif tmpKPITYPE == "MSHIPLV2PIE":
                 expirTimeKey = tmpFACTORY_ID + '_SCRP'
 
-                formerfabData = self._getMSHIPSCRAPData("formerfab",tmpPROD_NBR)
-                formerfabResult = self._groupMSHIPLV2PIE(formerfabData["scrapData"])
-                fabData = self._getMSHIPSCRAPData("fab",tmpPROD_NBR)
+                formerfabData = self._getMSHIPSCRAPData(
+                    "formerfab", tmpPROD_NBR)
+                formerfabResult = self._groupMSHIPLV2PIE(
+                    formerfabData["scrapData"])
+                fabData = self._getMSHIPSCRAPData("fab", tmpPROD_NBR)
                 fabResult = self._groupMSHIPLV2PIE(fabData["scrapData"])
-                incomingData = self._getMSHIPSCRAPData("incoming",tmpPROD_NBR)
-                fincomingResult = self._groupMSHIPLV2PIE(incomingData["scrapData"])
+                incomingData = self._getMSHIPSCRAPData("incoming", tmpPROD_NBR)
+                fincomingResult = self._groupMSHIPLV2PIE(
+                    incomingData["scrapData"])
 
-                returnData = self._calMSHIPLV2PIE(formerfabResult,fabResult,fincomingResult)
-                
+                returnData = self._calMSHIPLV2PIE(
+                    formerfabResult, fabResult, fincomingResult)
+
                 self.getRedisConnection()
-                if self.searchRedisKeys(redisKey):     
+                if self.searchRedisKeys(redisKey):
                     self.setRedisData(redisKey, json.dumps(
                         returnData, sort_keys=True, indent=2), self.getKeyExpirTime(expirTimeKey))
                 else:
@@ -353,11 +360,13 @@ class INTLV2(BaseType):
                         returnData, sort_keys=True, indent=2), 60)
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
-            #二階 MSHIP PIE API
-            elif tmpKPITYPE == "EFALV2_3":   
-                data = self._getEFALV2_3_Data(tmpOPER, tmpPROD_NBR, tmpCHECKCODE)
-                DATASERIES = self._calEFALV2_3_Data(data["rData"], data["pData"])
-                returnData = returnData = {                    
+            # 二階 MSHIP PIE API
+            elif tmpKPITYPE == "EFALV2_3":
+                data = self._getEFALV2_3_Data(
+                    tmpOPER, tmpPROD_NBR, tmpCHECKCODE)
+                DATASERIES = self._calEFALV2_3_Data(
+                    data["rData"], data["pData"])
+                returnData = returnData = {
                     "KPITYPE": tmpKPITYPE,
                     "COMPANY_CODE": tmpCOMPANY_CODE,
                     "SITE": tmpSITE,
@@ -368,15 +377,16 @@ class INTLV2(BaseType):
                     "OPER": tmpOPER,
                     "DATASERIES": DATASERIES
                 }
-                
+
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
-            #二階 MSHIP PIE API
-            elif tmpKPITYPE == "EFALV2_21":    
+            # 二階 MSHIP PIE API
+            elif tmpKPITYPE == "EFALV2_21":
                 expirTimeKey = tmpFACTORY_ID + '_DEFT'
                 data = self._getEFALV2_21_Data(tmpOPER, tmpPROD_NBR)
-                DATASERIES = self._calEFALV2_21_Data(data["dData"], data["pData"])
-                returnData = returnData = {                    
+                DATASERIES = self._calEFALV2_21_Data(
+                    data["dData"], data["pData"])
+                returnData = returnData = {
                     "KPITYPE": tmpKPITYPE,
                     "COMPANY_CODE": tmpCOMPANY_CODE,
                     "SITE": tmpSITE,
@@ -387,7 +397,7 @@ class INTLV2(BaseType):
                     "OPER": tmpOPER,
                     "DATASERIES": DATASERIES
                 }
-                
+
                 """
                 self.getRedisConnection()
                 if self.searchRedisKeys(redisKey):     
@@ -399,14 +409,15 @@ class INTLV2(BaseType):
                 """
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
-            elif tmpKPITYPE == "EFALV2_WIP_1":    
+            elif tmpKPITYPE == "EFALV2_WIP_1":
                 expirTimeKey = tmpFACTORY_ID + '_WIP'
 
                 data = self._getEFALV2_WIP_1_Data(tmpPROD_NBR)
 
-                DATASERIES = self._calEFALV2_WIP_1_Data(data["faWip"], data["prodNbrWip"])
+                DATASERIES = self._calEFALV2_WIP_1_Data(
+                    data["faWip"], data["prodNbrWip"])
 
-                returnData = returnData = {                    
+                returnData = returnData = {
                     "KPITYPE": tmpKPITYPE,
                     "COMPANY_CODE": tmpCOMPANY_CODE,
                     "SITE": tmpSITE,
@@ -419,17 +430,17 @@ class INTLV2(BaseType):
                     "PRODDATA1": DATASERIES["prodData1"],
                     "PRODDATA2": DATASERIES["prodData2"]
                 }
-                
+
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
-            elif tmpKPITYPE == "EFALV2_WIP_2":    
+            elif tmpKPITYPE == "EFALV2_WIP_2":
                 expirTimeKey = tmpFACTORY_ID + '_WIP'
 
                 data = self._getEFALV2_WIP_2_Data()
 
                 DATASERIES = self._calEFALV2_WIP_2_Data(data)
 
-                returnData = returnData = {                    
+                returnData = returnData = {
                     "KPITYPE": tmpKPITYPE,
                     "COMPANY_CODE": tmpCOMPANY_CODE,
                     "SITE": tmpSITE,
@@ -440,7 +451,7 @@ class INTLV2(BaseType):
                     "OPER": tmpOPER,
                     "DATASERIES": DATASERIES
                 }
-                
+
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
             else:
@@ -468,7 +479,7 @@ class INTLV2(BaseType):
 
         applicatiionWhere = ""
         if tmpAPPLICATION != "ALL":
-            applicatiionWhere = f"AND dmo.application = '{tmpAPPLICATION}' "        
+            applicatiionWhere = f"AND dmo.application = '{tmpAPPLICATION}' "
         try:
             passString = f"SELECT \
                             dlo.company_code   AS company_code, \
@@ -501,8 +512,8 @@ class INTLV2(BaseType):
                             dmo.application, \
                             dop.name \
                         HAVING SUM(fpa.sumqty) > 0 "
-            description , data = self.pSelectAndDescription(passString)            
-            pData = self._zipDescriptionAndData(description, data)  
+            description, data = self.pSelectAndDescription(passString)
+            pData = self._zipDescriptionAndData(description, data)
             deftString = f"SELECT \
                             dlo.company_code   AS company_code, \
                             dlo.site_code      AS site, \
@@ -539,8 +550,8 @@ class INTLV2(BaseType):
                             ddf.DEFTCODE, \
                             ddf.DEFTCODE_DESC \
                         HAVING SUM(fdf.sumqty) > 0 "
-            description , data = self.pSelectAndDescription(deftString)            
-            dData = self._zipDescriptionAndData(description, data)  
+            description, data = self.pSelectAndDescription(deftString)
+            dData = self._zipDescriptionAndData(description, data)
 
             returnData = {
                 "pData": pData,
@@ -574,7 +585,7 @@ class INTLV2(BaseType):
         passAggregate = []
         deftAggregate = []
 
-        #pass
+        # pass
         passMatch1 = {
             "$match": {
                 "COMPANY_CODE": tmpCOMPANY_CODE,
@@ -646,10 +657,10 @@ class INTLV2(BaseType):
             }
         }
         passAdd = {
-                "$addFields": {
-                    "OPER": OPER
-                }
+            "$addFields": {
+                "OPER": OPER
             }
+        }
         passSort = {
             "$sort": {
                 "COMPANY_CODE": 1,
@@ -662,7 +673,7 @@ class INTLV2(BaseType):
             }
         }
 
-        #deft
+        # deft
         deftMatch1 = {
             "$match": {
                 "COMPANY_CODE": tmpCOMPANY_CODE,
@@ -673,8 +684,9 @@ class INTLV2(BaseType):
                 "PROD_NBR": PROD_NBR,
                 "$expr": {
                     "$and": [
-                        {"$gte": [{"$toInt": "$MAIN_WC"},numeratorData["fromt"]]},
-                        {"$lte": [{"$toInt": "$MAIN_WC"},numeratorData["tot"]]}
+                        {"$gte": [{"$toInt": "$MAIN_WC"},
+                                  numeratorData["fromt"]]},
+                        {"$lte": [{"$toInt": "$MAIN_WC"}, numeratorData["tot"]]}
                     ]
                 },
                 "RW_COUNT": {"$lte": "1"}
@@ -689,9 +701,9 @@ class INTLV2(BaseType):
                     "PROD_NBR": "$PROD_NBR",
                     "ACCT_DATE": "$ACCT_DATE",
                     "APPLICATION": "$APPLICATION",
-                    "MAIN_WC": {"$toInt": "$MAIN_WC"},                 
-                    "DFCT_CODE" : "$DFCT_CODE",
-                    "ERRC_DESCR" : "$ERRC_DESCR"
+                    "MAIN_WC": {"$toInt": "$MAIN_WC"},
+                    "DFCT_CODE": "$DFCT_CODE",
+                    "ERRC_DESCR": "$ERRC_DESCR"
                 },
                 "DEFT_QTY": {
                     "$sum": {"$toInt": "$QTY"}
@@ -708,8 +720,8 @@ class INTLV2(BaseType):
                 "ACCT_DATE": "$_id.ACCT_DATE",
                 "APPLICATION": "$_id.APPLICATION",
                 "MAIN_WC": "$_id.MAIN_WC",
-                "DFCT_CODE" : "$_id.DFCT_CODE",                
-                "ERRC_DESCR" : "$_id.ERRC_DESCR",
+                "DFCT_CODE": "$_id.DFCT_CODE",
+                "ERRC_DESCR": "$_id.ERRC_DESCR",
                 "DEFT_QTY": "$DEFT_QTY"
             }
         }
@@ -722,8 +734,8 @@ class INTLV2(BaseType):
                     "PROD_NBR": "$PROD_NBR",
                     "ACCT_DATE": "$ACCT_DATE",
                     "APPLICATION": "$APPLICATION",
-                    "DFCT_CODE" : "$DFCT_CODE",
-                    "ERRC_DESCR" : "$ERRC_DESCR"
+                    "DFCT_CODE": "$DFCT_CODE",
+                    "ERRC_DESCR": "$ERRC_DESCR"
                 },
                 "DEFTSUMQTY": {
                     "$sum": {"$toInt": "$DEFT_QTY"}
@@ -739,16 +751,16 @@ class INTLV2(BaseType):
                 "PROD_NBR": "$_id.PROD_NBR",
                 "ACCT_DATE": "$_id.ACCT_DATE",
                 "APPLICATION": "$_id.APPLICATION",
-                "DFCT_CODE" : "$_id.DFCT_CODE",
-                "ERRC_DESCR" : "$_id.ERRC_DESCR",
+                "DFCT_CODE": "$_id.DFCT_CODE",
+                "ERRC_DESCR": "$_id.ERRC_DESCR",
                 "DEFTSUMQTY": "$DEFTSUMQTY"
             }
         }
         deftAdd = {
-                "$addFields": {
-                    "OPER": OPER
-                }
+            "$addFields": {
+                "OPER": OPER
             }
+        }
         deftSort = {
             "$sort": {
                 "COMPANY_CODE": 1,
@@ -757,14 +769,16 @@ class INTLV2(BaseType):
                 "PROD_NBR": 1,
                 "ACCT_DATE": 1,
                 "APPLICATION": 1,
-                "DFCT_CODE" : 1,
-                "ERRC_DESCR" : 1
+                "DFCT_CODE": 1,
+                "ERRC_DESCR": 1
             }
         }
-        
-        passAggregate.extend([passMatch1, passGroup1, passProject1, passGroup2, passProject2, passAdd, passSort])        
-        deftAggregate.extend([deftMatch1, deftGroup1, deftProject1,deftGroup2, deftProject2, deftAdd, deftSort])
-        
+
+        passAggregate.extend(
+            [passMatch1, passGroup1, passProject1, passGroup2, passProject2, passAdd, passSort])
+        deftAggregate.extend(
+            [deftMatch1, deftGroup1, deftProject1, deftGroup2, deftProject2, deftAdd, deftSort])
+
         try:
             self.getMongoConnection()
             self.setMongoDb("IAMP")
@@ -803,9 +817,9 @@ class INTLV2(BaseType):
         try:
             data = {}
             if tmpSITE == "TN":
-                data = self._getFPYLV2PIEDataFromMongo(OPER,PROD_NBR)
+                data = self._getFPYLV2PIEDataFromMongo(OPER, PROD_NBR)
             else:
-                data = self._getFPYLV2PIEDataFromOracle(OPER,PROD_NBR)
+                data = self._getFPYLV2PIEDataFromOracle(OPER, PROD_NBR)
             returnData = {
                 "pData": data["pData"],
                 "dData": data["dData"]
@@ -824,14 +838,14 @@ class INTLV2(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
-    def _groupFPYLV2PIEOPER(self, dData): 
-        deftData = []            
-        for d in dData:       
-            deftData.append(d) 
+    def _groupFPYLV2PIEOPER(self, dData):
+        deftData = []
+        for d in dData:
+            deftData.append(d)
 
-        if deftData != []:  
+        if deftData != []:
             deftSUM = 0
-            for p in deftData:            
+            for p in deftData:
                 deftSUM += p["DEFTSUMQTY"]
             p = deftData[0]
             data = {
@@ -842,35 +856,35 @@ class INTLV2(BaseType):
                 "ACCT_DATE": datetime.datetime.strptime(p["ACCT_DATE"], '%Y%m%d').strftime('%Y-%m-%d'),
                 "APPLICATION": p["APPLICATION"] if "APPLICATION" in p.keys() else None,
                 "OPER": p["OPER"],
-                "DEFTSUMQTY" : deftSUM
+                "DEFTSUMQTY": deftSUM
             }
             return data
-        else: 
+        else:
             return None
 
     def _calFPYLV2PIEData(self, PCBI, LAM, AAFC, CKEN, DKEN):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
-        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]        
-        tmpAPPLICATION =self.jsonData["APPLICATION"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
         tmpKPITYPE = self.jsonData["KPITYPE"]
         tmpACCT_DATE = self.jsonData["ACCT_DATE"]
         tmpPROD_NBR = self.jsonData["PROD_NBR"]
 
         TotalDEFTSUMQTY = 0
         tempData = []
-        tempData.extend([PCBI,LAM,AAFC,CKEN,DKEN])
+        tempData.extend([PCBI, LAM, AAFC, CKEN, DKEN])
         for x in tempData:
             if x != None:
                 tmpAPPLICATION = x["APPLICATION"]
                 TotalDEFTSUMQTY += x["DEFTSUMQTY"]
-        
+
         colorMap = {
-            "PCBI": {"colorName": "red", "HEX":"#ef476f"},
-            "LAM": {"colorName": "yellow", "HEX":"#ffd166"},
-            "AAFC": {"colorName": "green", "HEX":"#06d6a0"},
-            "CKEN": {"colorName": "blue", "HEX":"#118AB2"},
-            "DKEN": {"colorName": "midGreen", "HEX":"#073b4c"}
+            "PCBI": {"colorName": "red", "HEX": "#ef476f"},
+            "LAM": {"colorName": "yellow", "HEX": "#ffd166"},
+            "AAFC": {"colorName": "green", "HEX": "#06d6a0"},
+            "CKEN": {"colorName": "blue", "HEX": "#118AB2"},
+            "DKEN": {"colorName": "midGreen", "HEX": "#073b4c"}
         }
 
         DATASERIES = []
@@ -878,7 +892,7 @@ class INTLV2(BaseType):
             if x != None:
                 DATASERIES.append({
                     "OPER": x["OPER"],
-                    "VALUE": round(x["DEFTSUMQTY"] / TotalDEFTSUMQTY , 2) if TotalDEFTSUMQTY !=0 else 0,
+                    "VALUE": round(x["DEFTSUMQTY"] / TotalDEFTSUMQTY, 2) if TotalDEFTSUMQTY != 0 else 0,
                     "COLOR": colorMap[x["OPER"]]["HEX"] if x["OPER"] in colorMap.keys() else None,
                     "SELECT": None,
                     "SLICED": None,
@@ -886,16 +900,16 @@ class INTLV2(BaseType):
                     "PROD_NBR": tmpPROD_NBR
                 })
 
-        returnData = {                    
-                    "KPITYPE": tmpKPITYPE,
-                    "COMPANY_CODE": tmpCOMPANY_CODE,
-                    "SITE": tmpSITE,
-                    "FACTORY_ID": tmpFACTORY_ID,
-                    "APPLICATION": tmpAPPLICATION,
-                    "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
-                    "PROD_NBR": tmpPROD_NBR,
-                    "DATASERIES": DATASERIES
-                }
+        returnData = {
+            "KPITYPE": tmpKPITYPE,
+            "COMPANY_CODE": tmpCOMPANY_CODE,
+            "SITE": tmpSITE,
+            "FACTORY_ID": tmpFACTORY_ID,
+            "APPLICATION": tmpAPPLICATION,
+            "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
+            "PROD_NBR": tmpPROD_NBR,
+            "DATASERIES": DATASERIES
+        }
 
         return returnData
 
@@ -911,7 +925,7 @@ class INTLV2(BaseType):
         if deftData != [] and passData != []:
             for d in deftData:
                 p = list(filter(lambda d: d["PROD_NBR"]
-                        == p["PROD_NBR"], passData))[0]
+                                == p["PROD_NBR"], passData))[0]
                 oData["COMPANY_CODE"] = copy.deepcopy(p["COMPANY_CODE"])
                 oData["SITE"] = copy.deepcopy(p["SITE"])
                 oData["FACTORY_ID"] = copy.deepcopy(p["FACTORY_ID"])
@@ -936,7 +950,8 @@ class INTLV2(BaseType):
                     if(oData["PASSSUMQTY"] != 0):
                         ds = Decimal(oData["DEFTSUMQTY"])
                         ps = Decimal(oData["PASSSUMQTY"])
-                        oData["DEFECT_RATE"] =  self._DecimaltoFloat((ds / ps).quantize(Decimal('.00000000'), ROUND_HALF_UP))
+                        oData["DEFECT_RATE"] = self._DecimaltoFloat(
+                            (ds / ps).quantize(Decimal('.00000000'), ROUND_HALF_UP))
                     else:
                         oData["DEFECT_RATE"] = 1
                 oData["FPY_RATE"] = round(1 - oData["DEFECT_RATE"], 4)
@@ -948,80 +963,84 @@ class INTLV2(BaseType):
     def _calFPYLV2HISTObyOPER(self, tempData):
         tmpPROD_NBR = self.jsonData["PROD_NBR"]
         allDFCTCount = {}
-        for x in tempData:     
+        for x in tempData:
             if x["DFCT_CODE"] in allDFCTCount.keys():
                 allDFCTCount[x["DFCT_CODE"]] += x["DEFECT_RATE"]
             else:
                 allDFCTCount[x["DFCT_CODE"]] = x["DEFECT_RATE"]
-        top10 = dict(sorted(allDFCTCount.items(),key=lambda item:item[1],reverse=True) [:10])
+        top10 = dict(sorted(allDFCTCount.items(),
+                     key=lambda item: item[1], reverse=True)[:10])
 
-        operMap = {"PCBI":0,"LAM":1,"AAFC":2,"CKEN":3,"DKEN":4}
+        operMap = {"PCBI": 0, "LAM": 1, "AAFC": 2, "CKEN": 3, "DKEN": 4}
 
         DATASERIES = []
-        for x in tempData:  
-            cDFct = x["DFCT_CODE"]  if x["DFCT_CODE"] in top10.keys() else "OTHER"
-            cERRC = x["ERRC_DESCR"] if x["DFCT_CODE"] in top10.keys() else "OTHER" 
+        for x in tempData:
+            cDFct = x["DFCT_CODE"] if x["DFCT_CODE"] in top10.keys() else "OTHER"
+            cERRC = x["ERRC_DESCR"] if x["DFCT_CODE"] in top10.keys() else "OTHER"
 
             rank = 11
             if cDFct in top10.keys():
                 rank = 1
                 for i in top10:
                     if i != x["DFCT_CODE"]:
-                        rank +=1 
+                        rank += 1
                     else:
                         break
 
-            d = list(filter(lambda d: d["DFCT_CODE"] == cDFct and d["OPER"] == x["OPER"], DATASERIES))
+            d = list(filter(lambda d: d["DFCT_CODE"] ==
+                     cDFct and d["OPER"] == x["OPER"], DATASERIES))
             if d == []:
                 DATASERIES.append({
-                        "OPER": x["OPER"],
-                        "XVALUE": operMap.get(x["OPER"], None),
-                        "YVALUE": x["DEFECT_RATE"]*100,
-                        "RANK": rank,
-                        "DFCT_CODE" : cDFct,
-                        "ERRC_DESCR" : cERRC,                        
-                        "PROD_NBR": tmpPROD_NBR,
-                        "DeftSUM": x["DEFTSUMQTY"],
-                        "PassSUM": x["PASSSUMQTY"],
-                        "DEFECT_RATE": x["DEFECT_RATE"]*100
-                    })
+                    "OPER": x["OPER"],
+                    "XVALUE": operMap.get(x["OPER"], None),
+                    "YVALUE": x["DEFECT_RATE"]*100,
+                    "RANK": rank,
+                    "DFCT_CODE": cDFct,
+                    "ERRC_DESCR": cERRC,
+                    "PROD_NBR": tmpPROD_NBR,
+                    "DeftSUM": x["DEFTSUMQTY"],
+                    "PassSUM": x["PASSSUMQTY"],
+                    "DEFECT_RATE": x["DEFECT_RATE"]*100
+                })
             else:
                 for cx in DATASERIES:
-                    if cx["OPER"] == x["OPER"] and cx["DFCT_CODE"] == cDFct :                       
-                       cx["DeftSUM"] += x["DEFTSUMQTY"]
-                       ds = Decimal(cx["DeftSUM"])
-                       ps = Decimal(cx["PassSUM"])
-                       dr =  self._DecimaltoFloat((ds / ps).quantize(Decimal('.00000000'), ROUND_HALF_UP))
-                       cx["DEFECT_RATE"] = dr*100
-                       cx["YVALUE"] =  dr*100
-                       
-        #因為使用 operator.itemgetter 方法 排序順序要反過來執行
-        #不同欄位key 排序方式不同時 需要 3 - 2 - 1  反順序去寫code
-        DATASERIES.sort(key = operator.itemgetter("RANK"), reverse = True)      
-        
+                    if cx["OPER"] == x["OPER"] and cx["DFCT_CODE"] == cDFct:
+                        cx["DeftSUM"] += x["DEFTSUMQTY"]
+                        ds = Decimal(cx["DeftSUM"])
+                        ps = Decimal(cx["PassSUM"])
+                        dr = self._DecimaltoFloat(
+                            (ds / ps).quantize(Decimal('.00000000'), ROUND_HALF_UP))
+                        cx["DEFECT_RATE"] = dr*100
+                        cx["YVALUE"] = dr*100
+
+        # 因為使用 operator.itemgetter 方法 排序順序要反過來執行
+        # 不同欄位key 排序方式不同時 需要 3 - 2 - 1  反順序去寫code
+        DATASERIES.sort(key=operator.itemgetter("RANK"), reverse=True)
+
         returnData = DATASERIES
 
         return returnData
 
-    def _groupFPYLV2HISTOOPER(self, PCBI, LAM, AAFC, CKEN, DKEN): 
-        deftData = []            
-        for d in PCBI:       
-            deftData.append(d) 
-        for d in LAM:       
-            deftData.append(d) 
-        for d in AAFC:       
-            deftData.append(d) 
-        for d in CKEN:       
-            deftData.append(d) 
-        for d in DKEN:       
-            deftData.append(d) 
+    def _groupFPYLV2HISTOOPER(self, PCBI, LAM, AAFC, CKEN, DKEN):
+        deftData = []
+        for d in PCBI:
+            deftData.append(d)
+        for d in LAM:
+            deftData.append(d)
+        for d in AAFC:
+            deftData.append(d)
+        for d in CKEN:
+            deftData.append(d)
+        for d in DKEN:
+            deftData.append(d)
 
-        deftData.sort(key = operator.itemgetter("XVALUE", "XVALUE"), reverse = True)
-        deftData.sort(key = operator.itemgetter("RANK", "RANK"), reverse = True)
+        deftData.sort(key=operator.itemgetter(
+            "XVALUE", "XVALUE"), reverse=True)
+        deftData.sort(key=operator.itemgetter("RANK", "RANK"), reverse=True)
 
         return deftData
 
-    def _getMSHIPSCRAPData(self,type,PROD_NBR):
+    def _getMSHIPSCRAPData(self, type, PROD_NBR):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
@@ -1033,14 +1052,14 @@ class INTLV2(BaseType):
         (1)  前廠責：USL、TX LCD、FABX
         (2)  廠責：MFG、INT、EQP、ER 
         (3)  來料責：SQE
-        """       
+        """
 
         try:
             data = {}
             if tmpSITE == "TN":
-                data =  self._getMSHIPSCRAPDataFromMongoDB(type,PROD_NBR)
+                data = self._getMSHIPSCRAPDataFromMongoDB(type, PROD_NBR)
             else:
-                data = self._getMSHIPSCRAPDataFromOracle(type,PROD_NBR)
+                data = self._getMSHIPSCRAPDataFromOracle(type, PROD_NBR)
 
             returnData = {
                 "scrapData": data["scrapData"]
@@ -1060,7 +1079,7 @@ class INTLV2(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
-    def _getMSHIPSCRAPDataFromOracle(self,type,PROD_NBR):
+    def _getMSHIPSCRAPDataFromOracle(self, type, PROD_NBR):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
@@ -1069,15 +1088,15 @@ class INTLV2(BaseType):
         tmpAPPLICATION = self.jsonData["APPLICATION"]
 
         mshipDATA = {
-            "formerfab":{"in":"usl|lcd|fab","name": "前廠責"},
-            "fab":{"in":"mfg|int|eqp|er","name": "廠責"},
-            "incoming":{"in":"sqe","name": "來料責"},
+            "formerfab": {"in": "usl|lcd|fab", "name": "前廠責"},
+            "fab": {"in": "mfg|int|eqp|er", "name": "廠責"},
+            "incoming": {"in": "sqe", "name": "來料責"},
         }
         getFabData = mshipDATA[type]["name"]
 
         applicatiionWhere = ""
         if tmpAPPLICATION != "ALL":
-            applicatiionWhere = f"AND dmo.application = '{tmpAPPLICATION}' "        
+            applicatiionWhere = f"AND dmo.application = '{tmpAPPLICATION}' "
         try:
             scrapString = f"SELECT \
                             dlo.company_code   AS company_code, \
@@ -1110,7 +1129,7 @@ class INTLV2(BaseType):
                             msc.mfgdate, \
                             dmo.application \
                         HAVING SUM(msc.sumqty) >= 0 "
-            description , data = self.pSelectAndDescription(scrapString)            
+            description, data = self.pSelectAndDescription(scrapString)
             scrapData = self._zipDescriptionAndData(description, data)
 
             returnData = {
@@ -1131,7 +1150,7 @@ class INTLV2(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
-    def _getMSHIPSCRAPDataFromMongoDB(self,type,PROD_NBR):
+    def _getMSHIPSCRAPDataFromMongoDB(self, type, PROD_NBR):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
@@ -1145,11 +1164,11 @@ class INTLV2(BaseType):
         (3)  來料責：SQE
         """
         mshipDATA = {
-            "formerfab":{"in":"usl|lcd|fab","name": "前廠責"},
-            "fab":{"in":"mfg|int|eqp|er","name": "廠責"},
-            "incoming":{"in":"sqe","name": "來料責"},
+            "formerfab": {"in": "usl|lcd|fab", "name": "前廠責"},
+            "fab": {"in": "mfg|int|eqp|er", "name": "廠責"},
+            "incoming": {"in": "sqe", "name": "來料責"},
         }
-        getFabData = mshipDATA[type]   
+        getFabData = mshipDATA[type]
 
         scrapAggregate = []
 
@@ -1161,10 +1180,10 @@ class INTLV2(BaseType):
                 "FACTORY_ID": tmpFACTORY_ID,
                 "ACCT_DATE": tmpACCT_DATE,
                 "LCM_OWNER": {"$in": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]},
-                'RESP_OWNER': {'$regex': getFabData["in"], '$options': 'i' },
+                'RESP_OWNER': {'$regex': getFabData["in"], '$options': 'i'},
                 "PROD_NBR": PROD_NBR
             }
-        }        
+        }
         scrapGroup = {
             "$group": {
                 "_id": {
@@ -1240,14 +1259,14 @@ class INTLV2(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
-    def _groupMSHIPLV2PIE(self, dData): 
-        deftData = []            
-        for d in dData:       
-            deftData.append(d) 
+    def _groupMSHIPLV2PIE(self, dData):
+        deftData = []
+        for d in dData:
+            deftData.append(d)
 
-        if deftData != []:  
+        if deftData != []:
             TOBESCRAP_SUMQTY = 0
-            for p in deftData:            
+            for p in deftData:
                 TOBESCRAP_SUMQTY += p["TOBESCRAP_SUMQTY"]
             p = deftData[0]
             data = {
@@ -1256,36 +1275,36 @@ class INTLV2(BaseType):
                 "FACTORY_ID": p["FACTORY_ID"],
                 "PROD_NBR": p["PROD_NBR"],
                 "ACCT_DATE": datetime.datetime.strptime(p["ACCT_DATE"], '%Y%m%d').strftime('%Y-%m-%d'),
-                "APPLICATION": p["APPLICATION"] if "APPLICATION" in p.keys() else None,                
-                "TOBESCRAP_SUMQTY" : TOBESCRAP_SUMQTY,
-                "RESP_OWNER_E" : p["RESP_OWNER_E"],
+                "APPLICATION": p["APPLICATION"] if "APPLICATION" in p.keys() else None,
+                "TOBESCRAP_SUMQTY": TOBESCRAP_SUMQTY,
+                "RESP_OWNER_E": p["RESP_OWNER_E"],
                 "RESP_OWNER": p["RESP_OWNER"]
             }
             return data
-        else: 
+        else:
             return None
 
     def _calMSHIPLV2PIE(self, formerfab, fab, incoming):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
-        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]        
-        tmpAPPLICATION =self.jsonData["APPLICATION"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
         tmpKPITYPE = self.jsonData["KPITYPE"]
         tmpACCT_DATE = self.jsonData["ACCT_DATE"]
         tmpPROD_NBR = self.jsonData["PROD_NBR"]
 
         TotalSCRAPSUMQty = 0
         tempData = []
-        tempData.extend([formerfab,fab,incoming])
+        tempData.extend([formerfab, fab, incoming])
         for x in tempData:
             if x != None:
                 tmpAPPLICATION = x["APPLICATION"]
                 TotalSCRAPSUMQty += x["TOBESCRAP_SUMQTY"]
-        
+
         colorMap = {
-            "formerfab": {"colorName": "red", "HEX":"#ef476f"},
-            "fab": {"colorName": "yellow", "HEX":"#ffd166"},
-            "incoming": {"colorName": "green", "HEX":"#06d6a0"}
+            "formerfab": {"colorName": "red", "HEX": "#ef476f"},
+            "fab": {"colorName": "yellow", "HEX": "#ffd166"},
+            "incoming": {"colorName": "green", "HEX": "#06d6a0"}
         }
 
         DATASERIES = []
@@ -1294,7 +1313,7 @@ class INTLV2(BaseType):
                 DATASERIES.append({
                     "RESP_OWNER": x["RESP_OWNER"],
                     "RESP_OWNER_E": x["RESP_OWNER_E"],
-                    "VALUE": round(x["TOBESCRAP_SUMQTY"] / TotalSCRAPSUMQty , 2) if TotalSCRAPSUMQty !=0 else 0,
+                    "VALUE": round(x["TOBESCRAP_SUMQTY"] / TotalSCRAPSUMQty, 2) if TotalSCRAPSUMQty != 0 else 0,
                     "COLOR": colorMap[x["RESP_OWNER_E"]]["HEX"] if x["RESP_OWNER_E"] in colorMap.keys() else None,
                     "SELECT": None,
                     "SLICED": None,
@@ -1302,16 +1321,16 @@ class INTLV2(BaseType):
                     "PROD_NBR": tmpPROD_NBR
                 })
 
-        returnData = {                    
-                    "KPITYPE": tmpKPITYPE,
-                    "COMPANY_CODE": tmpCOMPANY_CODE,
-                    "SITE": tmpSITE,
-                    "FACTORY_ID": tmpFACTORY_ID,
-                    "APPLICATION": tmpAPPLICATION,
-                    "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
-                    "PROD_NBR": tmpPROD_NBR,
-                    "DATASERIES": DATASERIES
-                }
+        returnData = {
+            "KPITYPE": tmpKPITYPE,
+            "COMPANY_CODE": tmpCOMPANY_CODE,
+            "SITE": tmpSITE,
+            "FACTORY_ID": tmpFACTORY_ID,
+            "APPLICATION": tmpAPPLICATION,
+            "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
+            "PROD_NBR": tmpPROD_NBR,
+            "DATASERIES": DATASERIES
+        }
 
         return returnData
 
@@ -1342,21 +1361,24 @@ class INTLV2(BaseType):
             return None
 
     def _getEFALV2_3_Data(self, tmpOPER, PROD_NBR, CHECKCODE):
-        tmpSITE = self.jsonData["SITE"] 
+        tmpSITE = self.jsonData["SITE"]
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         tmpKPITYPE = self.jsonData["KPITYPE"]
         tmpACCT_DATE = self.jsonData["ACCT_DATE"]
-        tmpAPPLICATION = self.jsonData["APPLICATION"]        
-        _OPERLIST= self._getEFASet( tmpCOMPANY_CODE, tmpSITE, tmpFACTORY_ID, tmpOPER)
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
+        _OPERLIST = self._getEFASet(
+            tmpCOMPANY_CODE, tmpSITE, tmpFACTORY_ID, tmpOPER)
 
         try:
             data = {}
             if tmpSITE == "TN":
-                data = self._getEFALV2_3_DataFromMongoDB(_OPERLIST["OPERLIST"], PROD_NBR, CHECKCODE)
+                data = self._getEFALV2_3_DataFromMongoDB(
+                    _OPERLIST["OPERLIST"], PROD_NBR, CHECKCODE)
             else:
-                data = self._getEFALV2_3_DataFromOracle(_OPERLIST["NAMELIST"], PROD_NBR, CHECKCODE)
+                data = self._getEFALV2_3_DataFromOracle(
+                    _OPERLIST["NAMELIST"], PROD_NBR, CHECKCODE)
             returnData = {
                 "pData": data["pData"],
                 "rData": data["rData"]
@@ -1374,7 +1396,7 @@ class INTLV2(BaseType):
             self.writeError(
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
-    
+
     def _getEFALV2_3_DataFromOracle(self, OPERList, PROD_NBR, CHECKCODE):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
@@ -1388,7 +1410,7 @@ class INTLV2(BaseType):
             whereString += f" AND dmo.application = '{tmpAPPLICATION}' "
         if PROD_NBR != '':
             whereString += f" AND dmo.code = '{PROD_NBR}' "
-        
+
         try:
             passString = f"SELECT \
                             dmo.code        AS PROD_NBR, \
@@ -1408,7 +1430,7 @@ class INTLV2(BaseType):
                         GROUP BY \
                             dmo.code \
                         HAVING SUM(epa.sumqty) > 0 "
-            description , data = self.pSelectAndDescription(passString)            
+            description, data = self.pSelectAndDescription(passString)
             pData = self._zipDescriptionAndData(description, data)
 
             if CHECKCODE != '':
@@ -1434,8 +1456,8 @@ class INTLV2(BaseType):
                             ers.reasoncode, \
                             drc.reasoncode_desc \
                         HAVING SUM(ers.sumqty) > 0 "
-            description , data = self.pSelectAndDescription(reasonString)            
-            rData = self._zipDescriptionAndData(description, data)  
+            description, data = self.pSelectAndDescription(reasonString)
+            rData = self._zipDescriptionAndData(description, data)
 
             returnData = {
                 "pData": pData,
@@ -1463,128 +1485,120 @@ class INTLV2(BaseType):
         tmpACCT_DATE = self.jsonData["ACCT_DATE"]
         tmpAPPLICATION = self.jsonData["APPLICATION"]
 
-        passAggregate =[
-                  {
-                    "$match": {
-                      "COMPANY_CODE":  tmpCOMPANY_CODE,
-                      "SITE": tmpSITE,
-                      "FACTORY_ID": tmpFACTORY_ID,
-                      "ACCT_DATE": tmpACCT_DATE,
-                      "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList['denominator']]},
-                       "LCM_OWNER": {"$in": ["INT0","LCM0", "LCME", "PROD", "QTAP", "RES0"]}
-                    }
-                  },
-                  {
-                    "$group": {
-                      "_id": {
+        passAggregate = [
+            {
+                "$match": {
+                    "COMPANY_CODE":  tmpCOMPANY_CODE,
+                    "SITE": tmpSITE,
+                    "FACTORY_ID": tmpFACTORY_ID,
+                    "ACCT_DATE": tmpACCT_DATE,
+                    "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList['denominator']]},
+                    "LCM_OWNER": {"$in": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]}
+                }
+            },
+            {
+                "$group": {
+                    "_id": {
                         "PROD_NBR": "$PROD_NBR"
-                      },
-                      "PASSQTY": {
+                    },
+                    "PASSQTY": {
                         "$sum": {
-                          "$toInt": "$QTY"
+                            "$toInt": "$QTY"
                         }
-                      }
                     }
-                  },
-                  {
-                    "$addFields": {
-                      "PROD_NBR": "$_id.PROD_NBR",
-                      "PASSQTY": "$PASSQTY"
-                    }
-                  },
-                  {
-                    "$project": {
-                      "_id": 0
-                    }
-                  },
-                  {
-                    "$sort": {
-                      "PASSQTY": -1
-                    }
-                  }
-                ]
+                }
+            },
+            {
+                "$addFields": {
+                    "PROD_NBR": "$_id.PROD_NBR",
+                    "PASSQTY": "$PASSQTY"
+                }
+            },
+            {
+                "$project": {
+                    "_id": 0
+                }
+            },
+            {
+                "$sort": {
+                    "PASSQTY": -1
+                }
+            }
+        ]
 
         reasonAggregate = [
-                  {
-                    "$match": {
-                      "COMPANY_CODE": tmpCOMPANY_CODE,
-                      "SITE": tmpSITE,
-                      "FACTORY_ID": tmpFACTORY_ID,
-                      "ACCT_DATE": tmpACCT_DATE,
-                      "WORK_CTR": "2110",
-                      "TRANS_TYPE": "RWMO",
-                       "LCM_OWNER": {"$in": ["INT0","LCM0", "LCME", "PROD", "QTAP", "RES0"]},
-                      "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList['numerator']]},
-                      "DFCT_REASON": {
+            {
+                "$match": {
+                    "COMPANY_CODE": tmpCOMPANY_CODE,
+                    "SITE": tmpSITE,
+                    "FACTORY_ID": tmpFACTORY_ID,
+                    "ACCT_DATE": tmpACCT_DATE,
+                    "WORK_CTR": "2110",
+                    "TRANS_TYPE": "RWMO",
+                    "LCM_OWNER": {"$in": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                    "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList['numerator']]},
+                    "DFCT_REASON": {
                         "$nin": [
-                          "FA260-0"
+                            "FA260-0"
                         ]
-                      }
                     }
-                  },
-                  {
-                    "$lookup": {
-                      "from": "deftCodeView",
-                      "as": "deftCodeList",
-                      "let": {
-                        "dfctCode": "$DFCT_CODE"
-                      },
-                      "pipeline": [
-                        {
-                          "$match": {
-                            "$expr": {
-                              "$and": [
-                                {
-                                  "$eq": [
-                                    "$$dfctCode",
-                                    "$DEFECT_CODE"
-                                  ]
-                                }
-                              ]
-                            }
-                          }
-                        },
-                        {
-                          "$project": {
-                            "DEFECT_CODE": 1
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    "$unwind": "$deftCodeList"
-                  },
-                  {
-                    "$group": {
-                      "_id": {
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "CODEFILTER",
+                    "as": "CODEFILTER",
+                          "let": {
+                              "dfctCode": "$DFCT_CODE",
+                              "cc": "$COMPANY_CODE",
+                              "si": "$SITE",
+                              "fa": "$FACTORY_ID",
+                          },
+                    "pipeline": [{'$match': {'TYPE': 'DEFT',
+                                             '$expr': {'$and': [
+                                                       {'$eq': [
+                                                           '$$dfctCode', '$CODE']},
+                                                       {'$eq': [
+                                                           '$$cc', '$COMPANYCODE']},
+                                                       {'$eq': [
+                                                           '$$si', '$SITE']},
+                                                       {'$eq': ['$$fa', '$FACTORYID']}]}}},
+                                 {'$project': {'DFCT_CODE': '$CODE'}}]
+                }
+            },
+            {
+                "$unwind": "$CODEFILTER"
+            },
+            {
+                "$group": {
+                    "_id": {
                         "DFCT_REASON": "$DFCT_REASON",
                         "REASON_DESC": "$REASON_DESC"
-                      },
-                      "REASONQTY": {
+                    },
+                    "REASONQTY": {
                         "$sum": "$QTY"
-                      }
                     }
-                  },
-                  {
-                    "$addFields": {
-                      "DFCT_REASON": "$_id.DFCT_REASON",
-                      "REASON_DESC": "$_id.REASON_DESC",
-                      "REASONQTY": "$REASONQTY"
-                    }
-                  },
-                   {
-                    "$project": {
-                      "_id": 0,
-                    }
-                  },
-                  {
-                    "$sort": {
-                      "REASONQTY": -1
-                    }
-                  }
-                ]
-        
+                }
+            },
+            {
+                "$addFields": {
+                    "DFCT_REASON": "$_id.DFCT_REASON",
+                    "REASON_DESC": "$_id.REASON_DESC",
+                    "REASONQTY": "$REASONQTY"
+                }
+            },
+            {
+                "$project": {
+                    "_id": 0,
+                }
+            },
+            {
+                "$sort": {
+                    "REASONQTY": -1
+                }
+            }
+        ]
+
         if PROD_NBR != '':
             reasonAggregate[0]["$match"]["PROD_NBR"] = PROD_NBR
             passAggregate[0]["$match"]["PROD_NBR"] = PROD_NBR
@@ -1625,23 +1639,24 @@ class INTLV2(BaseType):
     def _calEFALV2_3_Data(self, rdata, pdata):
         tmpPROD_NBR = self.jsonData["PROD_NBR"]
         tmpOPER = self.jsonData["OPER"] if "OPER" in self.jsonData else "CKEN"
-        _rData = []            
-        for e in rdata:       
-            _rData.append(e) 
-        _pData = []            
-        for p in pdata:       
-            _pData.append(p) 
-        
+        _rData = []
+        for e in rdata:
+            _rData.append(e)
+        _pData = []
+        for p in pdata:
+            _pData.append(p)
+
         yellowList = self._getEFA_impReason()
 
         prodNbrPASSQTY = 0
         for p in _pData:
             prodNbrPASSQTY += p["PASSQTY"]
-        
+
         returnData = []
         for r in _rData:
             COLOR = "#ffd166" if r["DFCT_REASON"] in yellowList else "#0A8040"
-            REASONYIELD = round(r["REASONQTY"] / prodNbrPASSQTY, 6) if r["REASONQTY"] != 0 and prodNbrPASSQTY != 0 else 0
+            REASONYIELD = round(r["REASONQTY"] / prodNbrPASSQTY,
+                                6) if r["REASONQTY"] != 0 and prodNbrPASSQTY != 0 else 0
             returnData.append({
                 "PASSQTY": prodNbrPASSQTY,
                 "DFCT_REASON": r["DFCT_REASON"],
@@ -1651,8 +1666,8 @@ class INTLV2(BaseType):
                 "COLOR": COLOR,
                 "PROD_NBR": tmpPROD_NBR,
                 "OPER": tmpOPER
-            })   
-        
+            })
+
         returnData.sort(key=operator.itemgetter("REASONQTY"), reverse=True)
 
         return returnData
@@ -1660,15 +1675,18 @@ class INTLV2(BaseType):
     def _getEFALV2_21_Data(self, tmpOPER, PROD_NBR):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
-        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]      
-        _OPERLIST= self._getEFASet( tmpCOMPANY_CODE, tmpSITE, tmpFACTORY_ID, tmpOPER)
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        _OPERLIST = self._getEFASet(
+            tmpCOMPANY_CODE, tmpSITE, tmpFACTORY_ID, tmpOPER)
 
         try:
             data = {}
             if tmpSITE == "TN":
-                data = self._getEFALV2_21_DataFromMongoDB(_OPERLIST["OPERLIST"], PROD_NBR)
+                data = self._getEFALV2_21_DataFromMongoDB(
+                    _OPERLIST["OPERLIST"], PROD_NBR)
             else:
-                data = self._getEFALV2_21_DataFromOracle(_OPERLIST["NAMELIST"], PROD_NBR)
+                data = self._getEFALV2_21_DataFromOracle(
+                    _OPERLIST["NAMELIST"], PROD_NBR)
             returnData = {
                 "pData": data["pData"],
                 "dData": data["dData"]
@@ -1700,7 +1718,7 @@ class INTLV2(BaseType):
             whereString += f" AND dmo.application = '{tmpAPPLICATION}' "
         if PROD_NBR != '':
             whereString += f" AND dmo.code = '{PROD_NBR}' "
-        
+
         try:
             passString = f"SELECT \
                             dlo.company_code   AS company_code, \
@@ -1732,7 +1750,7 @@ class INTLV2(BaseType):
                             dmo.application, \
                             dop.name \
                         HAVING SUM(epa.sumqty) > 0 "
-            description , data = self.pSelectAndDescription(passString)            
+            description, data = self.pSelectAndDescription(passString)
             pData = self._zipDescriptionAndData(description, data)
 
             deftString = f"SELECT \
@@ -1772,8 +1790,8 @@ class INTLV2(BaseType):
                             edf.deftcode, \
                             ddc.deftcode_desc \
                         HAVING SUM(edf.sumqty) > 0 "
-            description , data = self.pSelectAndDescription(deftString)            
-            dData = self._zipDescriptionAndData(description, data)  
+            description, data = self.pSelectAndDescription(deftString)
+            dData = self._zipDescriptionAndData(description, data)
 
             returnData = {
                 "pData": pData,
@@ -1799,9 +1817,9 @@ class INTLV2(BaseType):
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         tmpACCT_DATE = self.jsonData["ACCT_DATE"]
-        tmpAPPLICATION = self.jsonData["APPLICATION"]   
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
         passAggregate = []
-        deftAggregate = []        
+        deftAggregate = []
 
         # pass
         passMatch1 = {
@@ -1809,9 +1827,9 @@ class INTLV2(BaseType):
                 "COMPANY_CODE": tmpCOMPANY_CODE,
                 "SITE": tmpSITE,
                 "FACTORY_ID": tmpFACTORY_ID,
-                "ACCT_DATE": tmpACCT_DATE,                
+                "ACCT_DATE": tmpACCT_DATE,
                 "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList['denominator']]},
-                 "LCM_OWNER": {"$in": ["INT0","LCM0", "LCME", "PROD", "QTAP", "RES0"]}
+                "LCM_OWNER": {"$in": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]}
             }
         }
         passGroup1 = {
@@ -1863,41 +1881,31 @@ class INTLV2(BaseType):
                 "FACTORY_ID": tmpFACTORY_ID,
                 "ACCT_DATE": tmpACCT_DATE,
                 "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList['numerator']]},
-                 "LCM_OWNER": {"$in": ["INT0","LCM0", "LCME", "PROD", "QTAP", "RES0"]}
+                "LCM_OWNER": {"$in": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]}
             }
         }
         deftlookup1 = {
             "$lookup": {
-                "from": "deftCodeView",
-                "as": "deftCodeList",
+                "from": "CODEFILTER",
+                "as": "CODEFILTER",
                 "let": {
-                        "dfctCode": "$DFCT_CODE"
+                        "dfctCode": "$DFCT_CODE",
+                        "cc": "$COMPANY_CODE",
+                        "si": "$SITE",
+                        "fa": "$FACTORY_ID",
                 },
-                "pipeline": [
-                    {
-                        "$match": {
-                            "$expr": {
-                                "$and": [
-                                    {
-                                        "$eq": [
-                                            "$$dfctCode",
-                                            "$DEFECT_CODE"
-                                        ]
-                                    }
-                                ]
-                            }
-                        }
-                    },
-                    {
-                        "$project": {
-                            "DEFECT_CODE": 1
-                        }
-                    }
-                ]
+                "pipeline": [{'$match': {'TYPE': 'DEFT',
+                                         '$expr': {'$and': [{'$eq': ['$$dfctCode', '$CODE']},
+                                                            {'$eq': [
+                                                                '$$cc', '$COMPANYCODE']},
+                                                            {'$eq': [
+                                                                '$$si', '$SITE']},
+                                                            {'$eq': ['$$fa', '$FACTORYID']}]}}},
+                             {'$project': {'DFCT_CODE': '$CODE'}}]
             }
         }
         deftunwind1 = {
-            "$unwind": "$deftCodeList"
+            "$unwind": "$CODEFILTER"
         }
         deftGroup1 = {
             "$group": {
@@ -1926,7 +1934,7 @@ class INTLV2(BaseType):
                 "PROD_NBR": "$_id.PROD_NBR",
                 "ACCT_DATE": "$_id.ACCT_DATE",
                 "APPLICATION": "$_id.APPLICATION",
-                "MAIN_WC": "$_id.MAIN_WC",                
+                "MAIN_WC": "$_id.MAIN_WC",
                 "DFCT_CODE": "$_id.DFCT_CODE",
                 "ERRC_DESCR": "$_id.ERRC_DESCR",
                 "DEFT_QTY": "$DEFT_QTY"
@@ -1985,19 +1993,20 @@ class INTLV2(BaseType):
     def _calEFALV2_21_Data(self, dData, pData):
         tmpPROD_NBR = self.jsonData["PROD_NBR"]
         tmpOPER = self.jsonData["OPER"] if "OPER" in self.jsonData else "CKEN"
-        _dData = []            
-        for e in dData:       
-            _dData.append(e) 
-        _pData = []            
-        for p in pData:       
-            _pData.append(p) 
-        
+        _dData = []
+        for e in dData:
+            _dData.append(e)
+        _pData = []
+        for p in pData:
+            _pData.append(p)
+
         prodNbrPASSQTY = 0
         for p in _pData:
             prodNbrPASSQTY += p["PASS_QTY"]
         returnData = []
         for r in _dData:
-            DEFTYIELD = round(r["DEFT_QTY"] / prodNbrPASSQTY, 6) if r["DEFT_QTY"] != 0 and prodNbrPASSQTY != 0 else 0
+            DEFTYIELD = round(r["DEFT_QTY"] / prodNbrPASSQTY,
+                              6) if r["DEFT_QTY"] != 0 and prodNbrPASSQTY != 0 else 0
             returnData.append({
                 "PASSQTY": prodNbrPASSQTY,
                 "DFCT_CODE": r["DFCT_CODE"],
@@ -2007,10 +2016,10 @@ class INTLV2(BaseType):
                 "DEFTYIELD": DEFTYIELD,
                 "PROD_NBR": tmpPROD_NBR,
                 "OPER": tmpOPER
-            })        
+            })
 
         returnData.sort(key=operator.itemgetter("DEFTQTY"), reverse=True)
-        
+
         return returnData
 
     def _getEFA_impReason(self):
@@ -2018,18 +2027,18 @@ class INTLV2(BaseType):
             self.getMongoConnection()
             self.setMongoDb("IAMP")
             self.setMongoCollection("excelToJson")
-            reqParm={
+            reqParm = {
                 "_id": "MOD2_DEFECT_DEV@J001-alarmReason"
             }
-            projectionFields={
+            projectionFields = {
                 "_id": False,
                 "DATA": True
             }
-            deftData = self.getMongoFind(reqParm,projectionFields)
+            deftData = self.getMongoFind(reqParm, projectionFields)
             self.closeMongoConncetion()
             returnData = []
-            for d in deftData:    
-                for x in d["DATA"]:                  
+            for d in deftData:
+                for x in d["DATA"]:
                     returnData.append(x["REASON_CODE"])
             return returnData
         except Exception as e:
@@ -2045,7 +2054,7 @@ class INTLV2(BaseType):
             return "error"
 
     def _getEFALV2_WIP_1_Data(self, PROD_NBR):
-        tmpSITE = self.jsonData["SITE"] 
+        tmpSITE = self.jsonData["SITE"]
         try:
             data = {}
             if tmpSITE == "TN":
@@ -2083,7 +2092,7 @@ class INTLV2(BaseType):
         whereString = ""
         if tmpAPPLICATION != "ALL":
             whereString += f" AND dmo.application = '{tmpAPPLICATION}' "
-        
+
         try:
             faWipString = f"SELECT \
                             NVL(SUM(ewp.QTY),0) AS TOTALQTY \
@@ -2097,7 +2106,7 @@ class INTLV2(BaseType):
                             AND dlo.factory_code = '{tmpFACTORY_ID}' \
                             AND ewp.mfgdate = '{tmpACCT_DATE}' \
                             {whereString} "
-            description , data = self.pSelectAndDescription(faWipString)            
+            description, data = self.pSelectAndDescription(faWipString)
             faWip = self._zipDescriptionAndData(description, data)
 
             prodNbrWipString = f"SELECT \
@@ -2123,8 +2132,8 @@ class INTLV2(BaseType):
                             AND ewp.mfgdate = '{tmpACCT_DATE}' \
                             AND dmo.code = '{PROD_NBR}' \
                             {whereString} "
-            description , data = self.pSelectAndDescription(prodNbrWipString)            
-            prodNbrWip = self._zipDescriptionAndData(description, data)  
+            description, data = self.pSelectAndDescription(prodNbrWipString)
+            prodNbrWip = self._zipDescriptionAndData(description, data)
 
             returnData = {
                 "faWip": faWip,
@@ -2152,105 +2161,105 @@ class INTLV2(BaseType):
         tmpACCT_DATE = self.jsonData["ACCT_DATE"]
         tmpAPPLICATION = self.jsonData["APPLICATION"]
 
-        faWipAggregate =[
-                  {
-                    "$match": {
-                      "COMPANY_CODE": tmpCOMPANY_CODE,
-                      "SITE": tmpSITE,
-                      "FACTORY_ID": tmpFACTORY_ID,
-                      "ACCT_DATE": tmpACCT_DATE,
-                      "WORK_CTR": "2110"
-                    }
-                  },
-                  {
-                    "$group": {
-                      "_id": {
+        faWipAggregate = [
+            {
+                "$match": {
+                    "COMPANY_CODE": tmpCOMPANY_CODE,
+                    "SITE": tmpSITE,
+                    "FACTORY_ID": tmpFACTORY_ID,
+                    "ACCT_DATE": tmpACCT_DATE,
+                    "WORK_CTR": "2110"
+                }
+            },
+            {
+                "$group": {
+                    "_id": {
                         "COMPANY_CODE": "$COMPANY_CODE",
                         "SITE": "$SITE",
                         "FACTORY_ID": "$FACTORY_ID",
                         "WORK_CTR": "$WORK_CTR"
-                      },
-                      "TOTALQTY": {
+                    },
+                    "TOTALQTY": {
                         "$sum": {
-                          "$toInt": "$QTY"
+                            "$toInt": "$QTY"
                         }
-                      }
                     }
-                  }
-                ]
-        
+                }
+            }
+        ]
+
         prodNbrWipAggregate = [
-                  {
-                    "$match": {
-                      "COMPANY_CODE": tmpCOMPANY_CODE,
-                      "SITE": tmpSITE,
-                      "FACTORY_ID": tmpFACTORY_ID,
-                      "ACCT_DATE": tmpACCT_DATE,
-                      "PROD_NBR": PROD_NBR,
-                      "WORK_CTR": "2110"
-                    }
-                  },
-                  {
-                    "$group": {
-                      "_id": {
+            {
+                "$match": {
+                    "COMPANY_CODE": tmpCOMPANY_CODE,
+                    "SITE": tmpSITE,
+                    "FACTORY_ID": tmpFACTORY_ID,
+                    "ACCT_DATE": tmpACCT_DATE,
+                    "PROD_NBR": PROD_NBR,
+                    "WORK_CTR": "2110"
+                }
+            },
+            {
+                "$group": {
+                    "_id": {
                         "COMPANY_CODE": "$COMPANY_CODE",
                         "SITE": "$SITE",
                         "FACTORY_ID": "$FACTORY_ID",
                         "WORK_CTR": "$WORK_CTR"
-                      },
-                      "TOTALQTY": {
+                    },
+                    "TOTALQTY": {
                         "$sum": {
-                          "$toInt": "$QTY"
+                            "$toInt": "$QTY"
                         }
-                      },
-                      "QTY1": {
+                    },
+                    "QTY1": {
                         "$sum": {
-                          "$toInt": "$QTY1"
+                            "$toInt": "$QTY1"
                         }
-                      },
-                      "QTY2": {
+                    },
+                    "QTY2": {
                         "$sum": {
-                          "$toInt": "$QTY2"
+                            "$toInt": "$QTY2"
                         }
-                      },
-                      "QTY3": {
+                    },
+                    "QTY3": {
                         "$sum": {
-                          "$toInt": "$QTY3"
+                            "$toInt": "$QTY3"
                         }
-                      },
-                      "QTY5": {
+                    },
+                    "QTY5": {
                         "$sum": {
-                          "$toInt": "$QTY5"
+                            "$toInt": "$QTY5"
                         }
-                      },
-                      "QTY7": {
+                    },
+                    "QTY7": {
                         "$sum": {
-                          "$toInt": "$QTY7"
+                            "$toInt": "$QTY7"
                         }
-                      },
-                      "QTY15": {
+                    },
+                    "QTY15": {
                         "$sum": {
-                          "$toInt": "$QTY15"
+                            "$toInt": "$QTY15"
                         }
-                      },
-                      "QTY30": {
+                    },
+                    "QTY30": {
                         "$sum": {
-                          "$toInt": "$QTY30"
+                            "$toInt": "$QTY30"
                         }
-                      },
-                      "QTY31": {
+                    },
+                    "QTY31": {
                         "$sum": {
-                          "$toInt": "$QTY31"
+                            "$toInt": "$QTY31"
                         }
-                      },
-                      "QTY45": {
+                    },
+                    "QTY45": {
                         "$sum": {
-                          "$toInt": "$QTY45"
+                            "$toInt": "$QTY45"
                         }
-                      }}
-                  }
-                ]
-        
+                    }}
+            }
+        ]
+
         if tmpAPPLICATION != 'ALL':
             faWipAggregate[0]["$match"]["APPLICATION"] = tmpAPPLICATION
             prodNbrWipAggregate[0]["$match"]["APPLICATION"] = tmpAPPLICATION
@@ -2282,16 +2291,16 @@ class INTLV2(BaseType):
             return "error"
 
     def _calEFALV2_WIP_1_Data(self, faWip, prodNbrWip):
-        _fData = []            
-        for e in faWip:       
-            _fData.append(e) 
-        _pData = []            
-        for p in prodNbrWip:       
-            _pData.append(p) 
-                           
+        _fData = []
+        for e in faWip:
+            _fData.append(e)
+        _pData = []
+        for p in prodNbrWip:
+            _pData.append(p)
+
         faData = {}
-        for fa in _fData:       
-            faData= {
+        for fa in _fData:
+            faData = {
                 "y": fa["TOTALQTY"],
                 "name": "FA 2110 WIP",
                 "color": "#058DC7",
@@ -2308,36 +2317,36 @@ class INTLV2(BaseType):
         }
         prodData2 = {
             "y": 0,
-            "name":"< 24hrs",
+            "name": "< 24hrs",
             "color": "#8CE66A",
             "radius": '62%',
             "innerRadius": '38%',
             "underColor": "#D1F5C4"
         }
-        for pn in _pData:       
+        for pn in _pData:
             prodData1 = {
                 "y": pn["TOTALQTY"],
                 "name": "PROD_NBR",
                 "color": "#656565",
                 "radius": '87%',
                 "innerRadius": '63%'
-            } 
+            }
             _name = ""
             _y = ""
             _fontColor = ""
             _underColor = ""
-            _OVERONEDAYQTY = pn["QTY2"] + pn["QTY3"]+ pn["QTY5"]+ pn["QTY7"]+ pn["QTY15"] \
-                + pn["QTY30"]+ pn["QTY31"] + pn["QTY45"]
-            if _OVERONEDAYQTY > 0 :
+            _OVERONEDAYQTY = pn["QTY2"] + pn["QTY3"] + pn["QTY5"] + pn["QTY7"] + pn["QTY15"] \
+                + pn["QTY30"] + pn["QTY31"] + pn["QTY45"]
+            if _OVERONEDAYQTY > 0:
                 _name = "> 24hrs"
                 _y = _OVERONEDAYQTY
-                _fontColor = "#F9CE24" #黃色
-                _underColor = "#FAEDB9"  #淺黃色            
+                _fontColor = "#F9CE24"  # 黃色
+                _underColor = "#FAEDB9"  # 淺黃色
             else:
                 _name = "< 24hrs"
                 _y = pn["QTY1"]
-                _fontColor = "#8CE66A"  #綠色
-                _underColor = "#D1F5C4"  #淺綠色            
+                _fontColor = "#8CE66A"  # 綠色
+                _underColor = "#D1F5C4"  # 淺綠色
             prodData2 = {
                 "y": _y,
                 "name": _name,
@@ -2348,15 +2357,15 @@ class INTLV2(BaseType):
             }
 
         returnData = {
-            "faData":faData,
-            "prodData1":prodData1,
-            "prodData2":prodData2
+            "faData": faData,
+            "prodData1": prodData1,
+            "prodData2": prodData2
         }
-        
+
         return returnData
 
     def _getEFALV2_WIP_2_Data(self):
-        tmpSITE = self.jsonData["SITE"] 
+        tmpSITE = self.jsonData["SITE"]
         try:
             data = {}
             if tmpSITE == "TN":
@@ -2389,7 +2398,7 @@ class INTLV2(BaseType):
         whereString = ""
         if tmpAPPLICATION != "ALL":
             whereString += f" AND dmo.application = '{tmpAPPLICATION}' "
-        
+
         try:
             faWipString = f"SELECT \
                             dlo.company_code   AS company_code, \
@@ -2424,8 +2433,8 @@ class INTLV2(BaseType):
                             dlo.factory_code, \
                             dop.name, \
                             dmo.code "
-            description , data = self.pSelectAndDescription(faWipString)            
-            faWip = self._zipDescriptionAndData(description, data)  
+            description, data = self.pSelectAndDescription(faWipString)
+            faWip = self._zipDescriptionAndData(description, data)
             returnData = faWip
             return returnData
 
@@ -2447,99 +2456,99 @@ class INTLV2(BaseType):
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         tmpACCT_DATE = self.jsonData["ACCT_DATE"]
         tmpAPPLICATION = self.jsonData["APPLICATION"]
-        
+
         wipAggregate = [
-                  {
-                    "$match": {
-                      "COMPANY_CODE": tmpCOMPANY_CODE,
-                      "SITE": tmpSITE,
-                      "FACTORY_ID": tmpFACTORY_ID,
-                      "ACCT_DATE": tmpACCT_DATE,
-                      "WORK_CTR": "2110"
-                    }
-                  },
-                  {
-                    "$group": {
-                      "_id": {
+            {
+                "$match": {
+                    "COMPANY_CODE": tmpCOMPANY_CODE,
+                    "SITE": tmpSITE,
+                    "FACTORY_ID": tmpFACTORY_ID,
+                    "ACCT_DATE": tmpACCT_DATE,
+                    "WORK_CTR": "2110"
+                }
+            },
+            {
+                "$group": {
+                    "_id": {
                         "COMPANY_CODE": "$COMPANY_CODE",
                         "SITE": "$SITE",
                         "FACTORY_ID": "$FACTORY_ID",
                         "WORK_CTR": "$WORK_CTR",
-                        "PROD_NBR" : "$PROD_NBR"
-                      },
-                      "TOTALQTY": {
+                        "PROD_NBR": "$PROD_NBR"
+                    },
+                    "TOTALQTY": {
                         "$sum": {
-                          "$toInt": "$QTY"
+                            "$toInt": "$QTY"
                         }
-                      },
-                      "QTY1": {
+                    },
+                    "QTY1": {
                         "$sum": {
-                          "$toInt": "$QTY1"
+                            "$toInt": "$QTY1"
                         }
-                      },
-                      "QTY2": {
+                    },
+                    "QTY2": {
                         "$sum": {
-                          "$toInt": "$QTY2"
+                            "$toInt": "$QTY2"
                         }
-                      },
-                      "QTY3": {
+                    },
+                    "QTY3": {
                         "$sum": {
-                          "$toInt": "$QTY3"
+                            "$toInt": "$QTY3"
                         }
-                      },
-                      "QTY5": {
+                    },
+                    "QTY5": {
                         "$sum": {
-                          "$toInt": "$QTY5"
+                            "$toInt": "$QTY5"
                         }
-                      },
-                      "QTY7": {
+                    },
+                    "QTY7": {
                         "$sum": {
-                          "$toInt": "$QTY7"
+                            "$toInt": "$QTY7"
                         }
-                      },
-                      "QTY15": {
+                    },
+                    "QTY15": {
                         "$sum": {
-                          "$toInt": "$QTY15"
+                            "$toInt": "$QTY15"
                         }
-                      },
-                      "QTY30": {
+                    },
+                    "QTY30": {
                         "$sum": {
-                          "$toInt": "$QTY30"
+                            "$toInt": "$QTY30"
                         }
-                      },
-                      "QTY31": {
+                    },
+                    "QTY31": {
                         "$sum": {
-                          "$toInt": "$QTY31"
+                            "$toInt": "$QTY31"
                         }
-                      },
-                      "QTY45": {
+                    },
+                    "QTY45": {
                         "$sum": {
-                          "$toInt": "$QTY45"
+                            "$toInt": "$QTY45"
                         }
-                      }}
-                  },
-                  {
-                      "$project": {
-                        "_id": 0,
-                        "COMPANY_CODE": "$_id.COMPANY_CODE",
-                        "SITE": "$_id.SITE",
-                        "FACTORY_ID": "$_id.FACTORY_ID",
-                        "WORK_CTR": "$_id.WORK_CTR",
-                        "PROD_NBR" : "$_id.PROD_NBR",
-                        "TOTALQTY": "$TOTALQTY",
-                        "QTY1": "$QTY1",
-                        "QTY2": "$QTY2",
-                        "QTY3": "$QTY3",
-                        "QTY5": "$QTY5",
-                        "QTY7": "$QTY7",
-                        "QTY15": "$QTY15",
-                        "QTY30": "$QTY30",
-                        "QTY31": "$QTY31",
-                        "QTY45": "$QTY45"
-                      }
-                  }
-                ]
-        
+                    }}
+            },
+            {
+                "$project": {
+                    "_id": 0,
+                    "COMPANY_CODE": "$_id.COMPANY_CODE",
+                    "SITE": "$_id.SITE",
+                    "FACTORY_ID": "$_id.FACTORY_ID",
+                    "WORK_CTR": "$_id.WORK_CTR",
+                    "PROD_NBR": "$_id.PROD_NBR",
+                    "TOTALQTY": "$TOTALQTY",
+                    "QTY1": "$QTY1",
+                    "QTY2": "$QTY2",
+                    "QTY3": "$QTY3",
+                    "QTY5": "$QTY5",
+                    "QTY7": "$QTY7",
+                    "QTY15": "$QTY15",
+                    "QTY30": "$QTY30",
+                    "QTY31": "$QTY31",
+                    "QTY45": "$QTY45"
+                }
+            }
+        ]
+
         if tmpAPPLICATION != 'ALL':
             wipAggregate[0]["$match"]["APPLICATION"] = tmpAPPLICATION
 
@@ -2565,40 +2574,41 @@ class INTLV2(BaseType):
             return "error"
 
     def _calEFALV2_WIP_2_Data(self, prodNbrWip):
-        _pData = []            
-        for p in prodNbrWip:       
-            _pData.append(p) 
-            
+        _pData = []
+        for p in prodNbrWip:
+            _pData.append(p)
+
         returnData = []
-        for pn in _pData:  
+        for pn in _pData:
             oneDay = 0
             oneThreeDay = 0
             threeDay = 0
-            oneDay = pn["QTY1"]   
+            oneDay = pn["QTY1"]
             oneThreeDay = pn["QTY2"] + pn["QTY3"]
-            threeDay = pn["QTY5"] + pn["QTY7"] + pn["QTY15"] + pn["QTY30"]+ pn["QTY31"] + pn["QTY45"]
+            threeDay = pn["QTY5"] + pn["QTY7"] + pn["QTY15"] + \
+                pn["QTY30"] + pn["QTY31"] + pn["QTY45"]
             if threeDay != 0:
                 returnData.append({
-                    "days":"3day~",
-                    "qty":threeDay,
+                    "days": "3day~",
+                    "qty": threeDay,
                     "color": "red",
-                    "PROD_NBR" : pn["PROD_NBR"],
+                    "PROD_NBR": pn["PROD_NBR"],
                     "XVALUE": 0
                 })
             if oneThreeDay != 0:
                 returnData.append({
-                    "days":"1day~3day",
-                    "qty":oneThreeDay,
+                    "days": "1day~3day",
+                    "qty": oneThreeDay,
                     "color": "yellow",
-                    "PROD_NBR" : pn["PROD_NBR"],
+                    "PROD_NBR": pn["PROD_NBR"],
                     "XVALUE": 1
                 })
             if oneDay != 0:
                 returnData.append({
-                    "days":"~24hr",
-                    "qty":oneDay,
+                    "days": "~24hr",
+                    "qty": oneDay,
                     "color": "green",
-                    "PROD_NBR" : pn["PROD_NBR"],
+                    "PROD_NBR": pn["PROD_NBR"],
                     "XVALUE": 2
                 })
         return returnData
@@ -2684,7 +2694,7 @@ class INTLV2(BaseType):
         else:
             EFA_nu_setting = EFAOPERDATA["OTHER"]["numerator"]
             EFA_de_setting = EFAOPERDATA["OTHER"]["denominator"]
-        _OPERLIST= {}
+        _OPERLIST = {}
         OPERCODEList_nu = []
         OPERCODEList_de = []
         OPERNAMEList_nu = ""
@@ -2705,21 +2715,19 @@ class INTLV2(BaseType):
             OPERNAMEList_nu = OPERNAMEList_nu[:-1]
         if OPERNAMEList_de != "":
             OPERNAMEList_de = OPERNAMEList_de[:-1]
-        
-        _OPERLIST= {
+
+        _OPERLIST = {
             "COMPANY_CODE": COMPANY_CODE,
             "SITE": SITE,
             "FACTORY_ID": FACTORY_ID,
             "OPER": OPER,
-            "OPERLIST":{
+            "OPERLIST": {
                 "numerator": OPERCODEList_nu,
                 "denominator": OPERCODEList_de
             },
-            "NAMELIST":{
+            "NAMELIST": {
                 "numerator": OPERNAMEList_nu,
                 "denominator": OPERNAMEList_de
             },
         }
         return _OPERLIST
-
-

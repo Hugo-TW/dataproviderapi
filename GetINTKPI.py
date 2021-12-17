@@ -2153,36 +2153,24 @@ class INTKPI(BaseType):
         }
         deftlookup1 = {
             "$lookup": {
-                "from": "deftCodeView",
-                "as": "deftCodeList",
+                "from": "CODEFILTER",
+                "as": "CODEFILTER",
                 "let": {
-                        "dfctCode": "$DFCT_CODE"
+                        "dfctCode": "$DFCT_CODE",
+                        "cc": "$COMPANY_CODE",
+                        "si": "$SITE",
+                        "fa": "$FACTORY_ID",
                 },
-                "pipeline": [
-                    {
-                        "$match": {
-                            "$expr": {
-                                "$and": [
-                                    {
-                                        "$eq": [
-                                            "$$dfctCode",
-                                            "$DEFECT_CODE"
-                                        ]
-                                    }
-                                ]
-                            }
-                        }
-                    },
-                    {
-                        "$project": {
-                            "DEFECT_CODE": 1
-                        }
-                    }
-                ]
+                "pipeline": [{'$match': {'TYPE': 'DEFT', 
+                '$expr': {'$and': [{'$eq': ['$$dfctCode', '$CODE']},
+                {'$eq': ['$$cc', '$COMPANYCODE']},
+                {'$eq': ['$$si', '$SITE']},
+                {'$eq': ['$$fa', '$FACTORYID']}]}}}, 
+                {'$project': {'DFCT_CODE': '$CODE'}}]
             }
         }
         deftunwind1 = {
-            "$unwind": "$deftCodeList"
+            "$unwind": "$CODEFILTER"
         }
 
         deftGroup1 = {
@@ -2236,7 +2224,7 @@ class INTKPI(BaseType):
         passAggregate.extend([passMatch1, passGroup1, passProject1, passSort])
         deftAggregate.extend(
             [deftMatch1, deftlookup1, deftunwind1, deftGroup1, deftProject1, deftSort])
-
+        print(deftAggregate)
         try:
             self.getMongoConnection()
             self.setMongoDb("IAMP")
@@ -2520,38 +2508,25 @@ class INTKPI(BaseType):
         }
         deftlookup1 = {
             "$lookup": {
-                "from": "deftCodeView",
-                "as": "deftCodeList",
+                "from": "CODEFILTER",
+                "as": "CODEFILTER",
                 "let": {
-                        "dfctCode": "$DFCT_CODE"
+                        "dfctCode": "$DFCT_CODE",
+                        "cc": "$COMPANY_CODE",
+                        "si": "$SITE",
+                        "fa": "$FACTORY_ID",
                 },
-                "pipeline": [
-                    {
-                        "$match": {
-                            "$expr": {
-                                "$and": [
-                                    {
-                                        "$eq": [
-                                            "$$dfctCode",
-                                            "$DEFECT_CODE"
-                                        ]
-                                    }
-                                ]
-                            }
-                        }
-                    },
-                    {
-                        "$project": {
-                            "DEFECT_CODE": 1
-                        }
-                    }
-                ]
+                "pipeline": [{'$match': {'TYPE': 'DEFT', 
+                '$expr': {'$and': [{'$eq': ['$$dfctCode', '$CODE']},
+                {'$eq': ['$$cc', '$COMPANYCODE']},
+                {'$eq': ['$$si', '$SITE']},
+                {'$eq': ['$$fa', '$FACTORYID']}]}}}, 
+                {'$project': {'DFCT_CODE': '$CODE'}}]
             }
         }
         deftunwind1 = {
-            "$unwind": "$deftCodeList"
+            "$unwind": "$CODEFILTER"
         }
-
         deftGroup1 = {
             "$group": {
                 "_id": {

@@ -1825,36 +1825,25 @@ class INTLV3(BaseType):
             },
             {
                 "$lookup": {
-                    "from": "deftCodeView",
-                    "as": "deftCodeList",
-                          "let": {
-                              "dfctCode": "$DFCT_CODE"
-                          },
-                    "pipeline": [
-                              {
-                                  "$match": {
-                                      "$expr": {
-                                          "$and": [
-                                              {
-                                                  "$eq": [
-                                                      "$$dfctCode",
-                                                      "$DEFECT_CODE"
-                                                  ]
-                                              }
-                                          ]
-                                      }
-                                  }
-                              },
-                              {
-                                  "$project": {
-                                      "DEFECT_CODE": 1
-                                  }
-                              }
-                          ]
+                "from": "CODEFILTER",
+                "as": "CODEFILTER",
+                "let": {
+                        "dfctCode": "$DFCT_CODE",
+                        "cc": "$COMPANY_CODE",
+                        "si": "$SITE",
+                        "fa": "$FACTORY_ID",
+                },
+                "pipeline": [{'$match': {'TYPE': 'DEFT', 
+                '$expr': {'$and': [
+                    {'$eq': ['$$dfctCode', '$CODE']},
+                    {'$eq': ['$$cc', '$COMPANYCODE']},
+                    {'$eq': ['$$si', '$SITE']},
+                    {'$eq': ['$$fa', '$FACTORYID']}]}}}, 
+                    {'$project': {'DFCT_CODE': '$CODE'}}]
                 }
             },
             {
-                "$unwind": "$deftCodeList"
+                "$unwind": "$CODEFILTER"
             },
             {
                 "$group": {
