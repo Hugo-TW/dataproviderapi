@@ -360,7 +360,7 @@ class INTLV2(BaseType):
                         returnData, sort_keys=True, indent=2), 60)
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
-            # 二階 MSHIP PIE API
+            # 二階 EFA 
             elif tmpKPITYPE == "EFALV2_3":
                 data = self._getEFALV2_3_Data(
                     tmpOPER, tmpPROD_NBR, tmpCHECKCODE)

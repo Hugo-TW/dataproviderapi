@@ -3020,7 +3020,7 @@ class INTKPI(BaseType):
                 # COLOR
                 COLOR = ""
                 if tdCheck == True and sdCheck == True and rCheck == True:
-                    COLOR = "#06d6a0"
+                    COLOR = "#2f7ed8"
                 elif tdCheck == True and sdCheck == True and rCheck == False:
                     COLOR = "#ffd166"
                 else:
@@ -3034,20 +3034,34 @@ class INTKPI(BaseType):
                     "COLOR": COLOR,
                     "SYMBOL": SYMBOL,
                     "QTY": sumPASSQTY,
-                    "SHOWLABEL": True if COLOR != "#06d6a0" else False
+                    "DEFTQTY": sumDEFTQTY,
+                    "SHOWLABEL": True if COLOR != "#2f7ed8" else False
                 })
 
         # red ef476f
         # yellow ffd166
         # green 06d6a0
-        # blue 118AB2
+        # blue #2f7ed8
         # midGreen 073b4c
+
+        checkRankType = 0
+        length = len(DATASERIES)
+        for x in range(length):
+            if x["QTY"] >= 3000 and  x["YIELD"] >= 0.003:
+                DATASERIES[x]["QUADRANT"] = 1
+                checkRankType = 1
+            else:
+                DATASERIES[x]["QUADRANT"] = 0
+        
         # 因為使用 operator.itemgetter 方法 排序順序要反過來執行
         # 不同欄位key 排序方式不同時 需要 3 - 2 - 1  反順序去寫code
-        DATASERIES.sort(key=operator.itemgetter("QTY"), reverse=True)
-        DATASERIES.sort(key=operator.itemgetter("YIELD"), reverse=True)
+        if checkRankType == 0:
+            DATASERIES.sort(key=operator.itemgetter("DEFTQTY"), reverse=True)   
+        elif checkRankType == 1:
+            DATASERIES.sort(key=operator.itemgetter("DEFTQTY"), reverse=True)  
+            DATASERIES.sort(key=operator.itemgetter("YIELD"), reverse=True)        
+            DATASERIES.sort(key=operator.itemgetter("QUADRANT"), reverse=True)
 
-        length = len(DATASERIES)
         rank = 1
         for x in range(length):
             DATASERIES[x]["RANK"] = rank
