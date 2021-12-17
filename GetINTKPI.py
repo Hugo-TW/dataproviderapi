@@ -1983,10 +1983,14 @@ class INTKPI(BaseType):
         tmpKPITYPE = self.jsonData["KPITYPE"]
         tmpACCT_DATE = self.jsonData["ACCT_DATE"]
         tmpAPPLICATION = self.jsonData["APPLICATION"]
+        tmpPROD_NBR = self.jsonData["PROD_NBR"] if "PROD_NBR" in self.jsonData else ""        
+        tmpKPITYPE = self.jsonData["KPITYPE"]
 
         applicatiionWhere = ""
         if tmpAPPLICATION != "ALL":
             applicatiionWhere = f"AND dmo.application = '{tmpAPPLICATION}' "
+        if tmpPROD_NBR != '' and tmpKPITYPE == 'PRODEFA':
+            applicatiionWhere = f"AND dmo.code = '{tmpPROD_NBR}' "
         try:
             passString = f"SELECT \
                             dlo.company_code   AS company_code, \
@@ -2083,6 +2087,7 @@ class INTKPI(BaseType):
         tmpACCT_DATE = self.jsonData["ACCT_DATE"]
         tmpAPPLICATION = self.jsonData["APPLICATION"]
         tmpPROD_NBR = self.jsonData["PROD_NBR"] if "PROD_NBR" in self.jsonData else ""
+        tmpKPITYPE = self.jsonData["KPITYPE"]
         passAggregate = []
         deftAggregate = []
 
@@ -2224,7 +2229,7 @@ class INTKPI(BaseType):
             passMatch1["$match"]["APPLICATION"] = tmpAPPLICATION
             deftMatch1["$match"]["APPLICATION"] = tmpAPPLICATION
 
-        if tmpPROD_NBR != '':
+        if tmpPROD_NBR != '' and tmpKPITYPE == 'PRODEFA':
             passMatch1["$match"]["PROD_NBR"] = tmpPROD_NBR
             deftMatch1["$match"]["PROD_NBR"] = tmpPROD_NBR
 
