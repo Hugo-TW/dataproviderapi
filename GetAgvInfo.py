@@ -67,13 +67,13 @@ class AgvInfo(BaseType):
                     and t.from_identity not like '%_02'
                     )
                     ,DISPATCH_INFO_END as (
-                    select * from
+                    select distinct agv_id,trx_sub_job_id,create_date from
                     (
                         select t2.agv_id,t.trx_job_id,t.trx_sub_job_id,t.from_identity,t.to_identity,
                         lag(t.agv_oper_id,1) over (partition by t.trx_job_id order by t.trx_job_id,t.trx_sub_job_id asc) as agv_oper_id_from,
                         t.agv_oper_id as agv_oper_id_to,
                         to_date(to_char(t1.create_date,'yyyy/mm/dd hh24miss'),'yyyy/mm/dd hh24miss') as create_date
-                        from TRX_WBS t, (select * from (select count(*) over (partition by t.ticket_id order by t.event_code) as count_data,t.* from mcs_dispatch_command_log t where t.event_code in (4,7)) t where t.count_data = 1) t1, TICKET_MAPPING_AGV_INFO t2
+                        from TRX_WBS t, (select * from  mcs_dispatch_command_log t where t.create_date||t.ticket_id in (select min(create_date)||ticket_id as ticket_date from mcs_dispatch_command_log t where t.event_code in (4,7) group by ticket_id)) t1, TICKET_MAPPING_AGV_INFO t2
                         where t.trx_sub_job_id = t1.ticket_id(+)
                         and t.trx_job_id = t2.trx_job_id (+)  
                         and t1.create_date is not null
