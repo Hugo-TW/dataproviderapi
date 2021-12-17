@@ -234,6 +234,7 @@ class INTKPI(BaseType):
             tmpKPITYPE = self.jsonData["KPITYPE"]
             tmpACCT_DATE = self.jsonData["ACCT_DATE"]
             tmpOPER = self.jsonData["OPER"] if "OPER" in self.jsonData else "CKEN"
+            tmpPROD_NBR = self.jsonData["tmpPROD_NBR"] if "tmpPROD_NBR" in self.jsonData else ""
 
             # redisKey
             tmp.append(className)
@@ -244,6 +245,7 @@ class INTKPI(BaseType):
             tmp.append(tmpKPITYPE)
             tmp.append(tmpACCT_DATE)
             tmp.append(tmpOPER)
+            tmp.append(tmpPROD_NBR)            
             redisKey = bottomLine.join(tmp)
             expirTimeKey = tmpFACTORY_ID + '_PASS'
             """
@@ -437,13 +439,13 @@ class INTKPI(BaseType):
                 returnData = self._calPRODEFAData(groupEFAData, tmpOPER)
 
                 # 存到 redis 暫存
-                self.getRedisConnection()
+                """self.getRedisConnection()
                 if self.searchRedisKeys(redisKey):
                     self.setRedisData(redisKey, json.dumps(
                         returnData, sort_keys=True, indent=2), self.getKeyExpirTime(expirTimeKey))
                 else:
                     self.setRedisData(redisKey, json.dumps(
-                        returnData, sort_keys=True, indent=2), 60)
+                        returnData, sort_keys=True, indent=2), 60)"""
 
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
@@ -2039,7 +2041,8 @@ class INTKPI(BaseType):
                             AND dlo.factory_code = '{tmpFACTORY_ID}' \
                             AND dop.name in ({OPERList['numerator']}) \
                             AND edf.mfgdate = '{tmpACCT_DATE}' \
-                            AND edf.deftcode in (select code from INTMP_DB.codefilter where type = 'DEFT') \
+                            AND edf.deftcode in (select code from INTMP_DB.codefilter where type = 'DEFT' \
+                                and COMPANYCODE = '{tmpCOMPANY_CODE}' and SITE = '{tmpSITE}' and factoryid = '{tmpFACTORY_ID}' ) \
                             {applicatiionWhere} \
                         GROUP BY \
                             dlo.company_code, \
@@ -2404,7 +2407,8 @@ class INTKPI(BaseType):
                             AND dlo.factory_code = '{tmpFACTORY_ID}' \
                             AND dop.name in ({OPERList['numerator']}) \
                             AND edf.mfgdate = '{tmpACCT_DATE}' \
-                            AND edf.deftcode in (select code from INTMP_DB.codefilter where type = 'DEFT')\
+                            AND edf.deftcode in (select code from INTMP_DB.codefilter where type = 'DEFT' \
+                                    and COMPANYCODE = '{tmpCOMPANY_CODE}' and SITE = '{tmpSITE}' and factoryid = '{tmpFACTORY_ID}' ) \
                             {applicatiionWhere} \
                         GROUP BY \
                             dlo.company_code, \
@@ -2858,7 +2862,7 @@ class INTKPI(BaseType):
 
     def _getEFA_impReason(self):
         try:
-            self.getMongoConnection()
+            """self.getMongoConnection()
             self.setMongoDb("IAMP")
             self.setMongoCollection("excelToJson")
             reqParm = {
@@ -2873,15 +2877,17 @@ class INTKPI(BaseType):
             returnData = []
             for d in deftData:
                 for x in d["DATA"]:
-                    returnData.append(x["REASON_CODE"])
-
-            """
-            sString = f"select code as REASON_CODE from INTMP_DB.codefilter where type = 'REASON'"
+                    returnData.append(x["REASON_CODE"])"""
+            tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+            tmpSITE = self.jsonData["SITE"]
+            tmpFACTORY_ID = self.jsonData["FACTORY_ID"] 
+            returnData = []
+            sString = f"select code as REASON_CODE from INTMP_DB.codefilter where type = 'REASON'  \
+                        and COMPANYCODE = '{tmpCOMPANY_CODE}' and SITE = '{tmpSITE}' and factoryid = '{tmpFACTORY_ID}' "
             description , data = self.pSelectAndDescription(sString)            
             deftData = self._zipDescriptionAndData(description, data)            
             for x in deftData:                  
-                yellowList.append(x["REASON_CODE"])
-            """
+                returnData.append(x["REASON_CODE"])
             return returnData
         except Exception as e:
             error_class = e.__class__.__name__  # 取得錯誤類型

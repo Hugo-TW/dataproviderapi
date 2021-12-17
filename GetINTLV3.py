@@ -5239,7 +5239,8 @@ class INTLV3(BaseType):
                                 AND dop.name in ({OPERList['numerator']}) \
                                 AND TO_DATE(edf.mfgdate, 'YYYYMMDD') >= TO_DATE({s_date}, 'YYYYMMDD') \
                                 AND TO_DATE(edf.mfgdate, 'YYYYMMDD') <= TO_DATE({e_date}, 'YYYYMMDD') \
-                                AND edf.deftcode in (select code from INTMP_DB.codefilter where type = 'DEFT') \
+                                AND edf.deftcode in (select code from INTMP_DB.codefilter where type = 'DEFT' \
+                                    and COMPANYCODE = '{tmpCOMPANY_CODE}' and SITE = '{tmpSITE}' and factoryid = '{tmpFACTORY_ID}' ) \
                                 {whereString} \
                             GROUP BY \
                                 dlo.factory_code, \

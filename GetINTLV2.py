@@ -1758,7 +1758,8 @@ class INTLV2(BaseType):
                             AND dlo.factory_code = '{tmpFACTORY_ID}' \
                             AND dop.name in ({OPERList['numerator']}) \
                             AND edf.mfgdate = '{tmpACCT_DATE}' \
-                            AND edf.deftcode in (select code from INTMP_DB.codefilter where type = 'DEFT') \
+                            AND edf.deftcode in (select code from INTMP_DB.codefilter where type = 'DEFT' \
+                                and COMPANYCODE = '{tmpCOMPANY_CODE}' and SITE = '{tmpSITE}' and factoryid = '{tmpFACTORY_ID}' ) \
                             {whereString} \
                         GROUP BY \
                             dlo.company_code, \
