@@ -5159,6 +5159,11 @@ class INTLV3(BaseType):
             start = time.time()
             returnData = self._groupDATALINE(n1d_DATA, n2d_DATA, n3d_DATA, n4d_DATA, n5d_DATA,
                                              n6d_DATA, n1w_DATA, n2w_DATA, n3w_DATA, n1m_DATA, n2m_DATA, n1s_DATA)
+            
+            fixColor = {"CKEN":"#924FA8","OTPC":"#1BA3C6","TPI":"#FC719E",
+                "AAFC":"#EDB425","LAM":"#4DAE27","BONDING":"#1F84EA"}
+            for x in returnData:
+                x["FIXCOLOR"] = fixColor.get(OPER, "")            
             end = time.time()
             self.writeLog('GroupData time elapsed: ' +
                           str(round(end-start, 2)) + ' seconds')
