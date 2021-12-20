@@ -1929,28 +1929,6 @@ class INTLV3(BaseType):
                 }
             },
             {
-                "$lookup": {
-                "from": "CODEFILTER",
-                "as": "CODEFILTER",
-                "let": {
-                        "dfctCode": "$DFCT_CODE",
-                        "cc": "$COMPANY_CODE",
-                        "si": "$SITE",
-                        "fa": "$FACTORY_ID",
-                },
-                "pipeline": [{'$match': {'TYPE': 'DEFT', 
-                '$expr': {'$and': [
-                    {'$eq': ['$$dfctCode', '$CODE']},
-                    {'$eq': ['$$cc', '$COMPANYCODE']},
-                    {'$eq': ['$$si', '$SITE']},
-                    {'$eq': ['$$fa', '$FACTORYID']}]}}}, 
-                    {'$project': {'DFCT_CODE': '$CODE'}}]
-                }
-            },
-            {
-                "$unwind": "$CODEFILTER"
-            },
-            {
                 "$group": {
                     "_id": {
                         "COMPANY_CODE": "$COMPANY_CODE",

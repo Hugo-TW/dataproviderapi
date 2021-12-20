@@ -1549,9 +1549,6 @@ class INTLV2(BaseType):
                 }
             },
             {
-                "$unwind": "$CODEFILTER"
-            },
-            {
                 "$group": {
                     "_id": {
                         "DFCT_REASON": "$DFCT_REASON",
@@ -1590,6 +1587,7 @@ class INTLV2(BaseType):
         if CHECKCODE != '':
             reasonAggregate[0]["$match"]["DFCT_CODE"] = CHECKCODE
 
+        print(reasonAggregate)
         try:
             self.getMongoConnection()
             self.setMongoDb("IAMP")
