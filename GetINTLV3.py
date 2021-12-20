@@ -1925,11 +1925,7 @@ class INTLV3(BaseType):
                     "LCM_OWNER": {"$in": ["INT0","LCM0", "LCME", "PROD", "QTAP", "RES0"]},
                     "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
                     "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]},
-                    "DFCT_REASON": {
-                        "$nin": [
-                            "FA260-0"
-                        ]
-                    }
+                    "DFCT_REASON": { "$regex": "F"}
                 }
             },
             {
@@ -5696,6 +5692,7 @@ class INTLV3(BaseType):
                                 AND dop.name in ({OPERList['numerator']}) \
                                 AND TO_DATE(ers.mfgdate, 'YYYYMMDD') >= TO_DATE({s_date}, 'YYYYMMDD') \
                                 AND TO_DATE(ers.mfgdate, 'YYYYMMDD') <= TO_DATE({e_date}, 'YYYYMMDD') \
+                                AND ers.reasoncode like 'F%' \
                                 {whereString} \
                                 {checkString} \
                             GROUP BY \
@@ -5753,7 +5750,8 @@ class INTLV3(BaseType):
                     "LCM_OWNER": {"$in": LCMOWNER},
                     "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList['numerator']]},
                     "WORK_CTR": "2110",
-                    "PROD_NBR": PROD_NBR
+                    "PROD_NBR": PROD_NBR,
+                    "DFCT_REASON": { "$regex": "F"}
                 }
             },
             {

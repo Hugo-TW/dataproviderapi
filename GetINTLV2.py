@@ -1455,6 +1455,7 @@ class INTLV2(BaseType):
                             AND dlo.factory_code = '{tmpFACTORY_ID}' \
                             AND dop.name in ({OPERList['numerator']}) \
                             AND ers.mfgdate = '{tmpACCT_DATE}' \
+                            AND ers.reasoncode like 'F%' \
                             {whereString} \
                         GROUP BY \
                             ers.reasoncode, \
@@ -1544,33 +1545,7 @@ class INTLV2(BaseType):
                     "TRANS_TYPE": "RWMO",
                     "LCM_OWNER": {"$in": LCMOWNER},
                     "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList['numerator']]},
-                    "DFCT_REASON": {
-                        "$nin": [
-                            "FA260-0"
-                        ]
-                    }
-                }
-            },
-            {
-                "$lookup": {
-                    "from": "CODEFILTER",
-                    "as": "CODEFILTER",
-                          "let": {
-                              "dfctCode": "$DFCT_CODE",
-                              "cc": "$COMPANY_CODE",
-                              "si": "$SITE",
-                              "fa": "$FACTORY_ID",
-                          },
-                    "pipeline": [{'$match': {'TYPE': 'DEFT',
-                                             '$expr': {'$and': [
-                                                       {'$eq': [
-                                                           '$$dfctCode', '$CODE']},
-                                                       {'$eq': [
-                                                           '$$cc', '$COMPANYCODE']},
-                                                       {'$eq': [
-                                                           '$$si', '$SITE']},
-                                                       {'$eq': ['$$fa', '$FACTORYID']}]}}},
-                                 {'$project': {'DFCT_CODE': '$CODE'}}]
+                    "DFCT_REASON": { "$regex": "F"}
                 }
             },
             {
