@@ -2024,7 +2024,7 @@ class INTLV2(BaseType):
 
     def _getEFA_impReason(self):
         try:
-            self.getMongoConnection()
+            """self.getMongoConnection()
             self.setMongoDb("IAMP")
             self.setMongoCollection("excelToJson")
             reqParm = {
@@ -2039,7 +2039,17 @@ class INTLV2(BaseType):
             returnData = []
             for d in deftData:
                 for x in d["DATA"]:
-                    returnData.append(x["REASON_CODE"])
+                    returnData.append(x["REASON_CODE"])"""
+            tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+            tmpSITE = self.jsonData["SITE"]
+            tmpFACTORY_ID = self.jsonData["FACTORY_ID"] 
+            returnData = []
+            sString = f"select code as REASON_CODE from INTMP_DB.codefilter where type = 'REASON'  \
+                        and COMPANYCODE = '{tmpCOMPANY_CODE}' and SITE = '{tmpSITE}' and factoryid = '{tmpFACTORY_ID}' "
+            description , data = self.pSelectAndDescription(sString)            
+            deftData = self._zipDescriptionAndData(description, data)            
+            for x in deftData:                  
+                returnData.append(x["REASON_CODE"])
             return returnData
         except Exception as e:
             error_class = e.__class__.__name__  # 取得錯誤類型
