@@ -2241,7 +2241,6 @@ class INTKPI(BaseType):
         passAggregate.extend([passMatch1, passGroup1, passProject1, passSort])
         deftAggregate.extend(
             [deftMatch1, deftlookup1, deftunwind1, deftGroup1, deftProject1, deftSort])
-        print(deftAggregate)
         try:
             self.getMongoConnection()
             self.setMongoDb("IAMP")
