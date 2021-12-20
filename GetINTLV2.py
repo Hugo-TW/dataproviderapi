@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import decimal
 import json
 import operator
 from re import X
@@ -1655,8 +1656,8 @@ class INTLV2(BaseType):
         returnData = []
         for r in _rData:
             COLOR = "#ffd166" if r["DFCT_REASON"] in yellowList else "#0A8040"
-            REASONYIELD = round(r["REASONQTY"] / prodNbrPASSQTY,
-                                6) if r["REASONQTY"] != 0 and prodNbrPASSQTY != 0 else 0
+            REASONYIELD = self._DecimaltoFloat(round(decimal.Decimal(r["REASONQTY"]) / decimal.Decimal(prodNbrPASSQTY),
+                                6) if r["REASONQTY"] != 0 and prodNbrPASSQTY != 0 else 0)
             returnData.append({
                 "PASSQTY": prodNbrPASSQTY,
                 "DFCT_REASON": r["DFCT_REASON"],
@@ -2741,3 +2742,4 @@ class INTLV2(BaseType):
             },
         }
         return _OPERLIST
+
