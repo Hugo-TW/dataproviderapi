@@ -1840,7 +1840,7 @@ class INTKPI(BaseType):
                                 "TPI": {"OPER": []},
                                 "OTPC": {"OPER": [1530]},
                                 "CKEN": {"OPER": [1600]}},
-                 "LCM_OWNER": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]
+                "LCM_OWNER": ["INT0", "PROY", "PROD", "QTAP", "RES0"]
             },
             "J001": {
                 "numerator": {"BONDING": {"OPER": [1300, 1301]},
