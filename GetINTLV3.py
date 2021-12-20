@@ -1822,25 +1822,19 @@ class INTLV3(BaseType):
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
 
-        OPERDATA = {
-            "BONDING": {"OPER": [1300, 1301]},
-            "LAM": {"OPER": [1340, 1370]},
-            "AAFC": {"OPER": [1419, 1420]},
-            "TPI": {"OPER": [1510]},
-            "OTPC": {"OPER": [1590]},
-            "CKEN": {"OPER": [1600]}
-        }
-        OPERList = []
-        if OPER == "ALL":
-            for key, value in OPERDATA.items():
-                OPERList.extend(value.get("OPER"))
-        else:
-            OPERList.extend(OPERDATA[OPER]["OPER"])
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]       
+        EFASet= self._getEFASet( tmpCOMPANY_CODE, tmpSITE, tmpFACTORY_ID, OPER)
 
         try:
             data = {}
-            data = self._getEFALV2RSLINEDataFromMongo(
-                OPER, OPERList, DATARANGENAME, ACCT_DATE_ARRAY, TYPE)
+            if tmpSITE == "TN":
+                data = self._getEFALV2RSLINEDataFromMongo(
+                OPER, EFASet, DATARANGENAME, ACCT_DATE_ARRAY, TYPE)
+            else:
+                data = self._getEFALV2RSLINEDataFromOracle(
+                OPER, EFASet, DATARANGENAME, ACCT_DATE_ARRAY, TYPE)        
 
             return data
 
@@ -1856,7 +1850,124 @@ class INTLV3(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
-    def _getEFALV2RSLINEDataFromMongo(self, OPER, OPERList, DATARANGENAME, ACCT_DATE_ARRAY, TYPE):
+    def _getEFALV2RSLINEDataFromOracle(self, OPER, EFASet, DATARANGENAME, ACCT_DATE_ARRAY, TYPE):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
+        tmpPROD_NBR = self.jsonData["PROD_NBR"]
+
+        OPERList = EFASet["NAMELIST"]
+        LCMOWNER = EFASet["LCMOWNER"]
+
+        _ACCT_DATE_ARRAY_LIST = ""
+        for x in ACCT_DATE_ARRAY:
+            _ACCT_DATE_ARRAY_LIST = _ACCT_DATE_ARRAY_LIST + f"'{x}',"
+        if _ACCT_DATE_ARRAY_LIST != "":
+            _ACCT_DATE_ARRAY_LIST = _ACCT_DATE_ARRAY_LIST[:-1]
+
+        whereString = ""
+        checkString = ""
+        if tmpAPPLICATION != "ALL":
+            whereString += f" AND dmo.application = '{tmpAPPLICATION}' "
+        if tmpPROD_NBR != '':
+            whereString += f" AND dmo.code = '{tmpPROD_NBR}' "
+
+        try:
+            passString = f"SELECT \
+                            dlo.company_code   AS company_code, \
+                            dlo.site_code      AS site, \
+                            dlo.factory_code   AS factory_id, \
+                            dmo.code           AS prod_nbr, \
+                            dmo.application    AS APPLICATION, \
+                            '{OPER}'          AS OPER, \
+                            '{DATARANGENAME}' AS DATARANGE, \
+                            {TYPE} AS XVALUE, \
+                            SUM(epa.sumqty) AS PASSQTY \
+                        FROM \
+                            INTMP_DB.fact_efa_pass_sum epa \
+                            LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = epa.local_id \
+                            LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = epa.model_id \
+                            LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = epa.oper_id \
+                        WHERE \
+                            dlo.company_code = '{tmpCOMPANY_CODE}' \
+                            AND dlo.site_code = '{tmpSITE}' \
+                            AND dlo.factory_code = '{tmpFACTORY_ID}' \
+                            AND dop.name in ({OPERList['denominator']}) \
+                            AND epa.mfgdate in ({_ACCT_DATE_ARRAY_LIST}) \
+                            {whereString} \
+                        GROUP BY \
+                            dlo.company_code, \
+                            dlo.site_code, \
+                            dlo.factory_code, \
+                            dmo.code, \
+                            epa.mfgdate, \
+                            dmo.application \
+                        HAVING SUM(epa.sumqty) > 0 "
+            description, data = self.pSelectAndDescription(passString)
+            pData = self._zipDescriptionAndData(description, data)
+
+            reasonString = f"SELECT \
+                            dlo.company_code   AS company_code, \
+                            dlo.site_code      AS site, \
+                            dlo.factory_code   AS factory_id, \
+                            dmo.code           AS prod_nbr, \
+                            dmo.application    AS APPLICATION, \
+                            '{OPER}'           AS OPER, \
+                            '{DATARANGENAME}' AS DATARANGE, \
+                            {TYPE} AS XVALUE, \
+                            drc.REASONCODE as DFCT_REASON, \
+                            drc.REASONCODE_DESC as REASON_DESC, \
+                            SUM(ers.sumqty) AS REASONQTY \
+                        FROM \
+                            INTMP_DB.fact_efa_reason_sum ers \
+                            LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = ers.local_id \
+                            LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = ers.model_id \
+                            LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = ers.oper_id \
+                            LEFT JOIN INTMP_DB.dime_reasoncode drc ON drc.REASONCODE= ers.REASONCODE \
+                        WHERE \
+                            dlo.company_code =  '{tmpCOMPANY_CODE}' \
+                            AND dlo.site_code = '{tmpSITE}' \
+                            AND dlo.factory_code = '{tmpFACTORY_ID}' \
+                            AND ers.mfgdate in ({_ACCT_DATE_ARRAY_LIST}) \
+                            AND dop.name in ({OPERList['numerator']}) \
+                            AND ers.REASONCODE like 'F%' \
+                            {whereString} \
+                        GROUP BY \
+                            dlo.company_code, \
+                            dlo.site_code, \
+                            dlo.factory_code, \
+                            dmo.code, \
+                            ers.mfgdate, \
+                            dmo.application, \
+                            drc.REASONCODE, \
+                            drc.REASONCODE_DESC \
+                        HAVING SUM(ers.sumqty) > 0 "
+            description, data = self.pSelectAndDescription(reasonString)
+            rData = self._zipDescriptionAndData(description, data)
+
+            returnData = {
+                "pData": pData,
+                "rData": rData
+            }
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+        return
+
+
+    def _getEFALV2RSLINEDataFromMongo(self, OPER, EFASet, DATARANGENAME, ACCT_DATE_ARRAY, TYPE):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
@@ -1864,6 +1975,9 @@ class INTLV3(BaseType):
         tmpAPPLICATION = self.jsonData["APPLICATION"]
         tmpPROD_NBR = self.jsonData["PROD_NBR"]
         tmpCHECKCODE = self.jsonData["CHECKCODE"] if "CHECKCODE" in self.jsonData else ""
+
+        OPERList = EFASet["OPERLIST"]
+        LCMOWNER = EFASet["LCMOWNER"]
 
         passAggregate = [
             {
@@ -1874,7 +1988,7 @@ class INTLV3(BaseType):
                     "PROD_NBR": tmpPROD_NBR,
                     "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
                     "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]},
-                    "LCM_OWNER": {"$in": ["INT0","LCM0", "LCME", "PROD", "QTAP", "RES0"]}
+                    "LCM_OWNER": {"$in": LCMOWNER}
                 }
             },
             {
@@ -1922,7 +2036,7 @@ class INTLV3(BaseType):
                     "WORK_CTR": "2110",
                     "TRANS_TYPE": "RWMO",
                     "PROD_NBR": tmpPROD_NBR,
-                    "LCM_OWNER": {"$in": ["INT0","LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                    "LCM_OWNER": {"$in": LCMOWNER},
                     "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
                     "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]},
                     "DFCT_REASON": { "$regex": "F"}
