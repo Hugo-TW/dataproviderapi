@@ -1839,7 +1839,8 @@ class INTKPI(BaseType):
                                 "AAFC": {"OPER": [1400]},
                                 "TPI": {"OPER": []},
                                 "OTPC": {"OPER": [1530]},
-                                "CKEN": {"OPER": [1600]}}
+                                "CKEN": {"OPER": [1600]}},
+                 "LCM_OWNER": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]
             },
             "J001": {
                 "numerator": {"BONDING": {"OPER": [1300, 1301]},
@@ -1853,7 +1854,8 @@ class INTKPI(BaseType):
                                 "AAFC": {"OPER": [1419, 1420]},
                                 "TPI": {"OPER": [1510]},
                                 "OTPC": {"OPER": [1590]},
-                                "CKEN": {"OPER": [1600]}}
+                                "CKEN": {"OPER": [1600]}},
+                "LCM_OWNER": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]
             },
             "J003": {
                 "numerator": {"BONDING": {"OPER": [1300]},
@@ -1867,7 +1869,8 @@ class INTKPI(BaseType):
                                 "AAFC": {"OPER": [1420]},
                                 "TPI": {"OPER": [1510]},
                                 "OTPC": {"OPER": []},
-                                "CKEN": {"OPER": [1600]}}
+                                "CKEN": {"OPER": [1600]}},
+                "LCM_OWNER": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]
             },
             "J004": {
                 "numerator": {"BONDING": {"OPER": [1300]},
@@ -1881,7 +1884,8 @@ class INTKPI(BaseType):
                                 "AAFC": {"OPER": [1700]},
                                 "TPI": {"OPER": []},
                                 "OTPC": {"OPER": []},
-                                "CKEN": {"OPER": [1700]}}
+                                "CKEN": {"OPER": [1700]}},
+                "LCM_OWNER": ["LCME", "PROD", "QTAP", "RES0"]
             },
             "OTHER": {
                 "numerator": {"BONDING": {"OPER": [1300, 1301]},
@@ -1895,23 +1899,29 @@ class INTKPI(BaseType):
                                 "AAFC": {"OPER": [1419, 1420]},
                                 "TPI": {"OPER": [1510]},
                                 "OTPC": {"OPER": [1590]},
-                                "CKEN": {"OPER": [1600]}}
+                                "CKEN": {"OPER": [1600]}},
+                "LCM_OWNER": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]
             },
         }
         EFA_nu_setting = {}
         EFA_de_setting = {}
+        EFA_lo_setting = []
         if SITE == "TN":
             EFA_nu_setting = EFAOPERDATA[FACTORY_ID]["numerator"]
             EFA_de_setting = EFAOPERDATA[FACTORY_ID]["denominator"]
+            EFA_lo_setting = EFAOPERDATA[FACTORY_ID]["LCM_OWNER"]
         else:
             EFA_nu_setting = EFAOPERDATA["OTHER"]["numerator"]
             EFA_de_setting = EFAOPERDATA["OTHER"]["denominator"]
+            EFA_lo_setting = EFAOPERDATA["OTHER"]["LCM_OWNER"]
         _OPERLIST= {}
         OPERCODEList_nu = []
         OPERCODEList_de = []
         OPERNAMEList_nu = ""
         OPERNAMEList_de = ""
+        LCMOWNER = []
         if OPER == "ALL":
+            LCMOWNER = ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]
             for key, value in EFA_nu_setting.items():
                 OPERCODEList_nu.extend(value.get("OPER"))
                 OPERNAMEList_nu = OPERNAMEList_nu + f"'{key}',"
@@ -1919,6 +1929,7 @@ class INTKPI(BaseType):
                 OPERCODEList_de.extend(value.get("OPER"))
                 OPERNAMEList_de = OPERNAMEList_de + f"'{key}',"
         else:
+            LCMOWNER = EFA_lo_setting
             OPERCODEList_nu.extend(EFA_nu_setting[OPER]["OPER"])
             OPERCODEList_de.extend(EFA_de_setting[OPER]["OPER"])
             OPERNAMEList_nu = f"'{OPER}',"
@@ -1927,7 +1938,7 @@ class INTKPI(BaseType):
             OPERNAMEList_nu = OPERNAMEList_nu[:-1]
         if OPERNAMEList_de != "":
             OPERNAMEList_de = OPERNAMEList_de[:-1]
-        
+                
         _OPERLIST= {
             "COMPANY_CODE": COMPANY_CODE,
             "SITE": SITE,
@@ -1941,6 +1952,7 @@ class INTKPI(BaseType):
                 "numerator": OPERNAMEList_nu,
                 "denominator": OPERNAMEList_de
             },
+            "LCMOWNER": LCMOWNER
         }
         return _OPERLIST
 
@@ -1951,13 +1963,13 @@ class INTKPI(BaseType):
         tmpKPITYPE = self.jsonData["KPITYPE"]
         tmpACCT_DATE = self.jsonData["ACCT_DATE"]
         tmpAPPLICATION = self.jsonData["APPLICATION"]        
-        _OPERLIST= self._getEFASet( tmpCOMPANY_CODE, tmpSITE, tmpFACTORY_ID, tmpOPER)
+        EFASet= self._getEFASet( tmpCOMPANY_CODE, tmpSITE, tmpFACTORY_ID, tmpOPER)
         try:
             data = {}
             if tmpSITE == "TN":
-                data = self._getEFADatabyDeftFromMongoDB(_OPERLIST["OPERLIST"])
+                data = self._getEFADatabyDeftFromMongoDB(EFASet)
             else:
-                data = self._getEFADatabyDeftFromOracle(_OPERLIST["NAMELIST"])
+                data = self._getEFADatabyDeftFromOracle(EFASet)
             returnData = {
                 "pData": data["pData"],
                 "dData": data["dData"]
@@ -1976,7 +1988,7 @@ class INTKPI(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
-    def _getEFADatabyDeftFromOracle(self, OPERList):
+    def _getEFADatabyDeftFromOracle(self, EFASet):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
@@ -1985,6 +1997,8 @@ class INTKPI(BaseType):
         tmpAPPLICATION = self.jsonData["APPLICATION"]
         tmpPROD_NBR = self.jsonData["PROD_NBR"] if "PROD_NBR" in self.jsonData else ""        
         tmpKPITYPE = self.jsonData["KPITYPE"]
+        OPERList = EFASet["NAMELIST"]
+        LCMOWNER = EFASet["LCMOWNER"]
 
         applicatiionWhere = ""
         if tmpAPPLICATION != "ALL":
@@ -2080,7 +2094,7 @@ class INTKPI(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
-    def _getEFADatabyDeftFromMongoDB(self, OPERList):
+    def _getEFADatabyDeftFromMongoDB(self, EFASet):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
@@ -2091,6 +2105,9 @@ class INTKPI(BaseType):
         passAggregate = []
         deftAggregate = []
 
+        OPERList = EFASet["OPERLIST"]
+        LCMOWNER = EFASet["LCMOWNER"]
+
         # pass
         passMatch1 = {
             "$match": {
@@ -2099,7 +2116,7 @@ class INTKPI(BaseType):
                 "FACTORY_ID": tmpFACTORY_ID,
                 "ACCT_DATE": tmpACCT_DATE,
                 "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList['denominator']]},
-                "LCM_OWNER": {"$in": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]}
+                "LCM_OWNER": {"$in": LCMOWNER}
             }
         }
         passGroup1 = {
@@ -2148,7 +2165,7 @@ class INTKPI(BaseType):
                 "FACTORY_ID": tmpFACTORY_ID,
                 "ACCT_DATE": tmpACCT_DATE,
                 "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList['numerator']]},
-                "LCM_OWNER": {"$in": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]}
+                "LCM_OWNER": {"$in": LCMOWNER}
             }
         }
         deftlookup1 = {
@@ -2311,13 +2328,13 @@ class INTKPI(BaseType):
         tmpKPITYPE = self.jsonData["KPITYPE"]
         tmpACCT_DATE = self.jsonData["ACCT_DATE"]
         tmpAPPLICATION = self.jsonData["APPLICATION"]      
-        _OPERLIST= self._getEFASet( tmpCOMPANY_CODE, tmpSITE, tmpFACTORY_ID, tmpOPER)
+        EFASet= self._getEFASet( tmpCOMPANY_CODE, tmpSITE, tmpFACTORY_ID, tmpOPER)
         try:
             data = {}
             if tmpSITE == "TN":
-                data = self._getEFADataFromMongoDB(_OPERLIST["OPERLIST"])
+                data = self._getEFADataFromMongoDB(EFASet)
             else:
-                data = self._getEFADataFromOracle(_OPERLIST["NAMELIST"])
+                data = self._getEFADataFromOracle(EFASet)
             returnData = {
                 "pData": data["pData"],
                 "dData": data["dData"]
@@ -2336,13 +2353,16 @@ class INTKPI(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
-    def _getEFADataFromOracle(self, OPERList):
+    def _getEFADataFromOracle(self, EFASet):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         tmpKPITYPE = self.jsonData["KPITYPE"]
         tmpACCT_DATE = self.jsonData["ACCT_DATE"]
         tmpAPPLICATION = self.jsonData["APPLICATION"]
+
+        OPERList = EFASet["NAMELIST"]
+        LCMOWNER = EFASet["LCMOWNER"]
 
         applicatiionWhere = ""
         if tmpAPPLICATION != "ALL":
@@ -2434,7 +2454,7 @@ class INTKPI(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
-    def _getEFADataFromMongoDB(self, OPERList):
+    def _getEFADataFromMongoDB(self, EFASet):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
@@ -2443,6 +2463,9 @@ class INTKPI(BaseType):
         passAggregate = []
         deftAggregate = []
 
+        OPERList = EFASet["OPERLIST"]
+        LCMOWNER = EFASet["LCMOWNER"]
+
         # pass
         passMatch1 = {
             "$match": {
@@ -2450,7 +2473,7 @@ class INTKPI(BaseType):
                 "SITE": tmpSITE,
                 "FACTORY_ID": tmpFACTORY_ID,
                 "ACCT_DATE": tmpACCT_DATE,
-                "LCM_OWNER": {"$in": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                "LCM_OWNER": {"$in": LCMOWNER},
                 "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList['denominator']]}
             }
         }
@@ -2502,7 +2525,7 @@ class INTKPI(BaseType):
                 "SITE": tmpSITE,
                 "FACTORY_ID": tmpFACTORY_ID,
                 "ACCT_DATE": tmpACCT_DATE,
-                "LCM_OWNER": {"$in": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                "LCM_OWNER": {"$in": LCMOWNER},
                 "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList['numerator']]}
             }
         }
@@ -2660,15 +2683,15 @@ class INTKPI(BaseType):
         tmpKPITYPE = self.jsonData["KPITYPE"]
         tmpACCT_DATE = self.jsonData["ACCT_DATE"]
         tmpAPPLICATION = self.jsonData["APPLICATION"]      
-        _OPERLIST= self._getEFASet( tmpCOMPANY_CODE, tmpSITE, tmpFACTORY_ID, tmpOPER)
+        EFASet = self._getEFASet( tmpCOMPANY_CODE, tmpSITE, tmpFACTORY_ID, tmpOPER)
         try:
             data = {}
             if tmpSITE == "TN":
                 data = self._getProdReasonDataFromMongoDB(
-                    Prod, REASON, _OPERLIST["OPERLIST"])
+                    Prod, REASON, EFASet)
             else:
                 data = self._getProdReasonDataFromOracle(
-                    Prod, REASON, _OPERLIST["NAMELIST"])
+                    Prod, REASON, EFASet)
 
             returnData = data
             return returnData
@@ -2685,13 +2708,15 @@ class INTKPI(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
-    def _getProdReasonDataFromOracle(self, Prod, REASON, OPERList):
+    def _getProdReasonDataFromOracle(self, Prod, REASON, EFASet):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         tmpKPITYPE = self.jsonData["KPITYPE"]
         tmpACCT_DATE = self.jsonData["ACCT_DATE"]
         tmpAPPLICATION = self.jsonData["APPLICATION"]
+        OPERList = EFASet["NAMELIST"]
+        LCMOWNER = EFASet["LCMOWNER"]
 
         _REASON_ARRAY_LIST = ""
         for x in REASON:
@@ -2755,11 +2780,14 @@ class INTKPI(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
-    def _getProdReasonDataFromMongoDB(self, Prod, REASON, OPERList):
+    def _getProdReasonDataFromMongoDB(self, Prod, REASON, EFASet):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         tmpACCT_DATE = self.jsonData["ACCT_DATE"]
+        OPERList = EFASet["OPERLIST"]
+        LCMOWNER = EFASet["LCMOWNER"]
+
         reasonAggregate = []
         # reason
         reasonMatch1 = {
@@ -2771,7 +2799,7 @@ class INTKPI(BaseType):
                 "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList['numerator']]},
                 "PROD_NBR": Prod,
                 "DFCT_REASON": {"$in": REASON},
-                "LCM_OWNER": {"$in": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]}
+                "LCM_OWNER": {"$in": LCMOWNER}
             }
         }
         reasonGroup1 = {

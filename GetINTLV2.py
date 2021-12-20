@@ -1369,17 +1369,17 @@ class INTLV2(BaseType):
         tmpKPITYPE = self.jsonData["KPITYPE"]
         tmpACCT_DATE = self.jsonData["ACCT_DATE"]
         tmpAPPLICATION = self.jsonData["APPLICATION"]
-        _OPERLIST = self._getEFASet(
+        EFASet = self._getEFASet(
             tmpCOMPANY_CODE, tmpSITE, tmpFACTORY_ID, tmpOPER)
 
         try:
             data = {}
             if tmpSITE == "TN":
                 data = self._getEFALV2_3_DataFromMongoDB(
-                    _OPERLIST["OPERLIST"], PROD_NBR, CHECKCODE)
+                    EFASet, PROD_NBR, CHECKCODE)
             else:
                 data = self._getEFALV2_3_DataFromOracle(
-                    _OPERLIST["NAMELIST"], PROD_NBR, CHECKCODE)
+                    EFASet, PROD_NBR, CHECKCODE)
             returnData = {
                 "pData": data["pData"],
                 "rData": data["rData"]
@@ -1398,13 +1398,16 @@ class INTLV2(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
-    def _getEFALV2_3_DataFromOracle(self, OPERList, PROD_NBR, CHECKCODE):
+    def _getEFALV2_3_DataFromOracle(self, EFASet, PROD_NBR, CHECKCODE):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         tmpKPITYPE = self.jsonData["KPITYPE"]
         tmpACCT_DATE = self.jsonData["ACCT_DATE"]
         tmpAPPLICATION = self.jsonData["APPLICATION"]
+
+        OPERList = EFASet["NAMELIST"]
+        LCMOWNER = EFASet["LCMOWNER"]
 
         whereString = ""
         if tmpAPPLICATION != "ALL":
@@ -1479,12 +1482,15 @@ class INTLV2(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
-    def _getEFALV2_3_DataFromMongoDB(self, OPERList, PROD_NBR, CHECKCODE):
+    def _getEFALV2_3_DataFromMongoDB(self, EFASet, PROD_NBR, CHECKCODE):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         tmpACCT_DATE = self.jsonData["ACCT_DATE"]
         tmpAPPLICATION = self.jsonData["APPLICATION"]
+
+        OPERList = EFASet["OPERLIST"]
+        LCMOWNER = EFASet["LCMOWNER"]
 
         passAggregate = [
             {
@@ -1494,7 +1500,7 @@ class INTLV2(BaseType):
                     "FACTORY_ID": tmpFACTORY_ID,
                     "ACCT_DATE": tmpACCT_DATE,
                     "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList['denominator']]},
-                    "LCM_OWNER": {"$in": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]}
+                    "LCM_OWNER": {"$in": LCMOWNER}
                 }
             },
             {
@@ -1536,7 +1542,7 @@ class INTLV2(BaseType):
                     "ACCT_DATE": tmpACCT_DATE,
                     "WORK_CTR": "2110",
                     "TRANS_TYPE": "RWMO",
-                    "LCM_OWNER": {"$in": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                    "LCM_OWNER": {"$in": LCMOWNER},
                     "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList['numerator']]},
                     "DFCT_REASON": {
                         "$nin": [
@@ -1677,17 +1683,17 @@ class INTLV2(BaseType):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
-        _OPERLIST = self._getEFASet(
+        EFASet = self._getEFASet(
             tmpCOMPANY_CODE, tmpSITE, tmpFACTORY_ID, tmpOPER)
 
         try:
             data = {}
             if tmpSITE == "TN":
                 data = self._getEFALV2_21_DataFromMongoDB(
-                    _OPERLIST["OPERLIST"], PROD_NBR)
+                    EFASet, PROD_NBR)
             else:
                 data = self._getEFALV2_21_DataFromOracle(
-                    _OPERLIST["NAMELIST"], PROD_NBR)
+                    EFASet, PROD_NBR)
             returnData = {
                 "pData": data["pData"],
                 "dData": data["dData"]
@@ -1706,13 +1712,16 @@ class INTLV2(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
-    def _getEFALV2_21_DataFromOracle(self, OPERList, PROD_NBR):
+    def _getEFALV2_21_DataFromOracle(self, EFASet, PROD_NBR):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         tmpKPITYPE = self.jsonData["KPITYPE"]
         tmpACCT_DATE = self.jsonData["ACCT_DATE"]
         tmpAPPLICATION = self.jsonData["APPLICATION"]
+
+        OPERList = EFASet["NAMELIST"]
+        LCMOWNER = EFASet["LCMOWNER"]
 
         whereString = ""
         if tmpAPPLICATION != "ALL":
@@ -1813,7 +1822,7 @@ class INTLV2(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
-    def _getEFALV2_21_DataFromMongoDB(self, OPERList, PROD_NBR):
+    def _getEFALV2_21_DataFromMongoDB(self, EFASet, PROD_NBR):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
@@ -1821,6 +1830,9 @@ class INTLV2(BaseType):
         tmpAPPLICATION = self.jsonData["APPLICATION"]
         passAggregate = []
         deftAggregate = []
+
+        OPERList = EFASet["OPERLIST"]
+        LCMOWNER = EFASet["LCMOWNER"]
 
         # pass
         passMatch1 = {
@@ -1830,7 +1842,7 @@ class INTLV2(BaseType):
                 "FACTORY_ID": tmpFACTORY_ID,
                 "ACCT_DATE": tmpACCT_DATE,
                 "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList['denominator']]},
-                "LCM_OWNER": {"$in": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]}
+                "LCM_OWNER": {"$in": LCMOWNER}
             }
         }
         passGroup1 = {
@@ -1882,7 +1894,7 @@ class INTLV2(BaseType):
                 "FACTORY_ID": tmpFACTORY_ID,
                 "ACCT_DATE": tmpACCT_DATE,
                 "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList['numerator']]},
-                "LCM_OWNER": {"$in": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]}
+                "LCM_OWNER": {"$in": LCMOWNER}
             }
         }
         deftlookup1 = {
@@ -2638,7 +2650,8 @@ class INTLV2(BaseType):
                                 "AAFC": {"OPER": [1400]},
                                 "TPI": {"OPER": []},
                                 "OTPC": {"OPER": [1530]},
-                                "CKEN": {"OPER": [1600]}}
+                                "CKEN": {"OPER": [1600]}},
+                 "LCM_OWNER": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]
             },
             "J001": {
                 "numerator": {"BONDING": {"OPER": [1300, 1301]},
@@ -2652,7 +2665,8 @@ class INTLV2(BaseType):
                                 "AAFC": {"OPER": [1419, 1420]},
                                 "TPI": {"OPER": [1510]},
                                 "OTPC": {"OPER": [1590]},
-                                "CKEN": {"OPER": [1600]}}
+                                "CKEN": {"OPER": [1600]}},
+                "LCM_OWNER": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]
             },
             "J003": {
                 "numerator": {"BONDING": {"OPER": [1300]},
@@ -2666,7 +2680,8 @@ class INTLV2(BaseType):
                                 "AAFC": {"OPER": [1420]},
                                 "TPI": {"OPER": [1510]},
                                 "OTPC": {"OPER": []},
-                                "CKEN": {"OPER": [1600]}}
+                                "CKEN": {"OPER": [1600]}},
+                "LCM_OWNER": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]
             },
             "J004": {
                 "numerator": {"BONDING": {"OPER": [1300]},
@@ -2680,7 +2695,8 @@ class INTLV2(BaseType):
                                 "AAFC": {"OPER": [1700]},
                                 "TPI": {"OPER": []},
                                 "OTPC": {"OPER": []},
-                                "CKEN": {"OPER": [1700]}}
+                                "CKEN": {"OPER": [1700]}},
+                "LCM_OWNER": ["LCME", "PROD", "QTAP", "RES0"]
             },
             "OTHER": {
                 "numerator": {"BONDING": {"OPER": [1300, 1301]},
@@ -2694,23 +2710,29 @@ class INTLV2(BaseType):
                                 "AAFC": {"OPER": [1419, 1420]},
                                 "TPI": {"OPER": [1510]},
                                 "OTPC": {"OPER": [1590]},
-                                "CKEN": {"OPER": [1600]}}
+                                "CKEN": {"OPER": [1600]}},
+                "LCM_OWNER": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]
             },
         }
         EFA_nu_setting = {}
         EFA_de_setting = {}
+        EFA_lo_setting = []
         if SITE == "TN":
             EFA_nu_setting = EFAOPERDATA[FACTORY_ID]["numerator"]
             EFA_de_setting = EFAOPERDATA[FACTORY_ID]["denominator"]
+            EFA_lo_setting = EFAOPERDATA[FACTORY_ID]["LCM_OWNER"]
         else:
             EFA_nu_setting = EFAOPERDATA["OTHER"]["numerator"]
             EFA_de_setting = EFAOPERDATA["OTHER"]["denominator"]
-        _OPERLIST = {}
+            EFA_lo_setting = EFAOPERDATA["OTHER"]["LCM_OWNER"]
+        _OPERLIST= {}
         OPERCODEList_nu = []
         OPERCODEList_de = []
         OPERNAMEList_nu = ""
         OPERNAMEList_de = ""
+        LCMOWNER = []
         if OPER == "ALL":
+            LCMOWNER = ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]
             for key, value in EFA_nu_setting.items():
                 OPERCODEList_nu.extend(value.get("OPER"))
                 OPERNAMEList_nu = OPERNAMEList_nu + f"'{key}',"
@@ -2718,6 +2740,7 @@ class INTLV2(BaseType):
                 OPERCODEList_de.extend(value.get("OPER"))
                 OPERNAMEList_de = OPERNAMEList_de + f"'{key}',"
         else:
+            LCMOWNER = EFA_lo_setting
             OPERCODEList_nu.extend(EFA_nu_setting[OPER]["OPER"])
             OPERCODEList_de.extend(EFA_de_setting[OPER]["OPER"])
             OPERNAMEList_nu = f"'{OPER}',"
@@ -2726,20 +2749,20 @@ class INTLV2(BaseType):
             OPERNAMEList_nu = OPERNAMEList_nu[:-1]
         if OPERNAMEList_de != "":
             OPERNAMEList_de = OPERNAMEList_de[:-1]
-
-        _OPERLIST = {
+                
+        _OPERLIST= {
             "COMPANY_CODE": COMPANY_CODE,
             "SITE": SITE,
             "FACTORY_ID": FACTORY_ID,
             "OPER": OPER,
-            "OPERLIST": {
+            "OPERLIST":{
                 "numerator": OPERCODEList_nu,
                 "denominator": OPERCODEList_de
             },
-            "NAMELIST": {
+            "NAMELIST":{
                 "numerator": OPERNAMEList_nu,
                 "denominator": OPERNAMEList_de
             },
+            "LCMOWNER": LCMOWNER
         }
         return _OPERLIST
-

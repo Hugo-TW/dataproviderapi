@@ -753,7 +753,7 @@ class INTLV3(BaseType):
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
             elif tmpKPITYPE == "EFALV2LINE":
-                expirTimeKey = tmpFACTORY_ID + '_REASON'
+                expirTimeKey = tmpFACTORY_ID + '_DEFT'
 
                 dataRange = self._dataRangeMin(tmpACCT_DATE)
 
@@ -1486,22 +1486,8 @@ class INTLV3(BaseType):
     def _getEFALV2DRLINEData(self, OPER, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
-        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
-
-        OPERDATA = {
-            "BONDING": {"OPER": [1300, 1301]},
-            "LAM": {"OPER": [1340, 1370]},
-            "AAFC": {"OPER": [1419, 1420]},
-            "TPI": {"OPER": [1510]},
-            "OTPC": {"OPER": [1590]},
-            "CKEN": {"OPER": [1600]}
-        }
-        OPERList = []
-        if OPER == "ALL":
-            for key, value in OPERDATA.items():
-                OPERList.extend(value.get("OPER"))
-        else:
-            OPERList.extend(OPERDATA[OPER]["OPER"])
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]       
+        EFASet= self._getEFASet( tmpCOMPANY_CODE, tmpSITE, tmpFACTORY_ID, OPER)
 
         yellowList = []
         for d in self._getEFA_impDeft():
@@ -1509,8 +1495,12 @@ class INTLV3(BaseType):
 
         try:
             data = {}
-            data = self._getEFALV2DRLINEDataFromMongo(
-                yellowList, OPER, OPERList, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE)
+            if tmpSITE == "TN":
+                data = self._getEFALV2DRLINEDataFromMongo(
+                yellowList, OPER, EFASet, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE)
+            else:
+                data = self._getEFALV2DRLINEDataFromOracle(
+                OPER, EFASet, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE)
 
             return data
 
@@ -1525,11 +1515,130 @@ class INTLV3(BaseType):
             self.writeError(
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
-
-    def _getEFALV2DRLINEDataFromMongo(self, yellowList, OPER, OPERList, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE):
+    
+    def _getEFALV2DRLINEDataFromOracle(self, OPER, EFASet, PROD_NBR, 
+                                            DATARANGENAME, ACCT_DATE_ARRAY, TYPE):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
+        OPERList = EFASet["NAMELIST"]
+        LCMOWNER = EFASet["LCMOWNER"]
+
+        _ACCT_DATE_ARRAY_LIST = ""
+        for x in ACCT_DATE_ARRAY:
+            _ACCT_DATE_ARRAY_LIST = _ACCT_DATE_ARRAY_LIST + f"'{x}',"
+        if _ACCT_DATE_ARRAY_LIST != "":
+            _ACCT_DATE_ARRAY_LIST = _ACCT_DATE_ARRAY_LIST[:-1]
+
+        whereString = ""
+        checkString = ""
+        if tmpAPPLICATION != "ALL":
+            whereString += f" AND dmo.application = '{tmpAPPLICATION}' "
+        if PROD_NBR != '':
+            whereString += f" AND dmo.code = '{PROD_NBR}' "
+
+        try:
+            passString = f"SELECT \
+                            dlo.company_code   AS company_code, \
+                            dlo.site_code      AS site, \
+                            dlo.factory_code   AS factory_id, \
+                            dmo.code           AS prod_nbr, \
+                            dmo.application    AS APPLICATION, \
+                            '{OPER}'          AS OPER, \
+                            '{DATARANGENAME}' AS DATARANGE, \
+                            {TYPE} AS XVALUE, \
+                            SUM(epa.sumqty) AS PASSSUMQTY \
+                        FROM \
+                            INTMP_DB.fact_efa_pass_sum epa \
+                            LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = epa.local_id \
+                            LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = epa.model_id \
+                            LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = epa.oper_id \
+                        WHERE \
+                            dlo.company_code = '{tmpCOMPANY_CODE}' \
+                            AND dlo.site_code = '{tmpSITE}' \
+                            AND dlo.factory_code = '{tmpFACTORY_ID}' \
+                            AND dop.name in ({OPERList['denominator']}) \
+                            AND epa.mfgdate in ({_ACCT_DATE_ARRAY_LIST}) \
+                            {whereString} \
+                        GROUP BY \
+                            dlo.company_code, \
+                            dlo.site_code, \
+                            dlo.factory_code, \
+                            dmo.code, \
+                            epa.mfgdate, \
+                            dmo.application \
+                        HAVING SUM(epa.sumqty) > 0 "
+            description, data = self.pSelectAndDescription(passString)
+            pData = self._zipDescriptionAndData(description, data)
+
+            deftString = f"SELECT \
+                            dlo.company_code   AS company_code, \
+                            dlo.site_code      AS site, \
+                            dlo.factory_code   AS factory_id, \
+                            dmo.code           AS prod_nbr, \
+                            dmo.application    AS APPLICATION, \
+                            '{OPER}'           AS OPER, \
+                            '{DATARANGENAME}' AS DATARANGE, \
+                            {TYPE} AS XVALUE, \
+                            ddf.DEFTCODE as DFCT_CODE, \
+                            ddf.DEFTCODE_DESC as ERRC_DESCR, \
+                            SUM(edf.sumqty) AS DEFT_QTY \
+                        FROM \
+                            INTMP_DB.fact_efa_deft_sum edf \
+                            LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = edf.local_id \
+                            LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = edf.model_id \
+                            LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = edf.oper_id \
+                            LEFT JOIN INTMP_DB.dime_deftcode ddf ON ddf.DEFTCODE= edf.DEFTCODE \
+                        WHERE \
+                            dlo.company_code =  '{tmpCOMPANY_CODE}' \
+                            AND dlo.site_code = '{tmpSITE}' \
+                            AND dlo.factory_code = '{tmpFACTORY_ID}' \
+                            AND edf.mfgdate in ({_ACCT_DATE_ARRAY_LIST}) \
+                            AND dop.name in ({OPERList['numerator']}) \
+                            AND edf.deftcode in (select code from INTMP_DB.codefilter where type = 'DEFT' \
+                                and COMPANYCODE = '{tmpCOMPANY_CODE}' and SITE = '{tmpSITE}' and factoryid = '{tmpFACTORY_ID}' ) \
+                            {whereString} \
+                        GROUP BY \
+                            dlo.company_code, \
+                            dlo.site_code, \
+                            dlo.factory_code, \
+                            dmo.code, \
+                            edf.mfgdate, \
+                            dmo.application, \
+                            ddf.DEFTCODE, \
+                            ddf.DEFTCODE_DESC \
+                        HAVING SUM(edf.sumqty) > 0 "
+            description, data = self.pSelectAndDescription(deftString)
+            dData = self._zipDescriptionAndData(description, data)
+
+            returnData = {
+                "pData": pData,
+                "dData": dData
+            }
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+        return
+
+    def _getEFALV2DRLINEDataFromMongo(self, yellowList, OPER, EFASet, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+
+        OPERList = EFASet["OPERLIST"]
+        LCMOWNER = EFASet["LCMOWNER"]
 
         passAggregate = []
         deftAggregate = []
@@ -1542,7 +1651,7 @@ class INTLV3(BaseType):
                 "FACTORY_ID": tmpFACTORY_ID,
                 "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
                 "PROD_NBR": PROD_NBR,
-                "LCM_OWNER": {"$in": ["INT0","LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                "LCM_OWNER": {"$in": LCMOWNER},
                 "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]}
             }
         }
@@ -1623,7 +1732,7 @@ class INTLV3(BaseType):
                 "SITE": tmpSITE,
                 "FACTORY_ID": tmpFACTORY_ID,
                 "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
-                "LCM_OWNER": {"$in": ["INT0","LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                "LCM_OWNER": {"$in": LCMOWNER},
                 "PROD_NBR": PROD_NBR,
                 "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]},
                 "DFCT_CODE": {"$in": yellowList}
@@ -5109,7 +5218,7 @@ class INTLV3(BaseType):
             tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
             tmpSITE = self.jsonData["SITE"]
             tmpFACTORY_ID = self.jsonData["FACTORY_ID"]     
-            _OPERLIST= self._getEFASet( tmpCOMPANY_CODE, tmpSITE, tmpFACTORY_ID, OPER)
+            EFASet= self._getEFASet( tmpCOMPANY_CODE, tmpSITE, tmpFACTORY_ID, OPER)
 
             start = time.time()
             e_date = dataRange["n1d_array"][0]
@@ -5117,9 +5226,9 @@ class INTLV3(BaseType):
             tmpSITE = self.jsonData["SITE"]
             _tempData = None
             if tmpSITE == "TN":
-                _tempData = self._getEFALV2DATAbyALLDateFromMongoDB(_OPERLIST["OPERLIST"], tmpPROD_NBR, s_date, e_date)
+                _tempData = self._getEFALV2DATAbyALLDateFromMongoDB(EFASet, tmpPROD_NBR, s_date, e_date)
             else:
-                _tempData = self._getEFALV2DATAbyALLDateFromOracle(_OPERLIST["NAMELIST"], tmpPROD_NBR, s_date, e_date)
+                _tempData = self._getEFALV2DATAbyALLDateFromOracle(EFASet, tmpPROD_NBR, s_date, e_date)
             tempData = []
             for d in _tempData:
                 tempData.append(d)
@@ -5178,11 +5287,13 @@ class INTLV3(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
     
-    def _getEFALV2DATAbyALLDateFromOracle(self, OPERList, PROD_NBR, s_date, e_date):
+    def _getEFALV2DATAbyALLDateFromOracle(self, EFASet, PROD_NBR, s_date, e_date):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         tmpAPPLICATION = self.jsonData["APPLICATION"]
+        OPERList = EFASet["NAMELIST"]
+        LCMOWNER = EFASet["LCMOWNER"]
 
         whereString = ""
         if tmpAPPLICATION != "ALL":
@@ -5261,11 +5372,14 @@ class INTLV3(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
-    def _getEFALV2DATAbyALLDateFromMongoDB(self, OPERList, PROD_NBR, s_date, e_date):
+    def _getEFALV2DATAbyALLDateFromMongoDB(self, EFASet, PROD_NBR, s_date, e_date):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         tmpAPPLICATION = self.jsonData["APPLICATION"]
+
+        OPERList = EFASet["OPERLIST"]
+        LCMOWNER = EFASet["LCMOWNER"]
 
         yellowList = []
         for d in self._getEFA_impDeft():
@@ -5283,7 +5397,7 @@ class INTLV3(BaseType):
                     },
                     "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList['numerator']]},
                     "DFCT_CODE": {"$in": yellowList},
-                    "LCM_OWNER": {"$in": ["INT0","LCM0", "LCME", "PROD", "QTAP", "RES0"]}
+                    "LCM_OWNER": {"$in": LCMOWNER}
                 }
             },
             {
@@ -5324,7 +5438,7 @@ class INTLV3(BaseType):
                                     "$lte": e_date
                                 },
                                 "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList['denominator']]},
-                                "LCM_OWNER": {"$in": ["INT0","LCM0", "LCME", "PROD", "QTAP", "RES0"]}
+                                "LCM_OWNER": {"$in": LCMOWNER}
                             }
                         },
                         {
@@ -5452,7 +5566,7 @@ class INTLV3(BaseType):
             tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
             tmpSITE = self.jsonData["SITE"]
             tmpFACTORY_ID = self.jsonData["FACTORY_ID"]      
-            _OPERLIST= self._getEFASet( tmpCOMPANY_CODE, tmpSITE, tmpFACTORY_ID, OPER)
+            EFASet= self._getEFASet( tmpCOMPANY_CODE, tmpSITE, tmpFACTORY_ID, OPER)
 
             start = time.time()
             e_date = dataRange["n1d_array"][0]
@@ -5460,9 +5574,9 @@ class INTLV3(BaseType):
             tmpSITE = self.jsonData["SITE"]
             _tempData = None
             if tmpSITE == "TN":
-                _tempData = self._getEFALV3DATAbyALLDateFromMongoDB(OPER, _OPERLIST["OPERLIST"], REASONCODE, tmpPROD_NBR,  s_date, e_date)
+                _tempData = self._getEFALV3DATAbyALLDateFromMongoDB(OPER, EFASet, REASONCODE, tmpPROD_NBR,  s_date, e_date)
             else:
-                _tempData = self._getEFALV3DATAbyALLDateFromOracle(OPER, _OPERLIST["NAMELIST"], REASONCODE, tmpPROD_NBR,  s_date, e_date)
+                _tempData = self._getEFALV3DATAbyALLDateFromOracle(OPER, EFASet, REASONCODE, tmpPROD_NBR,  s_date, e_date)
             tempData = []
             for d in _tempData:
                 tempData.append(d)
@@ -5520,13 +5634,15 @@ class INTLV3(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
-    def _getEFALV3DATAbyALLDateFromOracle(self,  OPER, OPERList, REASONCODE, PROD_NBR,  s_date, e_date):
+    def _getEFALV3DATAbyALLDateFromOracle(self,  OPER, EFASet, REASONCODE, PROD_NBR,  s_date, e_date):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         tmpKPITYPE = self.jsonData["KPITYPE"]
         tmpACCT_DATE = self.jsonData["ACCT_DATE"]
         tmpAPPLICATION = self.jsonData["APPLICATION"]
+        OPERList = EFASet["NAMELIST"]
+        LCMOWNER = EFASet["LCMOWNER"]
 
         whereString = ""
         checkString = ""
@@ -5616,10 +5732,13 @@ class INTLV3(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
-    def _getEFALV3DATAbyALLDateFromMongoDB(self, OPER, OPERList, REASONCODE, PROD_NBR,  s_date, e_date):
+    def _getEFALV3DATAbyALLDateFromMongoDB(self, OPER, EFASet, REASONCODE, PROD_NBR,  s_date, e_date):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+
+        OPERList = EFASet["OPERLIST"]
+        LCMOWNER = EFASet["LCMOWNER"]
 
         EFALV3_Aggregate = [
             {
@@ -5631,7 +5750,7 @@ class INTLV3(BaseType):
                         "$gte": s_date,
                         "$lte": e_date
                     },
-                    "LCM_OWNER": {"$in": ["INT0","LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                    "LCM_OWNER": {"$in": LCMOWNER},
                     "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList['numerator']]},
                     "WORK_CTR": "2110",
                     "PROD_NBR": PROD_NBR
@@ -5679,7 +5798,7 @@ class INTLV3(BaseType):
                                         },
                                         "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList['denominator']]},
                                         "PROD_NBR": PROD_NBR,
-                                        "LCM_OWNER": {"$in": ["INT0","LCM0", "LCME", "PROD", "QTAP", "RES0"]}
+                                        "LCM_OWNER": {"$in": LCMOWNER}
                                     }
                                 },
                                 {
@@ -5863,7 +5982,8 @@ class INTLV3(BaseType):
                                 "AAFC": {"OPER": [1400]},
                                 "TPI": {"OPER": []},
                                 "OTPC": {"OPER": [1530]},
-                                "CKEN": {"OPER": [1600]}}
+                                "CKEN": {"OPER": [1600]}},
+                 "LCM_OWNER": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]
             },
             "J001": {
                 "numerator": {"BONDING": {"OPER": [1300, 1301]},
@@ -5877,7 +5997,8 @@ class INTLV3(BaseType):
                                 "AAFC": {"OPER": [1419, 1420]},
                                 "TPI": {"OPER": [1510]},
                                 "OTPC": {"OPER": [1590]},
-                                "CKEN": {"OPER": [1600]}}
+                                "CKEN": {"OPER": [1600]}},
+                "LCM_OWNER": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]
             },
             "J003": {
                 "numerator": {"BONDING": {"OPER": [1300]},
@@ -5891,7 +6012,8 @@ class INTLV3(BaseType):
                                 "AAFC": {"OPER": [1420]},
                                 "TPI": {"OPER": [1510]},
                                 "OTPC": {"OPER": []},
-                                "CKEN": {"OPER": [1600]}}
+                                "CKEN": {"OPER": [1600]}},
+                "LCM_OWNER": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]
             },
             "J004": {
                 "numerator": {"BONDING": {"OPER": [1300]},
@@ -5905,7 +6027,8 @@ class INTLV3(BaseType):
                                 "AAFC": {"OPER": [1700]},
                                 "TPI": {"OPER": []},
                                 "OTPC": {"OPER": []},
-                                "CKEN": {"OPER": [1700]}}
+                                "CKEN": {"OPER": [1700]}},
+                "LCM_OWNER": ["LCME", "PROD", "QTAP", "RES0"]
             },
             "OTHER": {
                 "numerator": {"BONDING": {"OPER": [1300, 1301]},
@@ -5919,23 +6042,29 @@ class INTLV3(BaseType):
                                 "AAFC": {"OPER": [1419, 1420]},
                                 "TPI": {"OPER": [1510]},
                                 "OTPC": {"OPER": [1590]},
-                                "CKEN": {"OPER": [1600]}}
+                                "CKEN": {"OPER": [1600]}},
+                "LCM_OWNER": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]
             },
         }
         EFA_nu_setting = {}
         EFA_de_setting = {}
+        EFA_lo_setting = []
         if SITE == "TN":
             EFA_nu_setting = EFAOPERDATA[FACTORY_ID]["numerator"]
             EFA_de_setting = EFAOPERDATA[FACTORY_ID]["denominator"]
+            EFA_lo_setting = EFAOPERDATA[FACTORY_ID]["LCM_OWNER"]
         else:
             EFA_nu_setting = EFAOPERDATA["OTHER"]["numerator"]
             EFA_de_setting = EFAOPERDATA["OTHER"]["denominator"]
+            EFA_lo_setting = EFAOPERDATA["OTHER"]["LCM_OWNER"]
         _OPERLIST= {}
         OPERCODEList_nu = []
         OPERCODEList_de = []
         OPERNAMEList_nu = ""
         OPERNAMEList_de = ""
+        LCMOWNER = []
         if OPER == "ALL":
+            LCMOWNER = ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]
             for key, value in EFA_nu_setting.items():
                 OPERCODEList_nu.extend(value.get("OPER"))
                 OPERNAMEList_nu = OPERNAMEList_nu + f"'{key}',"
@@ -5943,6 +6072,7 @@ class INTLV3(BaseType):
                 OPERCODEList_de.extend(value.get("OPER"))
                 OPERNAMEList_de = OPERNAMEList_de + f"'{key}',"
         else:
+            LCMOWNER = EFA_lo_setting
             OPERCODEList_nu.extend(EFA_nu_setting[OPER]["OPER"])
             OPERCODEList_de.extend(EFA_de_setting[OPER]["OPER"])
             OPERNAMEList_nu = f"'{OPER}',"
@@ -5951,7 +6081,7 @@ class INTLV3(BaseType):
             OPERNAMEList_nu = OPERNAMEList_nu[:-1]
         if OPERNAMEList_de != "":
             OPERNAMEList_de = OPERNAMEList_de[:-1]
-        
+                
         _OPERLIST= {
             "COMPANY_CODE": COMPANY_CODE,
             "SITE": SITE,
@@ -5965,6 +6095,7 @@ class INTLV3(BaseType):
                 "numerator": OPERNAMEList_nu,
                 "denominator": OPERNAMEList_de
             },
+            "LCMOWNER": LCMOWNER
         }
         return _OPERLIST
 
