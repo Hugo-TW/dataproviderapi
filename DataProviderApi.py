@@ -72,10 +72,33 @@ from GetSingleCollection import singleCollectionFunc
 from SetMongoInserMany import mongoInsertManyFunc
 from CompensateDb2 import compensate
 from GetWayneTestInfo import WayneTestInfo
-from GetTvUpphInfo import TvUpphInfo
-from GetTvUpphLightInfo import TvUpphLightInfo
-from GetTvResignInfo import TvResignInfo
-from GetTvAttendanceInfo import TvAttendanceInfo
+from GetiSFPUpphInfo import iSFPUpphInfo
+from GetiSFPUpphLightInfo import iSFPUpphLightInfo
+from GetiSFPResignInfo import iSFPResignInfo
+from GetiSFPAttendanceInfo import iSFPAttendanceInfo
+from GetiSFPReAtInfo import iSFPReAtInfo
+from GetiSFPScrapLightInfo import iSFPScrapLightInfo
+from GetiSFPScrapInfo import iSFPScrapInfo
+from GetiSFPWOInfo import iSFPWOInfo
+from GetiSFPWIP30Info import iSFPWIP30Info
+from GetiSFPWIP14Info import iSFPWIP14Info
+from GetiSFPWOWIPInfo import iSFPWOWIPInfo
+from GetiSFPOutLightInfo import iSFPOutLightInfo
+from GetiSFPOutputInfo import iSFPOutputInfo
+from GetiSFPReachInfo import iSFPReachInfo
+from GetiSFPTDInputInfo import iSFPTDInputInfo
+from GetiSFPOEEInfo import iSFPOEEInfo
+from GetiSFPFPYYLightInfo import iSFPFPYYLightInfo
+from GetiSFPFPYYInfo import iSFPFPYYInfo
+from GetiSFPFPYScrapInfo import iSFPFPYScrapInfo
+from GetiSFPOQCLightInfo import iSFPOQCLightInfo
+from GetiSFPOQCInfo import iSFPOQCInfo
+from GetiSFPHotIPQAInfo import iSFPHotIPQAInfo
+from GetiSFPHoldLightInfo import iSFPHoldLightInfo
+from GetiSFPHoldInfo import iSFPHoldInfo
+from GetiSFPScrapPInfo import iSFPScrapPInfo
+from GetiSFPFPYNLightInfo import iSFPFPYNLightInfo
+from GetiSFPFPYNInfo import iSFPFPYNInfo
 
 os.environ['NLS_LANG'] = 'TRADITIONAL CHINESE_TAIWAN.UTF8'
 from Logger import Logger
@@ -85,6 +108,7 @@ app = Flask(__name__ )
 _dbAccount, _dbPassword, _SERVICE_NAME = ReadConfig('config.json',"INT_ORACLEDB_TEST").READ()
 _daoHelper = DaoHelper(_dbAccount, _dbPassword, _SERVICE_NAME)
 _db_pool= _daoHelper.poolCreate()
+
 # redis路径
 app.config["REDIS_URL"] = "redis://idts-kafka1.cminl.oa"
 # app注册sse的蓝图,并且访问路由是/stream1
@@ -2184,28 +2208,28 @@ class GetWayneTestInfo(Resource):
         wayneTestInfo = WayneTestInfo(identity)
         return wayneTestInfo.getData()  
 
-tvUpphInfoNS = api.namespace('GetTvUpphInfo', description = 'TvUpphInfo')
-tvUpphInfoML = api.model('GetTvUpphInfo', {
+isfpUpphInfoNS = api.namespace('GetiSFPUpphInfo', description = '廠晨會看板-UPPH 推移圖')
+isfpUpphInfoML = api.model('GetiSFPUpphInfo', {
 "COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
 "SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
 "FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
-"START_TIME":fields.String( required = True, description = 'FACTORY_ID', default = '20211123000000', example = '20211123000000'),
-"END_TIME":fields.String( required = True, description = 'FACTORY_ID', default = '20211128000000', example = '20211128000000'),
+"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123000000', example = '20211123000000'),
+"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128000000', example = '20211128000000'),
 })
-@tvUpphInfoNS.route('', methods = ['POST'])
-@tvUpphInfoNS.response(200, 'Sucess')
-@tvUpphInfoNS.response(201, 'Created Sucess')
-@tvUpphInfoNS.response(204, 'No Content')
-@tvUpphInfoNS.response(400, 'Bad Request')
-@tvUpphInfoNS.response(401, 'Unauthorized')
-@tvUpphInfoNS.response(403, 'Forbidden')
-@tvUpphInfoNS.response(404, 'Not Found')
-@tvUpphInfoNS.response(405, 'Method Not Allowed')
-@tvUpphInfoNS.response(409, 'Conflict')
-@tvUpphInfoNS.response(500, 'Internal Server Error')
+@isfpUpphInfoNS.route('', methods = ['POST'])
+@isfpUpphInfoNS.response(200, 'Sucess')
+@isfpUpphInfoNS.response(201, 'Created Sucess')
+@isfpUpphInfoNS.response(204, 'No Content')
+@isfpUpphInfoNS.response(400, 'Bad Request')
+@isfpUpphInfoNS.response(401, 'Unauthorized')
+@isfpUpphInfoNS.response(403, 'Forbidden')
+@isfpUpphInfoNS.response(404, 'Not Found')
+@isfpUpphInfoNS.response(405, 'Method Not Allowed')
+@isfpUpphInfoNS.response(409, 'Conflict')
+@isfpUpphInfoNS.response(500, 'Internal Server Error')
 class GetUpphInfo(Resource):
-    @tvUpphInfoNS.doc('AppConfSysMain')
-    @tvUpphInfoNS.expect(tvUpphInfoML)
+    @isfpUpphInfoNS.doc('AppConfSysMain')
+    @isfpUpphInfoNS.expect(isfpUpphInfoML)
     def post(self):
         if not request:
             abort(400)
@@ -2218,31 +2242,31 @@ class GetUpphInfo(Resource):
         start_time = jsonData["START_TIME"]
         end_time = jsonData["END_TIME"]
         log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
-        tvUpphInfo = TvUpphInfo(identity, start_time, end_time)
-        return tvUpphInfo.getData()     
+        isfpUpphInfo = iSFPUpphInfo(identity, start_time, end_time)
+        return isfpUpphInfo.getData()     
 
-tvUpphLightInfoNS = api.namespace('GetTvUpphLightInfo', description = 'TvUpphLightInfo')
-tvUpphLightInfoML = api.model('GetTvUpphLightInfo', {
+isfpUpphLightInfoNS = api.namespace('GetiSFPUpphLightInfo', description = '廠晨會看板-UPPH 推移圖燈號')
+isfpUpphLightInfoML = api.model('GetiSFPUpphLightInfo', {
 "COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
 "SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
 "FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
-"START_TIME":fields.String( required = True, description = 'FACTORY_ID', default = '20211123000000', example = '20211123000000'),
-"END_TIME":fields.String( required = True, description = 'FACTORY_ID', default = '20211128000000', example = '20211128000000'),
+"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123000000', example = '20211123000000'),
+"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128000000', example = '20211128000000'),
 })
-@tvUpphLightInfoNS.route('', methods = ['POST'])
-@tvUpphLightInfoNS.response(200, 'Sucess')
-@tvUpphLightInfoNS.response(201, 'Created Sucess')
-@tvUpphLightInfoNS.response(204, 'No Content')
-@tvUpphLightInfoNS.response(400, 'Bad Request')
-@tvUpphLightInfoNS.response(401, 'Unauthorized')
-@tvUpphLightInfoNS.response(403, 'Forbidden')
-@tvUpphLightInfoNS.response(404, 'Not Found')
-@tvUpphLightInfoNS.response(405, 'Method Not Allowed')
-@tvUpphLightInfoNS.response(409, 'Conflict')
-@tvUpphLightInfoNS.response(500, 'Internal Server Error')
+@isfpUpphLightInfoNS.route('', methods = ['POST'])
+@isfpUpphLightInfoNS.response(200, 'Sucess')
+@isfpUpphLightInfoNS.response(201, 'Created Sucess')
+@isfpUpphLightInfoNS.response(204, 'No Content')
+@isfpUpphLightInfoNS.response(400, 'Bad Request')
+@isfpUpphLightInfoNS.response(401, 'Unauthorized')
+@isfpUpphLightInfoNS.response(403, 'Forbidden')
+@isfpUpphLightInfoNS.response(404, 'Not Found')
+@isfpUpphLightInfoNS.response(405, 'Method Not Allowed')
+@isfpUpphLightInfoNS.response(409, 'Conflict')
+@isfpUpphLightInfoNS.response(500, 'Internal Server Error')
 class GetUpphLightInfo(Resource):
-    @tvUpphLightInfoNS.doc('AppConfSysMain')
-    @tvUpphLightInfoNS.expect(tvUpphLightInfoML)
+    @isfpUpphLightInfoNS.doc('AppConfSysMain')
+    @isfpUpphLightInfoNS.expect(isfpUpphLightInfoML)
     def post(self):
         if not request:
             abort(400)
@@ -2255,31 +2279,31 @@ class GetUpphLightInfo(Resource):
         start_time = jsonData["START_TIME"]
         end_time = jsonData["END_TIME"]
         log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
-        tvUpphLightInfo = TvUpphLightInfo(identity, start_time, end_time)
-        return tvUpphLightInfo.getData()               
+        isfpUpphLightInfo = iSFPUpphLightInfo(identity, start_time, end_time)
+        return isfpUpphLightInfo.getData()               
 
-tvResignInfoNS = api.namespace('GetTvResignInfo', description = 'TvResignInfo')
-tvResignInfoML = api.model('GetTvResignInfo', {
+isfpResignInfoNS = api.namespace('GetiSFPResignInfo', description = '廠晨會看板-離職率(%)')
+isfpResignInfoML = api.model('GetiSFPResignInfo', {
 "COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
 "SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
 "FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
-"START_TIME":fields.String( required = True, description = 'FACTORY_ID', default = '20211123000000', example = '20211123000000'),
-"END_TIME":fields.String( required = True, description = 'FACTORY_ID', default = '20211128000000', example = '20211128000000'),
+"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123000000', example = '20211123000000'),
+"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128000000', example = '20211128000000'),
 })
-@tvResignInfoNS.route('', methods = ['POST'])
-@tvResignInfoNS.response(200, 'Sucess')
-@tvResignInfoNS.response(201, 'Created Sucess')
-@tvResignInfoNS.response(204, 'No Content')
-@tvResignInfoNS.response(400, 'Bad Request')
-@tvResignInfoNS.response(401, 'Unauthorized')
-@tvResignInfoNS.response(403, 'Forbidden')
-@tvResignInfoNS.response(404, 'Not Found')
-@tvResignInfoNS.response(405, 'Method Not Allowed')
-@tvResignInfoNS.response(409, 'Conflict')
-@tvResignInfoNS.response(500, 'Internal Server Error')
+@isfpResignInfoNS.route('', methods = ['POST'])
+@isfpResignInfoNS.response(200, 'Sucess')
+@isfpResignInfoNS.response(201, 'Created Sucess')
+@isfpResignInfoNS.response(204, 'No Content')
+@isfpResignInfoNS.response(400, 'Bad Request')
+@isfpResignInfoNS.response(401, 'Unauthorized')
+@isfpResignInfoNS.response(403, 'Forbidden')
+@isfpResignInfoNS.response(404, 'Not Found')
+@isfpResignInfoNS.response(405, 'Method Not Allowed')
+@isfpResignInfoNS.response(409, 'Conflict')
+@isfpResignInfoNS.response(500, 'Internal Server Error')
 class GetResignInfo(Resource):
-    @tvResignInfoNS.doc('AppConfSysMain')
-    @tvResignInfoNS.expect(tvResignInfoML)
+    @isfpResignInfoNS.doc('AppConfSysMain')
+    @isfpResignInfoNS.expect(isfpResignInfoML)
     def post(self):
         if not request:
             abort(400)
@@ -2292,31 +2316,31 @@ class GetResignInfo(Resource):
         start_time = jsonData["START_TIME"]
         end_time = jsonData["END_TIME"]
         log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
-        tvResignInfo = TvResignInfo(identity, start_time, end_time)
-        return tvResignInfo.getData()
+        isfpResignInfo = iSFPResignInfo(identity, start_time, end_time)
+        return isfpResignInfo.getData()
 
-tvAttendanceInfoNS = api.namespace('GetTvAttendanceInfo', description = 'TvAttendanceInfo')
-tvAttendanceInfoML = api.model('GetTvAttendanceInfo', {
+isfpAttendanceInfoNS = api.namespace('GetiSFPAttendanceInfo', description = '廠晨會看板-出勤率(%)')
+isfpAttendanceInfoML = api.model('GetiSFPAttendanceInfo', {
 "COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
 "SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
 "FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
-"START_TIME":fields.String( required = True, description = 'FACTORY_ID', default = '20211123000000', example = '20211123000000'),
-"END_TIME":fields.String( required = True, description = 'FACTORY_ID', default = '20211128000000', example = '20211128000000'),
+"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123000000', example = '20211123000000'),
+"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128000000', example = '20211128000000'),
 })
-@tvAttendanceInfoNS.route('', methods = ['POST'])
-@tvAttendanceInfoNS.response(200, 'Sucess')
-@tvAttendanceInfoNS.response(201, 'Created Sucess')
-@tvAttendanceInfoNS.response(204, 'No Content')
-@tvAttendanceInfoNS.response(400, 'Bad Request')
-@tvAttendanceInfoNS.response(401, 'Unauthorized')
-@tvAttendanceInfoNS.response(403, 'Forbidden')
-@tvAttendanceInfoNS.response(404, 'Not Found')
-@tvAttendanceInfoNS.response(405, 'Method Not Allowed')
-@tvAttendanceInfoNS.response(409, 'Conflict')
-@tvAttendanceInfoNS.response(500, 'Internal Server Error')
+@isfpAttendanceInfoNS.route('', methods = ['POST'])
+@isfpAttendanceInfoNS.response(200, 'Sucess')
+@isfpAttendanceInfoNS.response(201, 'Created Sucess')
+@isfpAttendanceInfoNS.response(204, 'No Content')
+@isfpAttendanceInfoNS.response(400, 'Bad Request')
+@isfpAttendanceInfoNS.response(401, 'Unauthorized')
+@isfpAttendanceInfoNS.response(403, 'Forbidden')
+@isfpAttendanceInfoNS.response(404, 'Not Found')
+@isfpAttendanceInfoNS.response(405, 'Method Not Allowed')
+@isfpAttendanceInfoNS.response(409, 'Conflict')
+@isfpAttendanceInfoNS.response(500, 'Internal Server Error')
 class GetAttendanceInfo(Resource):
-    @tvAttendanceInfoNS.doc('AppConfSysMain')
-    @tvAttendanceInfoNS.expect(tvAttendanceInfoML)
+    @isfpAttendanceInfoNS.doc('AppConfSysMain')
+    @isfpAttendanceInfoNS.expect(isfpAttendanceInfoML)
     def post(self):
         if not request:
             abort(400)
@@ -2329,8 +2353,863 @@ class GetAttendanceInfo(Resource):
         start_time = jsonData["START_TIME"]
         end_time = jsonData["END_TIME"]
         log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
-        tvAttendanceInfo = TvAttendanceInfo(identity, start_time, end_time)
-        return tvAttendanceInfo.getData()        
+        isfpAttendanceInfo = iSFPAttendanceInfo(identity, start_time, end_time)
+        return isfpAttendanceInfo.getData()       
+
+isfpReAtInfoNS = api.namespace('GetiSFPReAtInfo', description = '廠晨會看板-離職率(%) & 出勤率(%) 區塊')
+isfpReAtInfoML = api.model('GetiSFPReAtInfo', {
+"COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+"SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
+"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123000000', example = '20211123000000'),
+"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128000000', example = '20211128000000'),
+})
+@isfpReAtInfoNS.route('', methods = ['POST'])
+@isfpReAtInfoNS.response(200, 'Sucess')
+@isfpReAtInfoNS.response(201, 'Created Sucess')
+@isfpReAtInfoNS.response(204, 'No Content')
+@isfpReAtInfoNS.response(400, 'Bad Request')
+@isfpReAtInfoNS.response(401, 'Unauthorized')
+@isfpReAtInfoNS.response(403, 'Forbidden')
+@isfpReAtInfoNS.response(404, 'Not Found')
+@isfpReAtInfoNS.response(405, 'Method Not Allowed')
+@isfpReAtInfoNS.response(409, 'Conflict')
+@isfpReAtInfoNS.response(500, 'Internal Server Error')
+class GetReAtInfo(Resource):
+    @isfpReAtInfoNS.doc('AppConfSysMain')
+    @isfpReAtInfoNS.expect(isfpReAtInfoML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        jsonData = BaseType.validateType(request.json)
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData:  
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        identity = jsonData["COMPANY_CODE"] + "-" + jsonData["SITE"] + "-" + jsonData["FACTORY_ID"]
+        start_time = jsonData["START_TIME"]
+        end_time = jsonData["END_TIME"]
+        log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
+        isfpReAtInfo = iSFPReAtInfo(identity, start_time, end_time)
+        return isfpReAtInfo.getData()             
+
+isfpScrapLightInfoNS = api.namespace('GetiSFPScrapLightInfo', description = '廠晨會看板-報廢推移圖燈號')
+isfpScrapLightInfoML = api.model('GetiSFPScrapLightInfo', {
+"COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+"SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
+"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123000000', example = '20211123000000'),
+"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128000000', example = '20211128000000'),
+})
+@isfpScrapLightInfoNS.route('', methods = ['POST'])
+@isfpScrapLightInfoNS.response(200, 'Sucess')
+@isfpScrapLightInfoNS.response(201, 'Created Sucess')
+@isfpScrapLightInfoNS.response(204, 'No Content')
+@isfpScrapLightInfoNS.response(400, 'Bad Request')
+@isfpScrapLightInfoNS.response(401, 'Unauthorized')
+@isfpScrapLightInfoNS.response(403, 'Forbidden')
+@isfpScrapLightInfoNS.response(404, 'Not Found')
+@isfpScrapLightInfoNS.response(405, 'Method Not Allowed')
+@isfpScrapLightInfoNS.response(409, 'Conflict')
+@isfpScrapLightInfoNS.response(500, 'Internal Server Error')
+class GetScrapLightInfo(Resource):
+    @isfpScrapLightInfoNS.doc('AppConfSysMain')
+    @isfpScrapLightInfoNS.expect(isfpScrapLightInfoML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        jsonData = BaseType.validateType(request.json)
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData:  
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        identity = jsonData["COMPANY_CODE"] + "-" + jsonData["SITE"] + "-" + jsonData["FACTORY_ID"]
+        start_time = jsonData["START_TIME"]
+        end_time = jsonData["END_TIME"]
+        log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
+        isfpScrapLightInfo = iSFPScrapLightInfo(identity, start_time, end_time)
+        return isfpScrapLightInfo.getData()
+
+isfpScrapInfoNS = api.namespace('GetiSFPScrapInfo', description = '廠晨會看板-報廢推移圖')
+isfpScrapInfoML = api.model('GetiSFPScrapInfo', {
+"COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+"SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
+"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123000000', example = '20211123000000'),
+"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128000000', example = '20211128000000'),
+})
+@isfpScrapInfoNS.route('', methods = ['POST'])
+@isfpScrapInfoNS.response(200, 'Sucess')
+@isfpScrapInfoNS.response(201, 'Created Sucess')
+@isfpScrapInfoNS.response(204, 'No Content')
+@isfpScrapInfoNS.response(400, 'Bad Request')
+@isfpScrapInfoNS.response(401, 'Unauthorized')
+@isfpScrapInfoNS.response(403, 'Forbidden')
+@isfpScrapInfoNS.response(404, 'Not Found')
+@isfpScrapInfoNS.response(405, 'Method Not Allowed')
+@isfpScrapInfoNS.response(409, 'Conflict')
+@isfpScrapInfoNS.response(500, 'Internal Server Error')
+class GetScrapInfo(Resource):
+    @isfpScrapInfoNS.doc('AppConfSysMain')
+    @isfpScrapInfoNS.expect(isfpScrapInfoML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        jsonData = BaseType.validateType(request.json)
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData:  
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        identity = jsonData["COMPANY_CODE"] + "-" + jsonData["SITE"] + "-" + jsonData["FACTORY_ID"]
+        start_time = jsonData["START_TIME"]
+        end_time = jsonData["END_TIME"]
+        log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
+        isfpScrapInfo = iSFPScrapInfo(identity, start_time, end_time)
+        return isfpScrapInfo.getData()
+
+isfpWOInfoNS = api.namespace('GetiSFPWOInfo', description = '廠晨會看板-工單結案率(%)')
+isfpWOInfoML = api.model('GetiSFPWOInfo', {
+"COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+"SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
+"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123000000', example = '20211123000000'),
+"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128000000', example = '20211128000000'),
+})
+@isfpWOInfoNS.route('', methods = ['POST'])
+@isfpWOInfoNS.response(200, 'Sucess')
+@isfpWOInfoNS.response(201, 'Created Sucess')
+@isfpWOInfoNS.response(204, 'No Content')
+@isfpWOInfoNS.response(400, 'Bad Request')
+@isfpWOInfoNS.response(401, 'Unauthorized')
+@isfpWOInfoNS.response(403, 'Forbidden')
+@isfpWOInfoNS.response(404, 'Not Found')
+@isfpWOInfoNS.response(405, 'Method Not Allowed')
+@isfpWOInfoNS.response(409, 'Conflict')
+@isfpWOInfoNS.response(500, 'Internal Server Error')
+class GetWOInfo(Resource):
+    @isfpWOInfoNS.doc('AppConfSysMain')
+    @isfpWOInfoNS.expect(isfpWOInfoML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        jsonData = BaseType.validateType(request.json)
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData:  
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        identity = jsonData["COMPANY_CODE"] + "-" + jsonData["SITE"] + "-" + jsonData["FACTORY_ID"]
+        start_time = jsonData["START_TIME"]
+        end_time = jsonData["END_TIME"]
+        log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
+        isfpWOInfo = iSFPWOInfo(identity, start_time, end_time)
+        return isfpWOInfo.getData()    
+
+isfpWIP30InfoNS = api.namespace('GetiSFPWIP30Info', description = '廠晨會看板- >30天的WIP')
+isfpWIP30InfoML = api.model('GetiSFPWIP30Info', {
+"COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+"SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
+"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123000000', example = '20211123000000'),
+"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128000000', example = '20211128000000'),
+})
+@isfpWIP30InfoNS.route('', methods = ['POST'])
+@isfpWIP30InfoNS.response(200, 'Sucess')
+@isfpWIP30InfoNS.response(201, 'Created Sucess')
+@isfpWIP30InfoNS.response(204, 'No Content')
+@isfpWIP30InfoNS.response(400, 'Bad Request')
+@isfpWIP30InfoNS.response(401, 'Unauthorized')
+@isfpWIP30InfoNS.response(403, 'Forbidden')
+@isfpWIP30InfoNS.response(404, 'Not Found')
+@isfpWIP30InfoNS.response(405, 'Method Not Allowed')
+@isfpWIP30InfoNS.response(409, 'Conflict')
+@isfpWIP30InfoNS.response(500, 'Internal Server Error')
+class GetWIP30Info(Resource):
+    @isfpWIP30InfoNS.doc('AppConfSysMain')
+    @isfpWIP30InfoNS.expect(isfpWIP30InfoML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        jsonData = BaseType.validateType(request.json)
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData:  
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        identity = jsonData["COMPANY_CODE"] + "-" + jsonData["SITE"] + "-" + jsonData["FACTORY_ID"]
+        start_time = jsonData["START_TIME"]
+        end_time = jsonData["END_TIME"]
+        log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
+        isfpWIP30Info = iSFPWIP30Info(identity, start_time, end_time)
+        return isfpWIP30Info.getData() 
+
+isfpWIP14InfoNS = api.namespace('GetiSFPWIP14Info', description = '廠晨會看板- >14天的WIP')
+isfpWIP14InfoML = api.model('GetiSFPWIP14Info', {
+"COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+"SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
+"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123000000', example = '20211123000000'),
+"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128000000', example = '20211128000000'),
+})
+@isfpWIP14InfoNS.route('', methods = ['POST'])
+@isfpWIP14InfoNS.response(200, 'Sucess')
+@isfpWIP14InfoNS.response(201, 'Created Sucess')
+@isfpWIP14InfoNS.response(204, 'No Content')
+@isfpWIP14InfoNS.response(400, 'Bad Request')
+@isfpWIP14InfoNS.response(401, 'Unauthorized')
+@isfpWIP14InfoNS.response(403, 'Forbidden')
+@isfpWIP14InfoNS.response(404, 'Not Found')
+@isfpWIP14InfoNS.response(405, 'Method Not Allowed')
+@isfpWIP14InfoNS.response(409, 'Conflict')
+@isfpWIP14InfoNS.response(500, 'Internal Server Error')
+class GetWIP14Info(Resource):
+    @isfpWIP14InfoNS.doc('AppConfSysMain')
+    @isfpWIP14InfoNS.expect(isfpWIP14InfoML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        jsonData = BaseType.validateType(request.json)
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData:  
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        identity = jsonData["COMPANY_CODE"] + "-" + jsonData["SITE"] + "-" + jsonData["FACTORY_ID"]
+        start_time = jsonData["START_TIME"]
+        end_time = jsonData["END_TIME"]
+        log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
+        isfpWIP14Info = iSFPWIP14Info(identity, start_time, end_time)
+        return isfpWIP14Info.getData() 
+
+isfpWOWIPInfoNS = api.namespace('GetiSFPWOWIPInfo', description = '廠晨會看板- WO 與 WIP 區塊')
+isfpWOWIPInfoML = api.model('GetiSFPWOWIPInfo', {
+"COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+"SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
+"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123000000', example = '20211123000000'),
+"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128000000', example = '20211128000000'),
+})
+@isfpWOWIPInfoNS.route('', methods = ['POST'])
+@isfpWOWIPInfoNS.response(200, 'Sucess')
+@isfpWOWIPInfoNS.response(201, 'Created Sucess')
+@isfpWOWIPInfoNS.response(204, 'No Content')
+@isfpWOWIPInfoNS.response(400, 'Bad Request')
+@isfpWOWIPInfoNS.response(401, 'Unauthorized')
+@isfpWOWIPInfoNS.response(403, 'Forbidden')
+@isfpWOWIPInfoNS.response(404, 'Not Found')
+@isfpWOWIPInfoNS.response(405, 'Method Not Allowed')
+@isfpWOWIPInfoNS.response(409, 'Conflict')
+@isfpWOWIPInfoNS.response(500, 'Internal Server Error')
+class GetWOWIPInfo(Resource):
+    @isfpWOWIPInfoNS.doc('AppConfSysMain')
+    @isfpWOWIPInfoNS.expect(isfpWOWIPInfoML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        jsonData = BaseType.validateType(request.json)
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData:  
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        identity = jsonData["COMPANY_CODE"] + "-" + jsonData["SITE"] + "-" + jsonData["FACTORY_ID"]
+        start_time = jsonData["START_TIME"]
+        end_time = jsonData["END_TIME"]
+        log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
+        isfpWOWIPInfo = iSFPWOWIPInfo(identity, start_time, end_time)
+        return isfpWOWIPInfo.getData()         
+
+isfpOutLightInfoNS = api.namespace('GetiSFPOutLightInfo', description = '廠晨會看板- OutPut 燈號')
+isfpOutLightInfoML = api.model('GetiSFPOutLightInfo', {
+"COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+"SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
+"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123000000', example = '20211123000000'),
+"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128000000', example = '20211128000000'),
+"LINE_TYPE":fields.String( required = True, description = 'LINE_TYPE', default = 'ALL', example = 'ALL'),
+})
+@isfpOutLightInfoNS.route('', methods = ['POST'])
+@isfpOutLightInfoNS.response(200, 'Sucess')
+@isfpOutLightInfoNS.response(201, 'Created Sucess')
+@isfpOutLightInfoNS.response(204, 'No Content')
+@isfpOutLightInfoNS.response(400, 'Bad Request')
+@isfpOutLightInfoNS.response(401, 'Unauthorized')
+@isfpOutLightInfoNS.response(403, 'Forbidden')
+@isfpOutLightInfoNS.response(404, 'Not Found')
+@isfpOutLightInfoNS.response(405, 'Method Not Allowed')
+@isfpOutLightInfoNS.response(409, 'Conflict')
+@isfpOutLightInfoNS.response(500, 'Internal Server Error')
+class GetOutLightInfo(Resource):
+    @isfpOutLightInfoNS.doc('AppConfSysMain')
+    @isfpOutLightInfoNS.expect(isfpOutLightInfoML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        jsonData = BaseType.validateType(request.json)
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData:  
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        identity = jsonData["COMPANY_CODE"] + "-" + jsonData["SITE"] + "-" + jsonData["FACTORY_ID"]
+        start_time = jsonData["START_TIME"]
+        end_time = jsonData["END_TIME"]
+        line_type = jsonData["LINE_TYPE"]
+        log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
+        isfpOutLightInfo = iSFPOutLightInfo(identity, start_time, end_time, line_type)
+        return isfpOutLightInfo.getData()  
+
+isfpOutputInfoNS = api.namespace('GetiSFPOutputInfo', description = '廠晨會看板- OutPut')
+isfpOutputInfoML = api.model('GetiSFPOutputInfo', {
+"COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+"SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
+"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123000000', example = '20211123000000'),
+"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128000000', example = '20211128000000'),
+"LINE_TYPE":fields.String( required = True, description = 'LINE_TYPE', default = 'ALL', example = 'ALL'),
+})
+@isfpOutputInfoNS.route('', methods = ['POST'])
+@isfpOutputInfoNS.response(200, 'Sucess')
+@isfpOutputInfoNS.response(201, 'Created Sucess')
+@isfpOutputInfoNS.response(204, 'No Content')
+@isfpOutputInfoNS.response(400, 'Bad Request')
+@isfpOutputInfoNS.response(401, 'Unauthorized')
+@isfpOutputInfoNS.response(403, 'Forbidden')
+@isfpOutputInfoNS.response(404, 'Not Found')
+@isfpOutputInfoNS.response(405, 'Method Not Allowed')
+@isfpOutputInfoNS.response(409, 'Conflict')
+@isfpOutputInfoNS.response(500, 'Internal Server Error')
+class GetOutputInfo(Resource):
+    @isfpOutputInfoNS.doc('AppConfSysMain')
+    @isfpOutputInfoNS.expect(isfpOutputInfoML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        jsonData = BaseType.validateType(request.json)
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData:  
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        identity = jsonData["COMPANY_CODE"] + "-" + jsonData["SITE"] + "-" + jsonData["FACTORY_ID"]
+        start_time = jsonData["START_TIME"]
+        end_time = jsonData["END_TIME"]
+        line_type = jsonData["LINE_TYPE"]
+        log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
+        isfpOutputInfo = iSFPOutputInfo(identity, start_time, end_time, line_type)
+        return isfpOutputInfo.getData()                                      
+
+isfpReachInfoNS = api.namespace('GetiSFPReachInfo', description = '廠晨會看板- 達產(%)')
+isfpReachInfoML = api.model('GetiSFPReachInfo', {
+"COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+"SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
+"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123000000', example = '20211123000000'),
+"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128000000', example = '20211128000000'),
+})
+@isfpReachInfoNS.route('', methods = ['POST'])
+@isfpReachInfoNS.response(200, 'Sucess')
+@isfpReachInfoNS.response(201, 'Created Sucess')
+@isfpReachInfoNS.response(204, 'No Content')
+@isfpReachInfoNS.response(400, 'Bad Request')
+@isfpReachInfoNS.response(401, 'Unauthorized')
+@isfpReachInfoNS.response(403, 'Forbidden')
+@isfpReachInfoNS.response(404, 'Not Found')
+@isfpReachInfoNS.response(405, 'Method Not Allowed')
+@isfpReachInfoNS.response(409, 'Conflict')
+@isfpReachInfoNS.response(500, 'Internal Server Error')
+class GetReachInfo(Resource):
+    @isfpReachInfoNS.doc('AppConfSysMain')
+    @isfpReachInfoNS.expect(isfpReachInfoML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        jsonData = BaseType.validateType(request.json)
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData:  
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        identity = jsonData["COMPANY_CODE"] + "-" + jsonData["SITE"] + "-" + jsonData["FACTORY_ID"]
+        start_time = jsonData["START_TIME"]
+        end_time = jsonData["END_TIME"]
+        log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
+        isfpReachInfo = iSFPReachInfo(identity, start_time, end_time)
+        return isfpReachInfo.getData()
+
+isfpTDInputInfoNS = api.namespace('GetiSFPTDInputInfo', description = '廠晨會看板- TD & Input 區塊')
+isfpTDInputInfoML = api.model('GetiSFPTDInputInfo', {
+"COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+"SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
+"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123000000', example = '20211123000000'),
+"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128000000', example = '20211128000000'),
+})
+@isfpTDInputInfoNS.route('', methods = ['POST'])
+@isfpTDInputInfoNS.response(200, 'Sucess')
+@isfpTDInputInfoNS.response(201, 'Created Sucess')
+@isfpTDInputInfoNS.response(204, 'No Content')
+@isfpTDInputInfoNS.response(400, 'Bad Request')
+@isfpTDInputInfoNS.response(401, 'Unauthorized')
+@isfpTDInputInfoNS.response(403, 'Forbidden')
+@isfpTDInputInfoNS.response(404, 'Not Found')
+@isfpTDInputInfoNS.response(405, 'Method Not Allowed')
+@isfpTDInputInfoNS.response(409, 'Conflict')
+@isfpTDInputInfoNS.response(500, 'Internal Server Error')
+class GetTDInputInfo(Resource):
+    @isfpTDInputInfoNS.doc('AppConfSysMain')
+    @isfpTDInputInfoNS.expect(isfpTDInputInfoML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        jsonData = BaseType.validateType(request.json)
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData:  
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        identity = jsonData["COMPANY_CODE"] + "-" + jsonData["SITE"] + "-" + jsonData["FACTORY_ID"]
+        start_time = jsonData["START_TIME"]
+        end_time = jsonData["END_TIME"]
+        log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
+        isfpTDInputInfo = iSFPTDInputInfo(identity, start_time, end_time)
+        return isfpTDInputInfo.getData() 
+
+isfpOEEInfoNS = api.namespace('GetiSFPOEEInfo', description = '廠晨會看板- 設備OEE(%)')
+isfpOEEInfoML = api.model('GetiSFPOEEInfo', {
+"COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+"SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
+"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123000000', example = '20211123000000'),
+"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128000000', example = '20211128000000'),
+})
+@isfpOEEInfoNS.route('', methods = ['POST'])
+@isfpOEEInfoNS.response(200, 'Sucess')
+@isfpOEEInfoNS.response(201, 'Created Sucess')
+@isfpOEEInfoNS.response(204, 'No Content')
+@isfpOEEInfoNS.response(400, 'Bad Request')
+@isfpOEEInfoNS.response(401, 'Unauthorized')
+@isfpOEEInfoNS.response(403, 'Forbidden')
+@isfpOEEInfoNS.response(404, 'Not Found')
+@isfpOEEInfoNS.response(405, 'Method Not Allowed')
+@isfpOEEInfoNS.response(409, 'Conflict')
+@isfpOEEInfoNS.response(500, 'Internal Server Error')
+class GetOEEInfo(Resource):
+    @isfpOEEInfoNS.doc('AppConfSysMain')
+    @isfpOEEInfoNS.expect(isfpOEEInfoML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        jsonData = BaseType.validateType(request.json)
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData:  
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        identity = jsonData["COMPANY_CODE"] + "-" + jsonData["SITE"] + "-" + jsonData["FACTORY_ID"]
+        start_time = jsonData["START_TIME"]
+        end_time = jsonData["END_TIME"]
+        log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
+        isfpOEEInfo = iSFPOEEInfo(identity, start_time, end_time)
+        return isfpOEEInfo.getData()               
+
+isfpFPYYLightInfoNS = api.namespace('GetiSFPFPYYLightInfo', description = '廠晨會看板- FPY(含快修) 燈號')
+isfpFPYYLightInfoML = api.model('GetiSFPFPYYLightInfo', {
+"COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+"SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
+"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123000000', example = '20211123000000'),
+"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128000000', example = '20211128000000'),
+})
+@isfpFPYYLightInfoNS.route('', methods = ['POST'])
+@isfpFPYYLightInfoNS.response(200, 'Sucess')
+@isfpFPYYLightInfoNS.response(201, 'Created Sucess')
+@isfpFPYYLightInfoNS.response(204, 'No Content')
+@isfpFPYYLightInfoNS.response(400, 'Bad Request')
+@isfpFPYYLightInfoNS.response(401, 'Unauthorized')
+@isfpFPYYLightInfoNS.response(403, 'Forbidden')
+@isfpFPYYLightInfoNS.response(404, 'Not Found')
+@isfpFPYYLightInfoNS.response(405, 'Method Not Allowed')
+@isfpFPYYLightInfoNS.response(409, 'Conflict')
+@isfpFPYYLightInfoNS.response(500, 'Internal Server Error')
+class GetFPYYLightInfo(Resource):
+    @isfpFPYYLightInfoNS.doc('AppConfSysMain')
+    @isfpFPYYLightInfoNS.expect(isfpFPYYLightInfoML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        jsonData = BaseType.validateType(request.json)
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData:  
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        identity = jsonData["COMPANY_CODE"] + "-" + jsonData["SITE"] + "-" + jsonData["FACTORY_ID"]
+        start_time = jsonData["START_TIME"]
+        end_time = jsonData["END_TIME"]
+        log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
+        isfpFPYYLightInfo = iSFPFPYYLightInfo(identity, start_time, end_time)
+        return isfpFPYYLightInfo.getData() 
+
+isfpFPYYInfoNS = api.namespace('GetiSFPFPYYInfo', description = '廠晨會看板- FPY(含快修) 推移圖')
+isfpFPYYInfoML = api.model('GetiSFPFPYYInfo', {
+"COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+"SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
+"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123000000', example = '20211123000000'),
+"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128000000', example = '20211128000000'),
+})
+@isfpFPYYInfoNS.route('', methods = ['POST'])
+@isfpFPYYInfoNS.response(200, 'Sucess')
+@isfpFPYYInfoNS.response(201, 'Created Sucess')
+@isfpFPYYInfoNS.response(204, 'No Content')
+@isfpFPYYInfoNS.response(400, 'Bad Request')
+@isfpFPYYInfoNS.response(401, 'Unauthorized')
+@isfpFPYYInfoNS.response(403, 'Forbidden')
+@isfpFPYYInfoNS.response(404, 'Not Found')
+@isfpFPYYInfoNS.response(405, 'Method Not Allowed')
+@isfpFPYYInfoNS.response(409, 'Conflict')
+@isfpFPYYInfoNS.response(500, 'Internal Server Error')
+class GetFPYYInfo(Resource):
+    @isfpFPYYInfoNS.doc('AppConfSysMain')
+    @isfpFPYYInfoNS.expect(isfpFPYYInfoML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        jsonData = BaseType.validateType(request.json)
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData:  
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        identity = jsonData["COMPANY_CODE"] + "-" + jsonData["SITE"] + "-" + jsonData["FACTORY_ID"]
+        start_time = jsonData["START_TIME"]
+        end_time = jsonData["END_TIME"]
+        log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
+        isfpFPYYInfo = iSFPFPYYInfo(identity, start_time, end_time)
+        return isfpFPYYInfo.getData() 
+
+isfpFPYScrapInfoNS = api.namespace('GetiSFPFPYScrapInfo', description = '廠晨會看板- FPY Total(%) & 破片報廢率(%) 區塊')
+isfpFPYScrapInfoML = api.model('GetiSFPFPYScrapInfo', {
+"COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+"SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
+"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123000000', example = '20211123000000'),
+"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128000000', example = '20211128000000'),
+})
+@isfpFPYScrapInfoNS.route('', methods = ['POST'])
+@isfpFPYScrapInfoNS.response(200, 'Sucess')
+@isfpFPYScrapInfoNS.response(201, 'Created Sucess')
+@isfpFPYScrapInfoNS.response(204, 'No Content')
+@isfpFPYScrapInfoNS.response(400, 'Bad Request')
+@isfpFPYScrapInfoNS.response(401, 'Unauthorized')
+@isfpFPYScrapInfoNS.response(403, 'Forbidden')
+@isfpFPYScrapInfoNS.response(404, 'Not Found')
+@isfpFPYScrapInfoNS.response(405, 'Method Not Allowed')
+@isfpFPYScrapInfoNS.response(409, 'Conflict')
+@isfpFPYScrapInfoNS.response(500, 'Internal Server Error')
+class GetFPYScrapInfo(Resource):
+    @isfpFPYScrapInfoNS.doc('AppConfSysMain')
+    @isfpFPYScrapInfoNS.expect(isfpFPYScrapInfoML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        jsonData = BaseType.validateType(request.json)
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData:  
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        identity = jsonData["COMPANY_CODE"] + "-" + jsonData["SITE"] + "-" + jsonData["FACTORY_ID"]
+        start_time = jsonData["START_TIME"]
+        end_time = jsonData["END_TIME"]
+        log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
+        isfpFPYScrapInfo = iSFPFPYScrapInfo(identity, start_time, end_time)
+        return isfpFPYScrapInfo.getData() 
+
+isfpOQCLightInfoNS = api.namespace('GetiSFPOQCLightInfo', description = '廠晨會看板- OQC 燈號')
+isfpOQCLightInfoML = api.model('GetiSFPOQCLightInfo', {
+"COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+"SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
+"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123000000', example = '20211123000000'),
+"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128000000', example = '20211128000000'),
+})
+@isfpOQCLightInfoNS.route('', methods = ['POST'])
+@isfpOQCLightInfoNS.response(200, 'Sucess')
+@isfpOQCLightInfoNS.response(201, 'Created Sucess')
+@isfpOQCLightInfoNS.response(204, 'No Content')
+@isfpOQCLightInfoNS.response(400, 'Bad Request')
+@isfpOQCLightInfoNS.response(401, 'Unauthorized')
+@isfpOQCLightInfoNS.response(403, 'Forbidden')
+@isfpOQCLightInfoNS.response(404, 'Not Found')
+@isfpOQCLightInfoNS.response(405, 'Method Not Allowed')
+@isfpOQCLightInfoNS.response(409, 'Conflict')
+@isfpOQCLightInfoNS.response(500, 'Internal Server Error')
+class GetOQCLightInfo(Resource):
+    @isfpOQCLightInfoNS.doc('AppConfSysMain')
+    @isfpOQCLightInfoNS.expect(isfpOQCLightInfoML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        jsonData = BaseType.validateType(request.json)
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData:  
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        identity = jsonData["COMPANY_CODE"] + "-" + jsonData["SITE"] + "-" + jsonData["FACTORY_ID"]
+        start_time = jsonData["START_TIME"]
+        end_time = jsonData["END_TIME"]
+        log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
+        isfpOQCLightInfo = iSFPOQCLightInfo(identity, start_time, end_time)
+        return isfpOQCLightInfo.getData() 
+
+isfpOQCInfoNS = api.namespace('GetiSFPOQCInfo', description = '廠晨會看板- OQC 判退推移圖')
+isfpOQCInfoML = api.model('GetiSFPOQCInfo', {
+"COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+"SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
+"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123000000', example = '20211123000000'),
+"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128000000', example = '20211128000000'),
+})
+@isfpOQCInfoNS.route('', methods = ['POST'])
+@isfpOQCInfoNS.response(200, 'Sucess')
+@isfpOQCInfoNS.response(201, 'Created Sucess')
+@isfpOQCInfoNS.response(204, 'No Content')
+@isfpOQCInfoNS.response(400, 'Bad Request')
+@isfpOQCInfoNS.response(401, 'Unauthorized')
+@isfpOQCInfoNS.response(403, 'Forbidden')
+@isfpOQCInfoNS.response(404, 'Not Found')
+@isfpOQCInfoNS.response(405, 'Method Not Allowed')
+@isfpOQCInfoNS.response(409, 'Conflict')
+@isfpOQCInfoNS.response(500, 'Internal Server Error')
+class GetOQCInfo(Resource):
+    @isfpOQCInfoNS.doc('AppConfSysMain')
+    @isfpOQCInfoNS.expect(isfpOQCInfoML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        jsonData = BaseType.validateType(request.json)
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData:  
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        identity = jsonData["COMPANY_CODE"] + "-" + jsonData["SITE"] + "-" + jsonData["FACTORY_ID"]
+        start_time = jsonData["START_TIME"]
+        end_time = jsonData["END_TIME"]
+        log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
+        isfpOQCInfo = iSFPOQCInfo(identity, start_time, end_time)
+        return isfpOQCInfo.getData()        
+
+isfpHotIPQAInfoNS = api.namespace('GetiSFPHotIPQAInfo', description = '廠晨會看板- 今日頭條 & IPQA(%) 區塊')
+isfpHotIPQAInfoML = api.model('GetiSFPHotIPQAInfo', {
+"COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+"SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
+"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123000000', example = '20211123000000'),
+"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128000000', example = '20211128000000'),
+})
+@isfpHotIPQAInfoNS.route('', methods = ['POST'])
+@isfpHotIPQAInfoNS.response(200, 'Sucess')
+@isfpHotIPQAInfoNS.response(201, 'Created Sucess')
+@isfpHotIPQAInfoNS.response(204, 'No Content')
+@isfpHotIPQAInfoNS.response(400, 'Bad Request')
+@isfpHotIPQAInfoNS.response(401, 'Unauthorized')
+@isfpHotIPQAInfoNS.response(403, 'Forbidden')
+@isfpHotIPQAInfoNS.response(404, 'Not Found')
+@isfpHotIPQAInfoNS.response(405, 'Method Not Allowed')
+@isfpHotIPQAInfoNS.response(409, 'Conflict')
+@isfpHotIPQAInfoNS.response(500, 'Internal Server Error')
+class GetHotIPQAInfo(Resource):
+    @isfpHotIPQAInfoNS.doc('AppConfSysMain')
+    @isfpHotIPQAInfoNS.expect(isfpHotIPQAInfoML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        jsonData = BaseType.validateType(request.json)
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData:  
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        identity = jsonData["COMPANY_CODE"] + "-" + jsonData["SITE"] + "-" + jsonData["FACTORY_ID"]
+        start_time = jsonData["START_TIME"]
+        end_time = jsonData["END_TIME"]
+        log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
+        isfpHotIPQAInfo = iSFPHotIPQAInfo(identity, start_time, end_time)
+        return isfpHotIPQAInfo.getData()
+
+isfpHoldLightInfoNS = api.namespace('GetiSFPHoldLightInfo', description = '廠晨會看板- Hold 燈號')
+isfpHoldLightInfoML = api.model('GetiSFPHoldLightInfo', {
+"COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+"SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
+"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123000000', example = '20211123000000'),
+"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128000000', example = '20211128000000'),
+})
+@isfpHoldLightInfoNS.route('', methods = ['POST'])
+@isfpHoldLightInfoNS.response(200, 'Sucess')
+@isfpHoldLightInfoNS.response(201, 'Created Sucess')
+@isfpHoldLightInfoNS.response(204, 'No Content')
+@isfpHoldLightInfoNS.response(400, 'Bad Request')
+@isfpHoldLightInfoNS.response(401, 'Unauthorized')
+@isfpHoldLightInfoNS.response(403, 'Forbidden')
+@isfpHoldLightInfoNS.response(404, 'Not Found')
+@isfpHoldLightInfoNS.response(405, 'Method Not Allowed')
+@isfpHoldLightInfoNS.response(409, 'Conflict')
+@isfpHoldLightInfoNS.response(500, 'Internal Server Error')
+class GetHoldLightInfo(Resource):
+    @isfpHoldLightInfoNS.doc('AppConfSysMain')
+    @isfpHoldLightInfoNS.expect(isfpHoldLightInfoML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        jsonData = BaseType.validateType(request.json)
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData:  
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        identity = jsonData["COMPANY_CODE"] + "-" + jsonData["SITE"] + "-" + jsonData["FACTORY_ID"]
+        start_time = jsonData["START_TIME"]
+        end_time = jsonData["END_TIME"]
+        log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
+        isfpHoldLightInfo = iSFPHoldLightInfo(identity, start_time, end_time)
+        return isfpHoldLightInfo.getData()
+
+isfpHoldInfoNS = api.namespace('GetiSFPHoldInfo', description = '廠晨會看板- Hold 推移圖')
+isfpHoldInfoML = api.model('GetiSFPHoldInfo', {
+"COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+"SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
+"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123000000', example = '20211123000000'),
+"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128000000', example = '20211128000000'),
+})
+@isfpHoldInfoNS.route('', methods = ['POST'])
+@isfpHoldInfoNS.response(200, 'Sucess')
+@isfpHoldInfoNS.response(201, 'Created Sucess')
+@isfpHoldInfoNS.response(204, 'No Content')
+@isfpHoldInfoNS.response(400, 'Bad Request')
+@isfpHoldInfoNS.response(401, 'Unauthorized')
+@isfpHoldInfoNS.response(403, 'Forbidden')
+@isfpHoldInfoNS.response(404, 'Not Found')
+@isfpHoldInfoNS.response(405, 'Method Not Allowed')
+@isfpHoldInfoNS.response(409, 'Conflict')
+@isfpHoldInfoNS.response(500, 'Internal Server Error')
+class GetHoldInfo(Resource):
+    @isfpHoldInfoNS.doc('AppConfSysMain')
+    @isfpHoldInfoNS.expect(isfpHoldInfoML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        jsonData = BaseType.validateType(request.json)
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData:  
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        identity = jsonData["COMPANY_CODE"] + "-" + jsonData["SITE"] + "-" + jsonData["FACTORY_ID"]
+        start_time = jsonData["START_TIME"]
+        end_time = jsonData["END_TIME"]
+        log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
+        isfpHoldInfo = iSFPHoldInfo(identity, start_time, end_time)
+        return isfpHoldInfo.getData()
+
+isfpScrapPInfoNS = api.namespace('GetiSFPScrapPInfo', description = '廠晨會看板- 破片報廢率(%)')
+isfpScrapPInfoML = api.model('GetiSFPScrapPInfo', {
+"COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+"SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
+"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123000000', example = '20211123000000'),
+"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128000000', example = '20211128000000'),
+})
+@isfpScrapPInfoNS.route('', methods = ['POST'])
+@isfpScrapPInfoNS.response(200, 'Sucess')
+@isfpScrapPInfoNS.response(201, 'Created Sucess')
+@isfpScrapPInfoNS.response(204, 'No Content')
+@isfpScrapPInfoNS.response(400, 'Bad Request')
+@isfpScrapPInfoNS.response(401, 'Unauthorized')
+@isfpScrapPInfoNS.response(403, 'Forbidden')
+@isfpScrapPInfoNS.response(404, 'Not Found')
+@isfpScrapPInfoNS.response(405, 'Method Not Allowed')
+@isfpScrapPInfoNS.response(409, 'Conflict')
+@isfpScrapPInfoNS.response(500, 'Internal Server Error')
+class GetScrapPInfo(Resource):
+    @isfpScrapPInfoNS.doc('AppConfSysMain')
+    @isfpScrapPInfoNS.expect(isfpScrapPInfoML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        jsonData = BaseType.validateType(request.json)
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData:  
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        identity = jsonData["COMPANY_CODE"] + "-" + jsonData["SITE"] + "-" + jsonData["FACTORY_ID"]
+        start_time = jsonData["START_TIME"]
+        end_time = jsonData["END_TIME"]
+        log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
+        isfpScrapPInfo = iSFPScrapPInfo(identity, start_time, end_time)
+        return isfpScrapPInfo.getData()        
+
+isfpFPYNLightInfoNS = api.namespace('GetiSFPFPYNLightInfo', description = '廠晨會看板- FPY(不含快修) 燈號')
+isfpFPYNLightInfoML = api.model('GetiSFPFPYNLightInfo', {
+"COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+"SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
+"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123000000', example = '20211123000000'),
+"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128000000', example = '20211128000000'),
+})
+@isfpFPYNLightInfoNS.route('', methods = ['POST'])
+@isfpFPYNLightInfoNS.response(200, 'Sucess')
+@isfpFPYNLightInfoNS.response(201, 'Created Sucess')
+@isfpFPYNLightInfoNS.response(204, 'No Content')
+@isfpFPYNLightInfoNS.response(400, 'Bad Request')
+@isfpFPYNLightInfoNS.response(401, 'Unauthorized')
+@isfpFPYNLightInfoNS.response(403, 'Forbidden')
+@isfpFPYNLightInfoNS.response(404, 'Not Found')
+@isfpFPYNLightInfoNS.response(405, 'Method Not Allowed')
+@isfpFPYNLightInfoNS.response(409, 'Conflict')
+@isfpFPYNLightInfoNS.response(500, 'Internal Server Error')
+class GetFPYNLightInfo(Resource):
+    @isfpFPYNLightInfoNS.doc('AppConfSysMain')
+    @isfpFPYNLightInfoNS.expect(isfpFPYNLightInfoML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        jsonData = BaseType.validateType(request.json)
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData:  
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        identity = jsonData["COMPANY_CODE"] + "-" + jsonData["SITE"] + "-" + jsonData["FACTORY_ID"]
+        start_time = jsonData["START_TIME"]
+        end_time = jsonData["END_TIME"]
+        log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
+        isfpFPYNLightInfo = iSFPFPYNLightInfo(identity, start_time, end_time)
+        return isfpFPYNLightInfo.getData()
+
+isfpFPYNInfoNS = api.namespace('GetiSFPFPYNInfo', description = '廠晨會看板- FPY(不含快修) 推移圖')
+isfpFPYNInfoML = api.model('GetiSFPFPYNInfo', {
+"COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+"SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
+"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123000000', example = '20211123000000'),
+"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128000000', example = '20211128000000'),
+})
+@isfpFPYNInfoNS.route('', methods = ['POST'])
+@isfpFPYNInfoNS.response(200, 'Sucess')
+@isfpFPYNInfoNS.response(201, 'Created Sucess')
+@isfpFPYNInfoNS.response(204, 'No Content')
+@isfpFPYNInfoNS.response(400, 'Bad Request')
+@isfpFPYNInfoNS.response(401, 'Unauthorized')
+@isfpFPYNInfoNS.response(403, 'Forbidden')
+@isfpFPYNInfoNS.response(404, 'Not Found')
+@isfpFPYNInfoNS.response(405, 'Method Not Allowed')
+@isfpFPYNInfoNS.response(409, 'Conflict')
+@isfpFPYNInfoNS.response(500, 'Internal Server Error')
+class GetFPYNInfo(Resource):
+    @isfpFPYNInfoNS.doc('AppConfSysMain')
+    @isfpFPYNInfoNS.expect(isfpFPYNInfoML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        jsonData = BaseType.validateType(request.json)
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData:  
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        identity = jsonData["COMPANY_CODE"] + "-" + jsonData["SITE"] + "-" + jsonData["FACTORY_ID"]
+        start_time = jsonData["START_TIME"]
+        end_time = jsonData["END_TIME"]
+        log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
+        isfpFPYNInfo = iSFPFPYNInfo(identity, start_time, end_time)
+        return isfpFPYNInfo.getData()
 
 intSDETLNs = api.namespace('intSDETL', description = 'intSDETL')
 intSDETLML_local = api.model('intSDETLML_local', {
