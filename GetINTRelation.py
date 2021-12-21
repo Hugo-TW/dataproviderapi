@@ -239,6 +239,7 @@ class INTRelation(BaseType):
             tmpOPER = self.jsonData["OPER"]  # or RESPTYPE
             # Defect or Reason Code
             tmpCHECKCODE = self.jsonData["CHECKCODE"]
+            tmpRWCOUNT = self.jsonData["RWCOUNT"] if "RWCOUNT" in self.jsonData else ">=1"
             expirSecond = 3600
             whereComSiteFac = f" COMPANY = '{tmpCOMPANY_CODE}' "
             whereComSiteFac += f" and SITE = '{tmpSITE}' "
@@ -419,6 +420,7 @@ class INTRelation(BaseType):
                     f" and TO_NUMBER(MAIN_OPER) >= {fromt} "\
                     f" and TO_NUMBER(MAIN_OPER) <= {to} "\
                     f" and MFGDATE = '{tmpACCT_DATE}' "
+                if tmpRWCOUNT == "=1" : whereString += " and RW_COUNT = 1 "
                 sql = "select PROD_NBR, DEFT, MFGDATE, MAIN_OPER, PANELID, RW_COUNT "\
                       " from INTMP_DB.PANELHISDAILY_DEFT " \
                       f"{whereString} " \
@@ -715,6 +717,7 @@ class INTRelation(BaseType):
                 # step0: 取得 與 defect / Reason 相關的 panel id
                 whereString = f"where {whereComSiteFac} and PROD_NBR = '{tmpPROD_NBR}' and  DEFT_REASON = '{tmpCHECKCODE}' "\
                     f" and MAIN_OPER = '{tmpOPER}'  and MFGDATE = '{tmpACCT_DATE}' "
+                if tmpRWCOUNT == "=1" : whereString += " and RW_COUNT = 1 "
                 sql = "select PROD_NBR, DEFT_REASON, MFGDATE, MAIN_OPER, PANELID, RW_COUNT "\
                       " from INTMP_DB.PANELHISDAILY_REASON " \
                       f"{whereString} " \
@@ -1000,6 +1003,7 @@ class INTRelation(BaseType):
                 # step0: 取得 與 defect / Reason 相關的 panel id
                 whereString = f"where {whereComSiteFac} and PROD_NBR = '{tmpPROD_NBR}' and  DEFT_REASON = '{tmpCHECKCODE}' "\
                     f" and MAIN_OPER in ({_OPERList_LIST})  and MFGDATE = '{tmpACCT_DATE}' "
+                if tmpRWCOUNT == "=1" : whereString += " and RW_COUNT = 1 "
                 sql = "select PROD_NBR, DEFT_REASON, MFGDATE, MAIN_OPER, PANELID, RW_COUNT "\
                       " from INTMP_DB.PANELHISDAILY_REASON " \
                       f"{whereString} " \
