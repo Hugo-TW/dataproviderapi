@@ -1216,6 +1216,7 @@ class INTRelation(BaseType):
                     )
 
                     categories = self._categories()
+                    """//"""
 
                     C_DESC = self._code2Desc("REASONCODE",tmpCHECKCODE)
                     returnData = {
