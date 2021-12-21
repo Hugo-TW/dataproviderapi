@@ -240,6 +240,9 @@ class INTRelation(BaseType):
             # Defect or Reason Code
             tmpCHECKCODE = self.jsonData["CHECKCODE"]
             expirSecond = 3600
+            whereComSiteFac = f" COMPANY = '{tmpCOMPANY_CODE}' "
+            whereComSiteFac += f" and SITE = '{tmpSITE}' "
+            whereComSiteFac += f" and FACTORY = '{tmpFACTORY_ID}' "
 
             # redisKey
             tmp.append(className)
@@ -265,17 +268,17 @@ class INTRelation(BaseType):
             """
             # region 準備數據
             # comm data: DEFTCODE
-            sql = "select DEFTCODE as CODE, DEFTCODE_DESC as cDESC from INTMP_DB.DEFTCODE"
+            sql = f"select DEFTCODE as CODE, DEFTCODE_DESC as cDESC from INTMP_DB.DEFTCODE "
             self.DEFTCODEData = []
             description , data = self.pSelectAndDescription(sql)            
             self.DEFTCODEData = self._zipDescriptionAndData(description, data)
             # comm data: REASONCODE數據
-            sql = "select REASONCODE as CODE, REASONCODE_DESC as cDESC from INTMP_DB.REASONCODE"
+            sql = f"select REASONCODE as CODE, REASONCODE_DESC as cDESC from INTMP_DB.REASONCODE"
             self.REASONCODEData = []
             description , data = self.pSelectAndDescription(sql)            
             self.REASONCODEData = self._zipDescriptionAndData(description, data)
             # comm data: MAT4數據
-            sql = "select MAT4 as CODE, MAT_DESC as cDESC from INTMP_DB.MAT"
+            sql = f"select MAT4 as CODE, MAT_DESC as cDESC from INTMP_DB.MAT where {whereComSiteFac}"
             self.MAT4Data = []
             description , data = self.pSelectAndDescription(sql)            
             self.MAT4Data = self._zipDescriptionAndData(description, data)
@@ -390,9 +393,9 @@ class INTRelation(BaseType):
                 start = time.time()
                 # region 準備數據                
                 # comm data: 權種數據
-                whereString = f" DEFTCODE = '{tmpCHECKCODE}' "
+                whereString = f" and DEFTCODE = '{tmpCHECKCODE}' "
                 sql = "select DEFTCODE, COMPARECODE, WEIGHT from INTMP_DB.DEFT_WEIGHT " \
-                      f"where {whereString} " \
+                      f"where {whereComSiteFac} {whereString} " \
                       "order by DEFTCODE, COMPARECODE "
                 commData = self.pSelect(sql)
                 weightData = {}
@@ -409,7 +412,7 @@ class INTRelation(BaseType):
                 denominatorValue = getFabData["FPY"]["denominator"][tmpOPER]
 
                 # step0: 取得 與 defect / Reason 相關的 panel id
-                whereString = f"where PROD_NBR = '{tmpPROD_NBR}' and  DEFT = '{tmpCHECKCODE}' and RW_COUNT <= 1 "\
+                whereString = f"where  {whereComSiteFac} and PROD_NBR = '{tmpPROD_NBR}' and  DEFT = '{tmpCHECKCODE}' and RW_COUNT <= 1 "\
                     f" and TO_NUMBER(MAIN_OPER) >= {fromt} "\
                     f" and TO_NUMBER(MAIN_OPER) <= {to} "\
                     f" and MFGDATE = '{tmpACCT_DATE}' "
@@ -446,7 +449,7 @@ class INTRelation(BaseType):
 
                 if len(PANELID_Group) > 0:
                     # step1: 取得 panel his
-                    whereString = f"where PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and PANELID in ({PANELID_Group_SQL_LIST}) "
+                    whereString = f"where {whereComSiteFac} and  PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and PANELID in ({PANELID_Group_SQL_LIST}) "
                     sql = f"with panel_his_daily as (select * from INTMP_DB.PANELHISDAILY {whereString} ) " \
                         "select PROD_NBR, MFGDATE, PANELID, OPER, TRANSDT, OPERATOR, EQPID, RW_COUNT, " \
                         "OUTPUT_FG from panel_his_daily order by PANELID, TRANSDT asc"
@@ -477,8 +480,8 @@ class INTRelation(BaseType):
                     #self.writeLog(hisData)
 
                     # step2: 取得panel use mat
-                    whereString = f" PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and OPER = '1050' and PANELID in ({PANELID_Group_SQL_LIST}) "
-                    sql = f"with panel_his_mat as (select * from INTMP_DB.PANELHISDAILY_MAT where {whereString}) " \
+                    whereString = f" and PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and OPER = '1050' and PANELID in ({PANELID_Group_SQL_LIST}) "
+                    sql = f"with panel_his_mat as (select * from INTMP_DB.PANELHISDAILY_MAT where {whereComSiteFac} {whereString}) " \
                         "select PROD_NBR, MFGDATE, PANELID, OPER, MAT_ID, MAT_LOTID from panel_his_mat " \
                         "order by MAT_ID, MAT_LOTID asc"
 
@@ -694,9 +697,9 @@ class INTRelation(BaseType):
             elif tmpFuncType == "REASON_PROD":
                 # region 準備數據
                 # comm data: 權種數據
-                whereString = f" REASONCODE = '{tmpCHECKCODE}' "
+                whereString = f" and REASONCODE = '{tmpCHECKCODE}' "
                 sql = "select REASONCODE, COMPARECODE, WEIGHT from INTMP_DB.REASON_WEIGHT " \
-                      f"where {whereString} " \
+                      f"where {whereComSiteFac} {whereString} " \
                       "order by REASONCODE, COMPARECODE "
                 commData = self.pSelect(sql)
                 weightData = {}
@@ -707,7 +710,7 @@ class INTRelation(BaseType):
                 gc.collect()
 
                 # step0: 取得 與 defect / Reason 相關的 panel id
-                whereString = f"where PROD_NBR = '{tmpPROD_NBR}' and  DEFT_REASON = '{tmpCHECKCODE}' "\
+                whereString = f"where {whereComSiteFac} and PROD_NBR = '{tmpPROD_NBR}' and  DEFT_REASON = '{tmpCHECKCODE}' "\
                     f" and MAIN_OPER = '{tmpOPER}'  and MFGDATE = '{tmpACCT_DATE}' "
                 sql = "select PROD_NBR, DEFT_REASON, MFGDATE, MAIN_OPER, PANELID, RW_COUNT "\
                       " from INTMP_DB.PANELHISDAILY_REASON " \
@@ -741,7 +744,7 @@ class INTRelation(BaseType):
                     PANELID_Group_SQL_LIST = PANELID_Group_SQL_LIST[:-1]
 
                 # step1: 取得 panel his
-                whereString = f"where PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and PANELID in ({PANELID_Group_SQL_LIST}) "
+                whereString = f"where {whereComSiteFac} and PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and PANELID in ({PANELID_Group_SQL_LIST}) "
                 sql = f"with panel_his_daily as (select * from INTMP_DB.PANELHISDAILY {whereString} ) " \
                       "select PROD_NBR, MFGDATE, PANELID, OPER, TRANSDT, OPERATOR, EQPID, RW_COUNT, " \
                       "OUTPUT_FG from panel_his_daily order by PANELID, TRANSDT asc"
@@ -771,8 +774,8 @@ class INTRelation(BaseType):
                 #self.writeLog(hisData)
 
                 # step2: 取得panel use mat
-                whereString = f" PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and OPER = '1050' and PANELID in ({PANELID_Group_SQL_LIST}) "
-                sql = f"with panel_his_mat as (select * from INTMP_DB.PANELHISDAILY_MAT where {whereString}) " \
+                whereString = f" and PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and OPER = '1050' and PANELID in ({PANELID_Group_SQL_LIST}) "
+                sql = f"with panel_his_mat as (select * from INTMP_DB.PANELHISDAILY_MAT where {whereComSiteFac} {whereString}) " \
                       "select PROD_NBR, MFGDATE, PANELID, OPER, MAT_ID, MAT_LOTID from panel_his_mat " \
                       "order by MAT_ID, MAT_LOTID asc"
                 data2 = self.pSelect(sql)
@@ -979,9 +982,9 @@ class INTRelation(BaseType):
 
                 # region 準備數據
                 # comm data: 權種數據
-                whereString = f" REASONCODE = '{tmpCHECKCODE}' "
+                whereString = f" and REASONCODE = '{tmpCHECKCODE}' "
                 sql = "select REASONCODE, COMPARECODE, WEIGHT from INTMP_DB.REASON_WEIGHT " \
-                      f"where {whereString} " \
+                      f"where {whereComSiteFac} {whereString} " \
                       "order by REASONCODE, COMPARECODE "
                 commData = self.pSelect(sql)
                 weightData = {}
@@ -992,7 +995,7 @@ class INTRelation(BaseType):
                 gc.collect()
 
                 # step0: 取得 與 defect / Reason 相關的 panel id
-                whereString = f"where PROD_NBR = '{tmpPROD_NBR}' and  DEFT_REASON = '{tmpCHECKCODE}' "\
+                whereString = f"where {whereComSiteFac} and PROD_NBR = '{tmpPROD_NBR}' and  DEFT_REASON = '{tmpCHECKCODE}' "\
                     f" and MAIN_OPER in ({_OPERList_LIST})  and MFGDATE = '{tmpACCT_DATE}' "
                 sql = "select PROD_NBR, DEFT_REASON, MFGDATE, MAIN_OPER, PANELID, RW_COUNT "\
                       " from INTMP_DB.PANELHISDAILY_REASON " \
@@ -1027,7 +1030,7 @@ class INTRelation(BaseType):
 
                 if len(PANELID_Group) > 0:
                     # step1: 取得 panel his
-                    whereString = f"where PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and PANELID in ({PANELID_Group_SQL_LIST}) "
+                    whereString = f"where {whereComSiteFac} and PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and PANELID in ({PANELID_Group_SQL_LIST}) "
                     sql = f"with panel_his_daily as (select * from INTMP_DB.PANELHISDAILY {whereString} ) " \
                         "select PROD_NBR, MFGDATE, PANELID, OPER, TRANSDT, OPERATOR, EQPID, RW_COUNT, " \
                         "OUTPUT_FG from panel_his_daily order by PANELID, TRANSDT asc"
@@ -1057,8 +1060,8 @@ class INTRelation(BaseType):
                     #self.writeLog(hisData)
 
                     # step2: 取得panel use mat
-                    whereString = f" PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and OPER = '1050' and PANELID in ({PANELID_Group_SQL_LIST}) "
-                    sql = f"with panel_his_mat as (select * from INTMP_DB.PANELHISDAILY_MAT where {whereString}) " \
+                    whereString = f" and PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and OPER = '1050' and PANELID in ({PANELID_Group_SQL_LIST}) "
+                    sql = f"with panel_his_mat as (select * from INTMP_DB.PANELHISDAILY_MAT where {whereComSiteFac} {whereString}) " \
                         "select PROD_NBR, MFGDATE, PANELID, OPER, MAT_ID, MAT_LOTID from panel_his_mat " \
                         "order by MAT_ID, MAT_LOTID asc"
                     data2 = self.pSelect(sql)
