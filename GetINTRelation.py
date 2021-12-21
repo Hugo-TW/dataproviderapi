@@ -280,6 +280,12 @@ class INTRelation(BaseType):
             description , data = self.pSelectAndDescription(sql)            
             self.MAT4Data = self._zipDescriptionAndData(description, data)
 
+            # comm data: OPER數據
+            sql = f"select OPER_ID_C as CODE, (OPER_ID_C||','||OPER_DESC) as cDESC from INTMP_DB.OPER"
+            self.OPERData = []
+            description , data = self.pSelectAndDescription(sql)            
+            self.OPERData = self._zipDescriptionAndData(description, data)
+
             if tmpFuncType == "FPY_TEST":
                 nodes = [
                     {"id": "0", "name": "TA_20001704", "symbolSize": 22.5,
@@ -477,7 +483,7 @@ class INTRelation(BaseType):
                     #self.writeLog(hisData)
 
                     # step2: 取得panel use mat
-                    whereString = f" and PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and OPER = '1050' and PANELID in ({PANELID_Group_SQL_LIST}) "
+                    whereString = f" and PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and OPER = ('1050','1300','1301') and PANELID in ({PANELID_Group_SQL_LIST}) "
                     sql = f"with panel_his_mat as (select * from INTMP_DB.PANELHISDAILY_MAT where {whereComSiteFac} {whereString}) " \
                         "select PROD_NBR, MFGDATE, PANELID, OPER, MAT_ID, MAT_LOTID from panel_his_mat " \
                         "order by MAT_ID, MAT_LOTID asc"
@@ -771,7 +777,7 @@ class INTRelation(BaseType):
                 #self.writeLog(hisData)
 
                 # step2: 取得panel use mat
-                whereString = f" and PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and OPER = '1050' and PANELID in ({PANELID_Group_SQL_LIST}) "
+                whereString = f" and PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and OPER in ('1050','1300','1301') and PANELID in ({PANELID_Group_SQL_LIST}) "
                 sql = f"with panel_his_mat as (select * from INTMP_DB.PANELHISDAILY_MAT where {whereComSiteFac} {whereString}) " \
                       "select PROD_NBR, MFGDATE, PANELID, OPER, MAT_ID, MAT_LOTID from panel_his_mat " \
                       "order by MAT_ID, MAT_LOTID asc"
@@ -1057,7 +1063,7 @@ class INTRelation(BaseType):
                     #self.writeLog(hisData)
 
                     # step2: 取得panel use mat
-                    whereString = f" and PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and OPER = '1050' and PANELID in ({PANELID_Group_SQL_LIST}) "
+                    whereString = f" and PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and OPER in ('1050','1300','1301') and PANELID in ({PANELID_Group_SQL_LIST}) "
                     sql = f"with panel_his_mat as (select * from INTMP_DB.PANELHISDAILY_MAT where {whereComSiteFac} {whereString}) " \
                         "select PROD_NBR, MFGDATE, PANELID, OPER, MAT_ID, MAT_LOTID from panel_his_mat " \
                         "order by MAT_ID, MAT_LOTID asc"
@@ -1271,6 +1277,8 @@ class INTRelation(BaseType):
             DataSet = self.DEFTCODEData
         elif TYPE == "MAT4":
             DataSet = self.MAT4Data
+        elif TYPE == "OPER":
+            DataSet = self.OPERData
         d = [dd for dd in DataSet if dd["CODE"] == C_CODE]
         if d != []:
             returnString = d[0]["CDESC"]         
@@ -1647,7 +1655,7 @@ class INTRelation(BaseType):
         for oo in node_cal_EQPID_OPER:
             data = {
                 "source": oo["NAME"],
-                "target": oo["OPER"],
+                "target": self._code2Desc("OPER",oo["OPER"]),
                 "value": oo["value"]
             }
             DATASERIES.append(data)
@@ -1666,7 +1674,7 @@ class INTRelation(BaseType):
             SymbolSize = round(tRate*oo["PANELID_COUNT"])
             if aRate >= A_Limit and tRate >= T_Limit:
                 data = {
-                    "NAME": f'{oo["OPER"]}',
+                    "NAME": self._code2Desc("OPER",oo["OPER"]),
                     "OPERATOR": f'{oo["OPERATOR"]}',
                     "OPER": oo["OPER"],
                     "PANELID_COUNT": oo["PANELID_COUNT"],
@@ -1699,11 +1707,12 @@ class INTRelation(BaseType):
 
     def _calNode_MAT_OPER(self, MAT_OPER, PANEL_TOTAL_COUNT, A_Limit, T_Limit, weightData):
         DATASERIES = []
-        for oo in MAT_OPER:
+        d1 = list(filter(lambda d: d["OPER"] == "1050", MAT_OPER))
+        for oo in d1:
             # aRate=>Pcs/All不良占%
             aRate = oo["PANELID_COUNT"] / PANEL_TOTAL_COUNT
             # bRate=>RSC權重
-            mat4 = oo["MAT_ID"][0:4]
+            mat4 = oo["MAT_ID"][0:4]           
             mat4_DESC = self._code2Desc("MAT4",mat4)
             bRate = weightData.get(mat4, 0)
             # (A*B)權重計算
@@ -1726,7 +1735,33 @@ class INTRelation(BaseType):
                     "SymbolSize": SymbolSize,
                     "value": oo["PANELID_COUNT"]
                 }
-                DATASERIES.append(data)
+                DATASERIES.append(data)    
+        
+        d2 = list(filter(lambda d: d["OPER"] in ("1300","1301") , MAT_OPER))        
+        matlot5_Count = 0
+        for oo in d2:
+            matlot5 = oo["MAT_LOTID"][0:5]
+            if matlot5 == "MODRW":
+                matlot5_Count += 1;              
+        if matlot5_Count >0 :
+            SymbolSize = round(matlot5_Count/len(MAT_OPER),4)
+            data = {
+                    "NAME": "PCBA RW品",
+                    "OPER": "1300",
+                    "MAT4": mat4,
+                    "MAT4_DESC": mat4_DESC,
+                    "MAT_ID": oo["MAT_ID"],
+                    "MAT_LOTID": oo["MAT_LOTID"],
+                    "PANELID_COUNT": oo["PANELID_COUNT"],
+                    "A_Limit": 0,
+                    "T_Limit": 0,
+                    "aRate": 0,
+                    "bRate": 0,
+                    "tRate": 0,
+                    "SymbolSize": matlot5_Count,
+                    "value": matlot5_Count
+                }
+            DATASERIES.append(data)  
         returnData = DATASERIES
         return returnData
 
@@ -1735,7 +1770,7 @@ class INTRelation(BaseType):
         for oo in node_cal_MAT_OPER:
             data = {
                 "source": oo["NAME"],
-                "target": oo["OPER"],
+                "target": self._code2Desc("OPER",oo["OPER"]),
                 "value": oo["value"]
             }
             DATASERIES.append(data)
