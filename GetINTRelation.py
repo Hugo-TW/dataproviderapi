@@ -256,10 +256,7 @@ class INTRelation(BaseType):
             tmp.append(tmpOPER)
             tmp.append(tmpCHECKCODE)
             redisKey = bottomLine.join(tmp)
-
-            if tmpFACTORY_ID not in ["J001"]:
-                return {'Result': 'NG', 'Reason': f'{tmpFACTORY_ID} not in FactoryID MAP'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
-
+            
             """
             self.getRedisConnection()
             if self.searchRedisKeys(redisKey):
