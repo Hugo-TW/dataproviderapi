@@ -2010,22 +2010,6 @@ class INTLV2(BaseType):
 
     def _getEFA_impReason(self):
         try:
-            """self.getMongoConnection()
-            self.setMongoDb("IAMP")
-            self.setMongoCollection("excelToJson")
-            reqParm = {
-                "_id": "MOD2_DEFECT_DEV@J001-alarmReason"
-            }
-            projectionFields = {
-                "_id": False,
-                "DATA": True
-            }
-            deftData = self.getMongoFind(reqParm, projectionFields)
-            self.closeMongoConncetion()
-            returnData = []
-            for d in deftData:
-                for x in d["DATA"]:
-                    returnData.append(x["REASON_CODE"])"""
             tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
             tmpSITE = self.jsonData["SITE"]
             tmpFACTORY_ID = self.jsonData["FACTORY_ID"] 

@@ -1489,9 +1489,7 @@ class INTLV3(BaseType):
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]       
         EFASet= self._getEFASet( tmpCOMPANY_CODE, tmpSITE, tmpFACTORY_ID, OPER)
 
-        yellowList = []
-        for d in self._getEFA_impDeft():
-            yellowList.append(d["DEFECT_CODE"])
+        yellowList = self._getEFA_impDeft()
 
         try:
             data = {}
@@ -5771,9 +5769,7 @@ class INTLV3(BaseType):
         OPERList = EFASet["OPERLIST"]
         LCMOWNER = EFASet["LCMOWNER"]
 
-        yellowList = []
-        for d in self._getEFA_impDeft():
-            yellowList.append(d["DEFECT_CODE"])
+        yellowList = self._getEFA_impDeft()
 
         EFALV2_Aggregate = [
             {
@@ -6336,17 +6332,16 @@ class INTLV3(BaseType):
 
     def _getEFA_impDeft(self):
         try:
-            self.getMongoConnection()
-            self.setMongoDb("IAMP")
-            self.setMongoCollection("deftCodeView")
-            reqParm = {
-            }
-            projectionFields = {
-                "_id": False
-            }
-            deftData = self.getMongoFind(reqParm, projectionFields)
-            self.closeMongoConncetion()
-            returnData = deftData
+            tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+            tmpSITE = self.jsonData["SITE"]
+            tmpFACTORY_ID = self.jsonData["FACTORY_ID"] 
+            returnData = []
+            sString = f"select code as DEFECT_CODE from INTMP_DB.codefilter where type = 'DEFT'  \
+                        and COMPANYCODE = '{tmpCOMPANY_CODE}' and SITE = '{tmpSITE}' and factoryid = '{tmpFACTORY_ID}' "
+            description , data = self.pSelectAndDescription(sString)            
+            deftData = self._zipDescriptionAndData(description, data)            
+            for x in deftData:                  
+                returnData.append(x["DEFECT_CODE"])
             return returnData
         except Exception as e:
             error_class = e.__class__.__name__  # 取得錯誤類型
