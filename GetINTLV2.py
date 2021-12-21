@@ -2051,12 +2051,17 @@ class INTLV2(BaseType):
 
     def _getEFALV2_WIP_1_Data(self, PROD_NBR):
         tmpSITE = self.jsonData["SITE"]
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        EFASet = self._getEFASet(
+            tmpCOMPANY_CODE, tmpSITE, tmpFACTORY_ID, "CKEN")
+
         try:
             data = {}
             if tmpSITE == "TN":
-                data = self._getEFALV2_WIP_1_DataFromMongoDB(PROD_NBR)
+                data = self._getEFALV2_WIP_1_DataFromMongoDB(PROD_NBR, EFASet)
             else:
-                data = self._getEFALV2_WIP_1_DataFromOracle(PROD_NBR)
+                data = self._getEFALV2_WIP_1_DataFromOracle(PROD_NBR, EFASet)
 
             returnData = {
                 "faWip": data["faWip"],
@@ -2077,13 +2082,16 @@ class INTLV2(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
-    def _getEFALV2_WIP_1_DataFromOracle(self, PROD_NBR):
+    def _getEFALV2_WIP_1_DataFromOracle(self, PROD_NBR, EFASet):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         tmpKPITYPE = self.jsonData["KPITYPE"]
         tmpACCT_DATE = self.jsonData["ACCT_DATE"]
         tmpAPPLICATION = self.jsonData["APPLICATION"]
+
+        OPERList = EFASet["NAMELIST"]
+        LCMOWNER = EFASet["LCMOWNER"]
 
         whereString = ""
         if tmpAPPLICATION != "ALL":
@@ -2150,12 +2158,15 @@ class INTLV2(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
-    def _getEFALV2_WIP_1_DataFromMongoDB(self, PROD_NBR):
+    def _getEFALV2_WIP_1_DataFromMongoDB(self, PROD_NBR, EFASet):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         tmpACCT_DATE = self.jsonData["ACCT_DATE"]
         tmpAPPLICATION = self.jsonData["APPLICATION"]
+
+        OPERList = EFASet["OPERLIST"]
+        LCMOWNER = EFASet["LCMOWNER"]
 
         faWipAggregate = [
             {
@@ -2164,7 +2175,8 @@ class INTLV2(BaseType):
                     "SITE": tmpSITE,
                     "FACTORY_ID": tmpFACTORY_ID,
                     "ACCT_DATE": tmpACCT_DATE,
-                    "WORK_CTR": "2110"
+                    "WORK_CTR": "2110",
+                    "$expr": {"$in": [{"$trim": { "input": "$LCM_OWNER" }}, LCMOWNER]}
                 }
             },
             {
@@ -2192,7 +2204,8 @@ class INTLV2(BaseType):
                     "FACTORY_ID": tmpFACTORY_ID,
                     "ACCT_DATE": tmpACCT_DATE,
                     "PROD_NBR": PROD_NBR,
-                    "WORK_CTR": "2110"
+                    "WORK_CTR": "2110",
+                    "$expr": {"$in": [{"$trim": { "input": "$LCM_OWNER" }}, LCMOWNER]}
                 }
             },
             {
@@ -2259,6 +2272,7 @@ class INTLV2(BaseType):
         if tmpAPPLICATION != 'ALL':
             faWipAggregate[0]["$match"]["APPLICATION"] = tmpAPPLICATION
             prodNbrWipAggregate[0]["$match"]["APPLICATION"] = tmpAPPLICATION
+
         try:
             self.getMongoConnection()
             self.setMongoDb("IAMP")
@@ -2362,12 +2376,17 @@ class INTLV2(BaseType):
 
     def _getEFALV2_WIP_2_Data(self):
         tmpSITE = self.jsonData["SITE"]
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        EFASet = self._getEFASet(
+            tmpCOMPANY_CODE, tmpSITE, tmpFACTORY_ID, "CKEN")
+
         try:
             data = {}
             if tmpSITE == "TN":
-                data = self._getEFALV2_WIP_2_DataFromMongoDB()
+                data = self._getEFALV2_WIP_2_DataFromMongoDB(EFASet)
             else:
-                data = self._getEFALV2_WIP_2_DataFromOracle()
+                data = self._getEFALV2_WIP_2_DataFromOracle(EFASet)
             returnData = data
             return returnData
 
@@ -2383,13 +2402,16 @@ class INTLV2(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
-    def _getEFALV2_WIP_2_DataFromOracle(self):
+    def _getEFALV2_WIP_2_DataFromOracle(self, EFASet):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         tmpKPITYPE = self.jsonData["KPITYPE"]
         tmpACCT_DATE = self.jsonData["ACCT_DATE"]
         tmpAPPLICATION = self.jsonData["APPLICATION"]
+
+        OPERList = EFASet["NAMELIST"]
+        LCMOWNER = EFASet["LCMOWNER"]
 
         whereString = ""
         if tmpAPPLICATION != "ALL":
@@ -2446,12 +2468,15 @@ class INTLV2(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
-    def _getEFALV2_WIP_2_DataFromMongoDB(self):
+    def _getEFALV2_WIP_2_DataFromMongoDB(self, EFASet):
         tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
         tmpSITE = self.jsonData["SITE"]
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         tmpACCT_DATE = self.jsonData["ACCT_DATE"]
         tmpAPPLICATION = self.jsonData["APPLICATION"]
+
+        OPERList = EFASet["OPERLIST"]
+        LCMOWNER = EFASet["LCMOWNER"]
 
         wipAggregate = [
             {
@@ -2460,7 +2485,8 @@ class INTLV2(BaseType):
                     "SITE": tmpSITE,
                     "FACTORY_ID": tmpFACTORY_ID,
                     "ACCT_DATE": tmpACCT_DATE,
-                    "WORK_CTR": "2110"
+                    "WORK_CTR": "2110",
+                    "$expr": {"$in": [{"$trim": { "input": "$LCM_OWNER" }}, LCMOWNER]}
                 }
             },
             {
