@@ -14,61 +14,24 @@ from flask_cors import CORS
 from BaseType import BaseType
 from datetime import date, datetime
 os.environ['NLS_LANG'] = 'TRADITIONAL CHINESE_TAIWAN.UTF8'
-class WayneTestInfo(BaseType):
-    def __init__(self,indentity):
+class iSFPOEEInfo(BaseType):
+    def __init__(self,indentity, start_time, end_time):
         super().__init__()
         self.writeLog(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
         self.__indentity = indentity
+        self.__start_time = start_time
+        self.__end_time = end_time
         
     def getData(self):
         try:
-            #取RGB Data
-            self.writeLog(f'{self.__class__.__name__} {sys._getframe().f_code.co_name} Start')
-            sql =  """with Result_data as (
-                        SELECT to_char(t.data_date,'mm/dd') as data_date,to_char(t.data_date,'mm') as month_date,t.data_type,to_char(t.data_value) as  data_value
-                        FROM WAYNE_TEST_TV t 
-                        where item_name in ('RESIGN','ATTENDANCE') 
-                       
-                        union
-                        
-                        select 'MTD' as date_time,substr('20211123000000',4,2) as month_date,t.data_type,to_char(round(decode(t.data_type,'燈號',round(sum(t.data_value)/count(*),0),sum(t.data_value)/count(*)),1)) as data_value
-                        from WAYNE_TEST_TV t
-                        where item_name in ('RESIGN','ATTENDANCE') 
-                        group by t.data_type
-                        )
-                        , Target_Data as (
-                        select to_char(t.data_date,'MM') as data_date,t.item_desc,t.red_day,t.green_day,t.red_mtd,t.green_mtd from isfp_target_upload t 
-                        where t.item_name in ('RESIGN','ATTENDANCE')
-                        )
-                        select t.data_date,t.data_type,
-                        case when (t.data_date <> 'MTD' and t.data_value > t1.red_day) then 'red'
-                            when (t.data_date <> 'MTD' and t.data_value >= t1.green_day and t.data_value <= t1.red_day) then 'yellow'
-                            when (t.data_date <> 'MTD' and t.data_value < t1.green_day) then 'green' 
-                            when (t.data_date = 'MTD' and t.data_value > t1.red_mtd) then 'red'
-                            when (t.data_date = 'MTD' and t.data_value >= t1.green_mtd and t.data_value <= t1.red_mtd) then 'yellow'
-                            when (t.data_date = 'MTD' and t.data_value < t1.green_mtd) then 'green' 
-                            end as RGB
-                        from Result_data t,Target_Data t1
-                        where t.month_date = t1.data_date
-                        and t.data_type = t1.item_desc"""
-            
-            self.writeLog(f'SQL:\n {sql}')
-            self.getConnection(self.__indentity)
-            data_RGB = self.Select(sql)
-            self.closeConnection()
-
-
             #取欄位名稱
             self.writeLog(f'{self.__class__.__name__} {sys._getframe().f_code.co_name} Start')
             sql =  """SELECT distinct '1' as A,to_char(t.data_date,'mm/dd') as data_date 
                         FROM WAYNE_TEST_TV t 
-                        where item_name = 'RESIGN' 
+                        where item_name = 'OEE' 
+                        and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss') 
                         union
-                        SELECT distinct '1' as A,to_char(t.data_date,'mm/dd') as data_date 
-                        FROM WAYNE_TEST_TV t 
-                        where item_name = 'ATTENDANCE' 
-                        union
-                        select '0' as A,'MTD' from dual"""
+                        select '0' as A,'MTD' from dual""".format(self.__start_time, self.__end_time) 
             
             self.writeLog(f'SQL:\n {sql}')
             self.getConnection(self.__indentity)
@@ -100,40 +63,44 @@ class WayneTestInfo(BaseType):
             sql =  """select * from 
                         (
                           select t.data_date,t.data_type,
-                          case when (t.data_date <> 'MTD' and t.data_value > t1.red_day) then 'red'
-                               when (t.data_date <> 'MTD' and t.data_value >= t1.green_day and t.data_value <= t1.red_day) then 'yellow'
-                               when (t.data_date <> 'MTD' and t.data_value < t1.green_day) then 'green' 
-                               when (t.data_date = 'MTD' and t.data_value > t1.red_mtd) then 'red'
-                               when (t.data_date = 'MTD' and t.data_value >= t1.green_mtd and t.data_value <= t1.red_mtd) then 'yellow'
-                               when (t.data_date = 'MTD' and t.data_value < t1.green_mtd) then 'green' 
+                          case when (t.data_date <> 'MTD' and t.data_value < t1.red_day) then 'red'
+                               when (t.data_date <> 'MTD' and t.data_value >= t1.red_day and t.data_value <= t1.green_day) then 'yellow'
+                               when (t.data_date <> 'MTD' and t.data_value > t1.green_day) then 'green' 
+                               when (t.data_date = 'MTD' and t.data_value < t1.red_mtd) then 'red'
+                               when (t.data_date = 'MTD' and t.data_value >= t1.red_mtd and t.data_value <= t1.green_mtd) then 'yellow'
+                               when (t.data_date = 'MTD' and t.data_value > t1.green_mtd) then 'green' 
                                end||'/'||t.data_value as data_value
                                from
                           (
                             SELECT to_char(t.data_date,'mm/dd') as data_date,to_char(t.data_date,'mm') as month_date,t.data_type,to_char(t.data_value) as  data_value,t.item_name
                             FROM WAYNE_TEST_TV t 
-                            where item_name in ('RESIGN','ATTENDANCE') 
+                            where item_name = 'OEE'
+                            and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss')
                             
                             union
                             
-                            select 'MTD' as date_time,substr('20211123000000',4,2) as month_dat,t.data_type,to_char(round(decode(t.data_type,'燈號',round(sum(t.data_value)/count(*),0),sum(t.data_value)/count(*)),1),'FM990.0') as data_value,t.item_name
+                            select 'MTD' as date_time,substr('{1}',4,2) as month_dat,t.data_type,to_char(round(decode(t.data_type,'燈號',round(sum(t.data_value)/count(*),0),sum(t.data_value)/count(*)),1),'FM990.0') as data_value,t.item_name
                             from WAYNE_TEST_TV t
-                            where item_name in ('RESIGN','ATTENDANCE') 
+                            where item_name = 'OEE'
+                            and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss')
                             group by t.data_type,t.item_name
                           )t,
                           (
                             select to_char(t.data_date,'MM') as data_date,t.item_name,t.item_desc,t.red_day,t.green_day,t.red_mtd,t.green_mtd from isfp_target_upload t 
-                            where t.item_name in ('RESIGN','ATTENDANCE')
+                            where t.data_date between to_date(substr('{0}',0,6),'yyyy/mm') and to_date(substr('{1}',0,6),'yyyy/mm') 
+                            and t.item_name = 'OEE'
                           )t1
                           where t.month_date = t1.data_date
                           and t.item_name = t1.item_name
                         )
-                        PIVOT (max (data_value)FOR data_date IN ('{0}')) 
-                        order by 1 desc""".format(self.__sColnumName) 
+                        PIVOT (max (data_value)FOR data_date IN ('{2}')) 
+                        order by 1""".format(self.__start_time, self.__end_time, self.__sColnumName) 
             
             self.writeLog(f'SQL:\n {sql}')
             self.getConnection(self.__indentity)
             data_result = self.Select(sql)
             self.closeConnection()
+
 
             datajson=[]
             dataitem=[0]
@@ -145,30 +112,24 @@ class WayneTestInfo(BaseType):
                 for da in data_result:
                     iNum_data_list = 1
                     datadict = dict(zip(colnumjson, da))
-                    datajson.append(datadict)  
-                    dataTitle.append(da[0])   
+                    datajson.append(datadict)     
+                    dataTitle.append(da[0])
 
                     #組元件所需Value格式
                     for da_D in data:
-                        # if(da[0] == '離職率'):
-                        #     if(da[iNum_data_list] is None):
-                        #         dataColor = ''
-                        #     elif(float(da[iNum_data_list]) > 0.5):
-                        #         dataColor = 'red'
-                        #     elif(float(da[iNum_data_list]) >= 0.4 and float(da[iNum_data_list]) <= 0.5):
-                        #         dataColor = 'yellow' 
-                        #     else:
-                        #         dataColor = 'green'
+                        # if(da[iNum_data_list] is None):
+                        #     dataColor = ''
+                        # elif(int(da[iNum_data_list]) < 95):
+                        #     dataColor = 'red'
+                        # elif(int(da[iNum_data_list]) >= 95 and int(da[iNum_data_list]) <= 97):
+                        #     dataColor = 'yellow' 
+                        # else:
+                        #     dataColor = 'green'
 
-                        # elif(da[0] == '出勤率'):  
-                        #     if(da[iNum_data_list] is None):
-                        #         dataColor = ''
-                        #     elif(float(da[iNum_data_list]) < 95):
-                        #         dataColor = 'red'
-                        #     elif(float(da[iNum_data_list]) >= 95 and float(da[iNum_data_list]) <= 96):
-                        #         dataColor = 'yellow' 
-                        #     else:
-                        #         dataColor = 'green'      
+                        # Testdatadict={
+                        #             "color" : dataColor,
+                        #             "value" : da[iNum_data_list]
+                        #         }      
 
                         if(da[iNum_data_list] is None):
                             Testdatadict={
@@ -182,31 +143,30 @@ class WayneTestInfo(BaseType):
                                     "value" : float(Color_Value[1])
                                 }   
 
-                             
                         iNum_data_list = iNum_data_list + 1   
                         dataList.append(Testdatadict) 
                     dataListArray.append(dataList)  
-                    dataList = []    
-                           
+                    dataList = []          
+ 
             else:
                 datadict = dict(zip(colnumjson, ""))
                 datajson.append(datadict) 
 
             data_result = json.dumps(datajson, sort_keys=False, indent=2,cls=ComplexEncoder)
-            
+          
             #組元件所需資料格式          
             responseResult = {}
-            #dataitem[0] = "達產(%)"
-            #ResuleSide.append(dataitem)
+            dataitem[0] = "設備OEE%(%)"
+            ResuleSide.append(dataitem)
             ResuleSide.append(dataTitle)
-            responseResult = dict(borderType = 2,titleArray = ResultColnumjson,sideArray = ResuleSide,listArray = dataListArray)
+            responseResult = dict(borderType = 1,titleArray = ResultColnumjson,sideArray = ResuleSide,listArray = dataListArray)
             
+
 
             self.writeLog(f"Json:\n {data_result}")
             self.writeLog(f'{self.__class__.__name__} {sys._getframe().f_code.co_name} DONE')
             #return json.loads(data_result),200,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
             return responseResult,200,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
-
         except Exception as e:
             error_class = e.__class__.__name__ #取得錯誤類型
             detail = e.args[0] #取得詳細內容

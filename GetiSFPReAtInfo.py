@@ -14,11 +14,13 @@ from flask_cors import CORS
 from BaseType import BaseType
 from datetime import date, datetime
 os.environ['NLS_LANG'] = 'TRADITIONAL CHINESE_TAIWAN.UTF8'
-class WayneTestInfo(BaseType):
-    def __init__(self,indentity):
+class iSFPReAtInfo(BaseType):
+    def __init__(self,indentity, start_time, end_time):
         super().__init__()
         self.writeLog(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
         self.__indentity = indentity
+        self.__start_time = start_time
+        self.__end_time = end_time
         
     def getData(self):
         try:
@@ -28,17 +30,20 @@ class WayneTestInfo(BaseType):
                         SELECT to_char(t.data_date,'mm/dd') as data_date,to_char(t.data_date,'mm') as month_date,t.data_type,to_char(t.data_value) as  data_value
                         FROM WAYNE_TEST_TV t 
                         where item_name in ('RESIGN','ATTENDANCE') 
-                       
+                        and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss')
+                        
                         union
                         
-                        select 'MTD' as date_time,substr('20211123000000',4,2) as month_date,t.data_type,to_char(round(decode(t.data_type,'燈號',round(sum(t.data_value)/count(*),0),sum(t.data_value)/count(*)),1)) as data_value
+                        select 'MTD' as date_time,substr('{1}',4,2) as month_date,t.data_type,to_char(round(decode(t.data_type,'燈號',round(sum(t.data_value)/count(*),0),sum(t.data_value)/count(*)),1)) as data_value
                         from WAYNE_TEST_TV t
                         where item_name in ('RESIGN','ATTENDANCE') 
+                        and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss')
                         group by t.data_type
                         )
                         , Target_Data as (
                         select to_char(t.data_date,'MM') as data_date,t.item_desc,t.red_day,t.green_day,t.red_mtd,t.green_mtd from isfp_target_upload t 
-                        where t.item_name in ('RESIGN','ATTENDANCE')
+                        where t.data_date between to_date(substr('{0}',0,6),'yyyy/mm') and to_date(substr('{1}',0,6),'yyyy/mm') 
+                        and t.item_name in ('RESIGN','ATTENDANCE')
                         )
                         select t.data_date,t.data_type,
                         case when (t.data_date <> 'MTD' and t.data_value > t1.red_day) then 'red'
@@ -50,7 +55,7 @@ class WayneTestInfo(BaseType):
                             end as RGB
                         from Result_data t,Target_Data t1
                         where t.month_date = t1.data_date
-                        and t.data_type = t1.item_desc"""
+                        and t.data_type = t1.item_desc""".format(self.__start_time, self.__end_time) 
             
             self.writeLog(f'SQL:\n {sql}')
             self.getConnection(self.__indentity)
@@ -63,12 +68,14 @@ class WayneTestInfo(BaseType):
             sql =  """SELECT distinct '1' as A,to_char(t.data_date,'mm/dd') as data_date 
                         FROM WAYNE_TEST_TV t 
                         where item_name = 'RESIGN' 
+                        and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss') 
                         union
                         SELECT distinct '1' as A,to_char(t.data_date,'mm/dd') as data_date 
                         FROM WAYNE_TEST_TV t 
                         where item_name = 'ATTENDANCE' 
+                        and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss') 
                         union
-                        select '0' as A,'MTD' from dual"""
+                        select '0' as A,'MTD' from dual""".format(self.__start_time, self.__end_time) 
             
             self.writeLog(f'SQL:\n {sql}')
             self.getConnection(self.__indentity)
@@ -112,23 +119,26 @@ class WayneTestInfo(BaseType):
                             SELECT to_char(t.data_date,'mm/dd') as data_date,to_char(t.data_date,'mm') as month_date,t.data_type,to_char(t.data_value) as  data_value,t.item_name
                             FROM WAYNE_TEST_TV t 
                             where item_name in ('RESIGN','ATTENDANCE') 
+                            and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss')
                             
                             union
                             
-                            select 'MTD' as date_time,substr('20211123000000',4,2) as month_dat,t.data_type,to_char(round(decode(t.data_type,'燈號',round(sum(t.data_value)/count(*),0),sum(t.data_value)/count(*)),1),'FM990.0') as data_value,t.item_name
+                            select 'MTD' as date_time,substr('{1}',4,2) as month_dat,t.data_type,to_char(round(decode(t.data_type,'燈號',round(sum(t.data_value)/count(*),0),sum(t.data_value)/count(*)),1),'FM990.0') as data_value,t.item_name
                             from WAYNE_TEST_TV t
                             where item_name in ('RESIGN','ATTENDANCE') 
+                            and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss')
                             group by t.data_type,t.item_name
                           )t,
                           (
                             select to_char(t.data_date,'MM') as data_date,t.item_name,t.item_desc,t.red_day,t.green_day,t.red_mtd,t.green_mtd from isfp_target_upload t 
-                            where t.item_name in ('RESIGN','ATTENDANCE')
+                            where t.data_date between to_date(substr('{0}',0,6),'yyyy/mm') and to_date(substr('{1}',0,6),'yyyy/mm') 
+                            and t.item_name in ('RESIGN','ATTENDANCE')
                           )t1
                           where t.month_date = t1.data_date
                           and t.item_name = t1.item_name
                         )
-                        PIVOT (max (data_value)FOR data_date IN ('{0}')) 
-                        order by 1 desc""".format(self.__sColnumName) 
+                        PIVOT (max (data_value)FOR data_date IN ('{2}')) 
+                        order by 1 desc""".format(self.__start_time, self.__end_time, self.__sColnumName) 
             
             self.writeLog(f'SQL:\n {sql}')
             self.getConnection(self.__indentity)
