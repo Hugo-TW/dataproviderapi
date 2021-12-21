@@ -485,7 +485,7 @@ class INTRelation(BaseType):
                     #self.writeLog(hisData)
 
                     # step2: 取得panel use mat
-                    whereString = f" and PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and OPER = ('1050','1300','1301') and PANELID in ({PANELID_Group_SQL_LIST}) "
+                    whereString = f" and PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and OPER in ('1050','1300','1301') and PANELID in ({PANELID_Group_SQL_LIST}) "
                     sql = f"with panel_his_mat as (select * from INTMP_DB.PANELHISDAILY_MAT where {whereComSiteFac} {whereString}) " \
                         "select PROD_NBR, MFGDATE, PANELID, OPER, MAT_ID, MAT_LOTID from panel_his_mat " \
                         "order by MAT_ID, MAT_LOTID asc"
