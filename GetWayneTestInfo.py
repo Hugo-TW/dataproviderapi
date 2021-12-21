@@ -208,7 +208,7 @@ class WayneTestInfo(BaseType):
             for da in data_RGB_Size:
                 if(da[0] == 'circleSize'):
                     ResultCircleSize = da[1]
-                else:
+                elif(da[0] == 'fontSize'):
                     ResultFontSize = da[1]    
 
             #組元件所需資料格式          
