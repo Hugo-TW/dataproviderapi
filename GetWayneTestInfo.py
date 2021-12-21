@@ -80,6 +80,7 @@ class WayneTestInfo(BaseType):
             dataList=[]
             dataListArray=[]
             colnumjson.append("DATA_DATE")
+            ResultColnumjson.append("")
             sColnumName = ""
             iCount = 0
             if(len(data) != 0):
