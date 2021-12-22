@@ -1293,6 +1293,62 @@ class INTRelation(BaseType):
                     return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
                 else:
                     return {'Result': 'Fail', 'Reason': 'No Panel ID DATA LIST'}, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+            
+            elif tmpFuncType == "REASON_CELL_HP":
+                OPERDATA = {
+                        "BONDING":{"OPER": [1300,1301]},
+                        "LAM":{"OPER": [1340,1370]},
+                        "AAFC":{"OPER": [1419,1420]},
+                        "TPI":{"OPER": [1510]},
+                        "OTPC":{"OPER": [1590]},
+                        "CKEN":{"OPER": [1600]}                         
+                    }         
+                OPERList = []
+                if tmpOPER == "ALL":
+                    for key, value in OPERDATA.items():
+                        OPERList.extend(value.get("OPER"))
+                else:
+                    OPERList.extend(OPERDATA[tmpOPER]["OPER"])
+                
+                _OPERList_LIST = ""
+                for x in OPERList:
+                    _OPERList_LIST = _OPERList_LIST + f"'{x}',"
+                if _OPERList_LIST != "":
+                    _OPERList_LIST = _OPERList_LIST[:-1]
+
+                # step0: 取得 與 defect / Reason 相關的 panel id
+                # step0: 取得 與 defect / Reason 相關的 panel id
+                whereString = f"where {whereComSiteFac} and PROD_NBR = '{tmpPROD_NBR}' and  DEFT_REASON = '{tmpCHECKCODE}' "\
+                    f" and MAIN_OPER in ({_OPERList_LIST})  and MFGDATE = '{tmpACCT_DATE}' "
+                if tmpRWCOUNT == "=1" : whereString += " and RW_COUNT = 1 "
+                sql = "select PANELID "\
+                      " from INTMP_DB.PANELHISDAILY_REASON " \
+                      f"{whereString} " \
+                      "group by PANELID " \
+                      "order by PANELID "
+                description , data = self.pSelectAndDescription(sql)            
+                panelIDData = self._zipDescriptionAndData(description, data)
+
+                if len(panelIDData) > 0:
+                    nnData = self._nnData(panelIDData)
+                    returnData = {
+                        "RELATIONTYPE": tmpFuncType,
+                        "COMPANY_CODE": tmpCOMPANY_CODE,
+                        "SITE": tmpSITE,
+                        "FACTORY_ID": tmpFACTORY_ID,
+                        "APPLICATION": tmpAPPLICATION,
+                        "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
+                        "PROD_NBR": tmpPROD_NBR if tmpRWCOUNT != "=1" else f'直行品 {tmpPROD_NBR}',
+                        "XAXIS": nnData["XAXIS"],
+                        "YAXIS": nnData["YAXIS"],
+                        "HEARMAP": nnData["HEARMAP"]
+                    }
+                    end = time.time()
+                    return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+                else:
+                    return {'Result': 'Fail', 'Reason': 'No Panel ID DATA LIST'}, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+            
+
             else:
                 return {'Result': 'Fail', 'Reason': 'Parametes[KPITYPE] not in Rule'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
