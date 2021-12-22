@@ -455,6 +455,7 @@ class INTRelation(BaseType):
                 if len(PANELID_Group) > 0:
                     # step1: 取得 panel his
                     whereString = f"where {whereComSiteFac} and  PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and PANELID in ({PANELID_Group_SQL_LIST}) "
+                    if tmpRWCOUNT == "=1" : whereString += " and RW_COUNT = 0 "
                     sql = f"with panel_his_daily as (select * from INTMP_DB.PANELHISDAILY {whereString} ) " \
                         "select PROD_NBR, MFGDATE, PANELID, OPER, TRANSDT, OPERATOR, EQPID, RW_COUNT, " \
                         "OUTPUT_FG from panel_his_daily order by PANELID, TRANSDT asc"
@@ -676,7 +677,7 @@ class INTRelation(BaseType):
                         "FACTORY_ID": tmpFACTORY_ID,
                         "APPLICATION": tmpAPPLICATION,
                         "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
-                        "PROD_NBR": tmpPROD_NBR,
+                        "PROD_NBR": tmpPROD_NBR if tmpRWCOUNT != "=1" else f'直行品 {tmpPROD_NBR}',
                         "OPER": tmpOPER,
                         "C_CODE": tmpCHECKCODE,
                         "C_DESCR": C_DESC if C_DESC != None else tmpCHECKCODE,
@@ -751,6 +752,7 @@ class INTRelation(BaseType):
 
                 # step1: 取得 panel his
                 whereString = f"where {whereComSiteFac} and PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and PANELID in ({PANELID_Group_SQL_LIST}) "
+                if tmpRWCOUNT == "=1" : whereString += " and RW_COUNT = 0 "
                 sql = f"with panel_his_daily as (select * from INTMP_DB.PANELHISDAILY {whereString} ) " \
                       "select PROD_NBR, MFGDATE, PANELID, OPER, TRANSDT, OPERATOR, EQPID, RW_COUNT, " \
                       "OUTPUT_FG from panel_his_daily order by PANELID, TRANSDT asc"
@@ -945,7 +947,7 @@ class INTRelation(BaseType):
                     "FACTORY_ID": tmpFACTORY_ID,
                     "APPLICATION": tmpAPPLICATION,
                     "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
-                    "PROD_NBR": tmpPROD_NBR,
+                    "PROD_NBR": tmpPROD_NBR if tmpRWCOUNT != "=1" else f'直行品 {tmpPROD_NBR}',
                     "OPER": tmpOPER,
                     "C_CODE": tmpCHECKCODE,
                     "C_DESCR": C_DESC if C_DESC != None else tmpCHECKCODE,
@@ -1038,6 +1040,7 @@ class INTRelation(BaseType):
                 if len(PANELID_Group) > 0:
                     # step1: 取得 panel his
                     whereString = f"where {whereComSiteFac} and PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and PANELID in ({PANELID_Group_SQL_LIST}) "
+                    if tmpRWCOUNT == "=1" : whereString += " and RW_COUNT = 0 "
                     sql = f"with panel_his_daily as (select * from INTMP_DB.PANELHISDAILY {whereString} ) " \
                         "select PROD_NBR, MFGDATE, PANELID, OPER, TRANSDT, OPERATOR, EQPID, RW_COUNT, " \
                         "OUTPUT_FG from panel_his_daily order by PANELID, TRANSDT asc"
@@ -1232,7 +1235,7 @@ class INTRelation(BaseType):
                         "FACTORY_ID": tmpFACTORY_ID,
                         "APPLICATION": tmpAPPLICATION,
                         "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
-                        "PROD_NBR": tmpPROD_NBR,
+                        "PROD_NBR": tmpPROD_NBR if tmpRWCOUNT != "=1" else f'直行品 {tmpPROD_NBR}',
                         "OPER": tmpOPER,
                         "C_CODE": tmpCHECKCODE,
                         "C_DESCR": C_DESC if C_DESC != None else tmpCHECKCODE,
