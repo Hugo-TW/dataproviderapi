@@ -43,6 +43,7 @@ class iSFPScrapPInfo(BaseType):
             dataList=[]
             dataListArray=[]
             colnumjson.append("DATA_DATE")
+            ResultColnumjson.append("")
             sColnumName = ""
             iCount = 0
             if(len(data) != 0):
@@ -62,21 +63,39 @@ class iSFPScrapPInfo(BaseType):
             self.writeLog(f'{self.__class__.__name__} {sys._getframe().f_code.co_name} Start')
             sql =  """select * from 
                         (
-                        SELECT to_char(t.data_date,'mm/dd') as data_date,t.data_type,to_char(t.data_value) as  data_value
-                        FROM WAYNE_TEST_TV t 
-                        where item_name = 'SCRAP_P'
-                        and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss')
-                        
-                        union
-                        
-                        select 'MTD' as date_time,t.data_type,to_char(round(decode(t.data_type,'燈號',round(sum(t.data_value)/count(*),0),sum(t.data_value)/count(*)),1)) as data_value
-                        from WAYNE_TEST_TV t
-                        where item_name = 'SCRAP_P'
-                        and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss')
-                        group by t.data_type
+                          select t.data_date,t.data_type,
+                          case when (t.data_date <> 'MTD' and t.data_value > t1.red_day) then 'red'
+                               when (t.data_date <> 'MTD' and t.data_value >= t1.green_day and t.data_value <= t1.red_day) then 'yellow'
+                               when (t.data_date <> 'MTD' and t.data_value < t1.green_day) then 'green' 
+                               when (t.data_date = 'MTD' and t.data_value > t1.red_mtd) then 'red'
+                               when (t.data_date = 'MTD' and t.data_value >= t1.green_mtd and t.data_value <= t1.red_mtd) then 'yellow'
+                               when (t.data_date = 'MTD' and t.data_value < t1.green_mtd) then 'green' 
+                               end||'/'||t.data_value as data_value
+                               from
+                          (
+                            SELECT to_char(t.data_date,'mm/dd') as data_date,to_char(t.data_date,'mm') as month_date,t.data_type,to_char(t.data_value) as  data_value,t.item_name
+                            FROM WAYNE_TEST_TV t 
+                            where item_name = 'SCRAP_P'
+                            and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss')
+                            
+                            union
+                            
+                            select 'MTD' as date_time,substr('{1}',4,2) as month_dat,t.data_type,to_char(round(decode(t.data_type,'燈號',round(sum(t.data_value)/count(*),0),sum(t.data_value)/count(*)),1),'FM990.0') as data_value,t.item_name
+                            from WAYNE_TEST_TV t
+                            where item_name = 'SCRAP_P'
+                            and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss')
+                            group by t.data_type,t.item_name
+                          )t,
+                          (
+                            select to_char(t.data_date,'MM') as data_date,t.item_name,t.item_desc,t.red_day,t.green_day,t.red_mtd,t.green_mtd from isfp_target_upload t 
+                            where t.data_date between to_date(substr('{0}',0,6),'yyyy/mm') and to_date(substr('{1}',0,6),'yyyy/mm') 
+                            and t.item_name = 'SCRAP_P'
+                          )t1
+                          where t.month_date = t1.data_date
+                          and t.item_name = t1.item_name
                         )
-                        PIVOT (SUM (data_value)FOR data_date IN ('{2}')) 
-                        order by 1 desc""".format(self.__start_time, self.__end_time, self.__sColnumName) 
+                        PIVOT (max (data_value)FOR data_date IN ('{2}')) 
+                        order by 1 """.format(self.__start_time, self.__end_time, self.__sColnumName) 
             
             self.writeLog(f'SQL:\n {sql}')
             self.getConnection(self.__indentity)
@@ -105,19 +124,32 @@ class iSFPScrapPInfo(BaseType):
                  
                     #組元件所需Value格式
                     for da_D in data:
-                        if(da[iNum_data_list] is None):
-                            dataColor = ''
-                        elif(float(da[iNum_data_list]) > 0.2):
-                            dataColor = 'red'
-                        elif(float(da[iNum_data_list]) >= 0.13 and float(da[iNum_data_list]) <= 0.2):
-                            dataColor = 'yellow' 
-                        else:
-                            dataColor = 'green'
+                        # if(da[iNum_data_list] is None):
+                        #     dataColor = ''
+                        # elif(float(da[iNum_data_list]) > 0.2):
+                        #     dataColor = 'red'
+                        # elif(float(da[iNum_data_list]) >= 0.13 and float(da[iNum_data_list]) <= 0.2):
+                        #     dataColor = 'yellow' 
+                        # else:
+                        #     dataColor = 'green'
 
-                        Testdatadict={
-                                    "color" : dataColor,
-                                    "value" : da[iNum_data_list]
-                                }        
+                        # Testdatadict={
+                        #             "color" : dataColor,
+                        #             "value" : da[iNum_data_list]
+                        #         }      
+
+                        if(da[iNum_data_list] is None):
+                            Testdatadict={
+                                    "color" : '',
+                                    "value" : ''
+                                }   
+                        else:    
+                            Color_Value = da[iNum_data_list].split("/", 1)
+                            Testdatadict={
+                                    "color" : Color_Value[0],
+                                    "value" : float(Color_Value[1])
+                                }   
+  
                         iNum_data_list = iNum_data_list + 1   
                         dataList.append(Testdatadict) 
                     dataListArray.append(dataList)  
@@ -129,12 +161,27 @@ class iSFPScrapPInfo(BaseType):
 
             data_result = json.dumps(datajson, sort_keys=False, indent=2,cls=ComplexEncoder)
             
+            #取燈號 Size
+            self.writeLog(f'{self.__class__.__name__} {sys._getframe().f_code.co_name} Start')
+            sql =  """select t.data_type,t.data_value from wayne_test_size t"""
+            
+            self.writeLog(f'SQL:\n {sql}')
+            self.getConnection(self.__indentity)
+            data_RGB_Size = self.Select(sql)
+            self.closeConnection()
+
+            for da in data_RGB_Size:
+                if(da[0] == 'circleSize'):
+                    ResultCircleSize = da[1]
+                elif(da[0] == 'fontSize'):
+                    ResultFontSize = da[1] 
+
             #組元件所需資料格式          
             responseResult = {}
             #dataitem[0] = "達產(%)"
             #ResuleSide.append(dataitem)
             ResuleSide.append(dataTitle)
-            responseResult = dict(borderType = 2,titleArray = ResultColnumjson,sideArray = ResuleSide,listArray = dataListArray)
+            responseResult = dict(circleSize = ResultCircleSize, fontSize = ResultFontSize, borderType = 2,titleArray = ResultColnumjson,sideArray = ResuleSide,listArray = dataListArray)
             
 
             self.writeLog(f"Json:\n {data_result}")

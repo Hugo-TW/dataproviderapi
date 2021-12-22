@@ -74,12 +74,19 @@ class iSFPWOWIPInfo(BaseType):
             sql =  """select * from 
                         (
                           select t.data_date,t.data_type,
-                          case when (t.data_date <> 'MTD' and t.data_value > t1.red_day) then 'red'
-                               when (t.data_date <> 'MTD' and t.data_value >= t1.green_day and t.data_value <= t1.red_day) then 'yellow'
-                               when (t.data_date <> 'MTD' and t.data_value < t1.green_day) then 'green' 
-                               when (t.data_date = 'MTD' and t.data_value > t1.red_mtd) then 'red'
-                               when (t.data_date = 'MTD' and t.data_value >= t1.green_mtd and t.data_value <= t1.red_mtd) then 'yellow'
-                               when (t.data_date = 'MTD' and t.data_value < t1.green_mtd) then 'green' 
+                          case when (t.data_type = 'WO' and t.data_date <> 'MTD' and t.data_value < t1.red_day) then 'red'
+                               when (t.data_type = 'WO' and t.data_date <> 'MTD' and t.data_value >= t1.red_day and t.data_value <= t1.green_day) then 'yellow'
+                               when (t.data_type = 'WO' and t.data_date <> 'MTD' and t.data_value > t1.green_day) then 'green' 
+                               when (t.data_type = 'WO' and t.data_date = 'MTD' and t.data_value < t1.red_mtd) then 'red'
+                               when (t.data_type = 'WO' and t.data_date = 'MTD' and t.data_value >= t1.red_mtd and t.data_value <= t1.green_mtd) then 'yellow'
+                               when (t.data_type = 'WO' and t.data_date = 'MTD' and t.data_value > t1.green_mtd) then 'green' 
+                               
+                               when (t.data_type <> 'WO' and t.data_date <> 'MTD' and t.data_value > t1.red_day) then 'red'
+                               when (t.data_type <> 'WO' and t.data_date <> 'MTD' and t.data_value >= t1.green_day and t.data_value <= t1.red_day) then 'yellow'
+                               when (t.data_type <> 'WO' and t.data_date <> 'MTD' and t.data_value < t1.green_day) then 'green' 
+                               when (t.data_type <> 'WO' and t.data_date = 'MTD' and t.data_value > t1.red_mtd) then 'red'
+                               when (t.data_type <> 'WO' and t.data_date = 'MTD' and t.data_value >= t1.green_mtd and t.data_value <= t1.red_mtd) then 'yellow'
+                               when (t.data_type <> 'WO' and t.data_date = 'MTD' and t.data_value < t1.green_mtd) then 'green'
                                end||'/'||t.data_value as data_value
                                from
                           (
