@@ -1564,7 +1564,6 @@ class INTLV3(BaseType):
                             dlo.site_code, \
                             dlo.factory_code, \
                             dmo.code, \
-                            epa.mfgdate, \
                             dmo.application \
                         HAVING SUM(epa.sumqty) > 0 "
             description, data = self.pSelectAndDescription(passString)
@@ -1602,7 +1601,6 @@ class INTLV3(BaseType):
                             dlo.site_code, \
                             dlo.factory_code, \
                             dmo.code, \
-                            edf.mfgdate, \
                             dmo.application, \
                             ddf.DEFTCODE, \
                             ddf.DEFTCODE_DESC \
@@ -1899,7 +1897,6 @@ class INTLV3(BaseType):
                             dlo.site_code, \
                             dlo.factory_code, \
                             dmo.code, \
-                            epa.mfgdate, \
                             dmo.application \
                         HAVING SUM(epa.sumqty) > 0 "
             description, data = self.pSelectAndDescription(passString)
@@ -1936,7 +1933,6 @@ class INTLV3(BaseType):
                             dlo.site_code, \
                             dlo.factory_code, \
                             dmo.code, \
-                            ers.mfgdate, \
                             dmo.application, \
                             drc.REASONCODE, \
                             drc.REASONCODE_DESC \
@@ -2492,7 +2488,6 @@ class INTLV3(BaseType):
                             dlo.site_code, \
                             dlo.factory_code, \
                             dmo.code, \
-                            fpa.mfgdate, \
                             dmo.application, \
                             dop.name \
                         HAVING SUM(fpa.sumqty) > 0 "
@@ -2529,7 +2524,6 @@ class INTLV3(BaseType):
                             dlo.site_code, \
                             dlo.factory_code, \
                             dmo.code, \
-                            fdf.mfgdate, \
                             dmo.application, \
                             dop.name, \
                             ddf.DEFTCODE, \
@@ -3067,7 +3061,6 @@ class INTLV3(BaseType):
                             dlo.site_code, \
                             dlo.factory_code, \
                             dmo.code, \
-                            fpa.mfgdate, \
                             dmo.application, \
                             dop.name \
                         HAVING SUM(fpa.sumqty) > 0 "
@@ -3130,7 +3123,6 @@ class INTLV3(BaseType):
                             dlo.site_code, \
                             dlo.factory_code, \
                             dmo.code, \
-                            fdf.mfgdate, \
                             dmo.application, \
                             ddf.DEFTCODE, \
                             ddf.DEFTCODE_DESC \
@@ -4574,7 +4566,6 @@ class INTLV3(BaseType):
                             dlo.site_code, \
                             dlo.factory_code, \
                             dmo.code, \
-                            fpa.mfgdate, \
                             dmo.application, \
                             dop.name \
                         HAVING SUM(fpa.sumqty) > 0 "
@@ -4606,7 +4597,6 @@ class INTLV3(BaseType):
                             dlo.site_code, \
                             dlo.factory_code, \
                             dmo.code, \
-                            fdf.mfgdate, \
                             dmo.application, \
                             dop.name \
                         HAVING SUM(fdf.sumqty) > 0 "
