@@ -442,7 +442,6 @@ class INTRelation(BaseType):
                 del idData
                 gc.collect()
                 self.writeLog("panelData")
-                self.writeLog(panelData)
 
                 PANELID_Group = self._Group_PANELID_List(panelData)
 
@@ -1256,6 +1255,44 @@ class INTRelation(BaseType):
                 else:
                     return {'Result': 'Fail', 'Reason': 'No Panel ID DATA LIST'}, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
   
+            elif tmpFuncType == "DEFT_CELL_HP":
+                getFabData = self.operSetData[tmpFACTORY_ID]
+                numeratorData = getFabData["FPY"]["numerator"][tmpOPER]
+                fromt = numeratorData["fromt"]
+                to = numeratorData["tot"]
+                denominatorValue = getFabData["FPY"]["denominator"][tmpOPER]
+                # step0: 取得 與 defect / Reason 相關的 panel id
+                whereString = f"where  {whereComSiteFac} and PROD_NBR = '{tmpPROD_NBR}' and  DEFT = '{tmpCHECKCODE}' and RW_COUNT <= 1 "\
+                    f" and TO_NUMBER(MAIN_OPER) >= {fromt} "\
+                    f" and TO_NUMBER(MAIN_OPER) <= {to} "\
+                    f" and MFGDATE = '{tmpACCT_DATE}' "
+                if tmpRWCOUNT == "=1" : whereString += " and RW_COUNT = 1 "
+                sql = "select PANELID "\
+                      " from INTMP_DB.PANELHISDAILY_DEFT " \
+                      f"{whereString} " \
+                      "group by PANELID " \
+                      "order by PANELID "
+                description , data = self.pSelectAndDescription(sql)            
+                panelIDData = self._zipDescriptionAndData(description, data)
+
+                if len(panelIDData) > 0:
+                    nnData = self._nnData(panelIDData)
+                    returnData = {
+                        "RELATIONTYPE": tmpFuncType,
+                        "COMPANY_CODE": tmpCOMPANY_CODE,
+                        "SITE": tmpSITE,
+                        "FACTORY_ID": tmpFACTORY_ID,
+                        "APPLICATION": tmpAPPLICATION,
+                        "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
+                        "PROD_NBR": tmpPROD_NBR if tmpRWCOUNT != "=1" else f'直行品 {tmpPROD_NBR}',
+                        "XAXIS": nnData["XAXIS"],
+                        "YAXIS": nnData["YAXIS"],
+                        "HEARMAP": nnData["HEARMAP"]
+                    }
+                    end = time.time()
+                    return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+                else:
+                    return {'Result': 'Fail', 'Reason': 'No Panel ID DATA LIST'}, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
             else:
                 return {'Result': 'Fail', 'Reason': 'Parametes[KPITYPE] not in Rule'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
@@ -1270,6 +1307,45 @@ class INTRelation(BaseType):
             self.writeError(
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return {'Result': 'NG', 'Reason': f'{funcName} erro'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+
+    def _nnData (self, panelIDData):
+        HEARMAP = []
+        XAXIS = []
+        YAXIS = []
+        tempData = []
+        for x in panelIDData:            
+            b = x["PANELID"][len(x["PANELID"])-2]
+            s = x["PANELID"][len(x["PANELID"])-1]
+            tempData.append({"PANELID": x["PANELID"],"b": b,"s": s})
+            if b not in XAXIS:
+                XAXIS.append(f'{b}')
+            if s not in YAXIS:
+                YAXIS.append(f'{s}')
+
+        XAXIS.sort()
+        bid= 0
+        YAXIS.sort()
+        sid= 0
+        for b in XAXIS:
+            sid= 0
+            for s in YAXIS:
+                d = [dd for dd in tempData if b == dd["b"] and s == dd["s"]]
+                HEARMAP.append({
+                    "name": f'{b}/{s}',
+                    "x": bid,
+                    "y": sid,
+                    "b": b,
+                    "s": s,
+                    "value":len(d)})   
+                sid += 1
+            bid += 1
+
+        returnData = {
+            "XAXIS":XAXIS,
+            "YAXIS":YAXIS,
+            "HEARMAP":HEARMAP
+        }
+        return returnData
 
     def _filterListbyOPER(self, LIST, OPER):
         d = [dd for dd in LIST if dd["OPER"] != OPER]
