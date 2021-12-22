@@ -39,7 +39,7 @@ class iSFPOutLightInfo(BaseType):
             data = self.Select(sql)
             self.closeConnection()
             colnumjson=[]
-            colnumjson.append("DATA_DATE")
+            colnumjson.append("DATE")
             sColnumName = ""
             iCount = 0
             if(len(data) != 0):
