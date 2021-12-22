@@ -96,7 +96,8 @@ class iSFPFPYYLightInfo(BaseType):
                         dataResult.append('RED') 
 
                     datadict = dict(zip(colnumjson, dataResult))
-                    datajson.append(datadict)     
+                    datajson.append(datadict)  
+                    dataResult=[]   
                            
             else:
                 datadict = dict(zip(colnumjson, ""))

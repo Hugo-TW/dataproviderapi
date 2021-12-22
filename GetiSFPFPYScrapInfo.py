@@ -69,12 +69,19 @@ class iSFPFPYScrapInfo(BaseType):
             sql =  """select * from 
                         (
                           select t.data_date,t.data_type,
-                          case when (t.data_date <> 'MTD' and t.data_value > t1.red_day) then 'red'
-                               when (t.data_date <> 'MTD' and t.data_value >= t1.green_day and t.data_value <= t1.red_day) then 'yellow'
-                               when (t.data_date <> 'MTD' and t.data_value < t1.green_day) then 'green' 
-                               when (t.data_date = 'MTD' and t.data_value > t1.red_mtd) then 'red'
-                               when (t.data_date = 'MTD' and t.data_value >= t1.green_mtd and t.data_value <= t1.red_mtd) then 'yellow'
-                               when (t.data_date = 'MTD' and t.data_value < t1.green_mtd) then 'green' 
+                          case when (t.data_type = 'FPY_TOTAL' and t.data_date <> 'MTD' and t.data_value < t1.red_day) then 'red'
+                               when (t.data_type = 'FPY_TOTAL' and t.data_date <> 'MTD' and t.data_value >= t1.red_day and t.data_value <= t1.green_day) then 'yellow'
+                               when (t.data_type = 'FPY_TOTAL' and t.data_date <> 'MTD' and t.data_value > t1.green_day) then 'green' 
+                               when (t.data_type = 'FPY_TOTAL' and t.data_date = 'MTD' and t.data_value < t1.red_mtd) then 'red'
+                               when (t.data_type = 'FPY_TOTAL' and t.data_date = 'MTD' and t.data_value >= t1.red_mtd and t.data_value <= t1.green_mtd) then 'yellow'
+                               when (t.data_type = 'FPY_TOTAL' and t.data_date = 'MTD' and t.data_value > t1.green_mtd) then 'green' 
+                               
+                               when (t.data_type <> 'FPY_TOTAL' and t.data_date <> 'MTD' and t.data_value > t1.red_day) then 'red'
+                               when (t.data_type <> 'FPY_TOTAL' and t.data_date <> 'MTD' and t.data_value >= t1.green_day and t.data_value <= t1.red_day) then 'yellow'
+                               when (t.data_type <> 'FPY_TOTAL' and t.data_date <> 'MTD' and t.data_value < t1.green_day) then 'green' 
+                               when (t.data_type <> 'FPY_TOTAL' and t.data_date = 'MTD' and t.data_value > t1.red_mtd) then 'red'
+                               when (t.data_type <> 'FPY_TOTAL' and t.data_date = 'MTD' and t.data_value >= t1.green_mtd and t.data_value <= t1.red_mtd) then 'yellow'
+                               when (t.data_type <> 'FPY_TOTAL' and t.data_date = 'MTD' and t.data_value < t1.green_mtd) then 'green'
                                end||'/'||t.data_value as data_value
                                from
                           (
@@ -100,7 +107,7 @@ class iSFPFPYScrapInfo(BaseType):
                           and t.item_name = t1.item_name
                         )
                         PIVOT (max (data_value)FOR data_date IN ('{2}')) 
-                        order by 1 desc""".format(self.__start_time, self.__end_time, self.__sColnumName) 
+                        order by 1 """.format(self.__start_time, self.__end_time, self.__sColnumName) 
             
             self.writeLog(f'SQL:\n {sql}')
             self.getConnection(self.__indentity)

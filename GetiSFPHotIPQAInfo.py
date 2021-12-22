@@ -69,12 +69,17 @@ class iSFPHotIPQAInfo(BaseType):
             sql =  """select * from 
                         (
                           select t.data_date,t.data_type,
-                          case when (t.data_date <> 'MTD' and t.data_value > t1.red_day) then 'red'
-                               when (t.data_date <> 'MTD' and t.data_value >= t1.green_day and t.data_value <= t1.red_day) then 'yellow'
-                               when (t.data_date <> 'MTD' and t.data_value < t1.green_day) then 'green' 
-                               when (t.data_date = 'MTD' and t.data_value > t1.red_mtd) then 'red'
-                               when (t.data_date = 'MTD' and t.data_value >= t1.green_mtd and t.data_value <= t1.red_mtd) then 'yellow'
-                               when (t.data_date = 'MTD' and t.data_value < t1.green_mtd) then 'green' 
+                          case when (t.data_type = 'HEADLINES' and t.data_date <> 'MTD' and t.data_value >= t1.red_day) then 'red'
+                               when (t.data_type = 'HEADLINES' and t.data_date <> 'MTD' and t.data_value < t1.red_day) then 'green'
+                               when (t.data_type = 'HEADLINES' and t.data_date = 'MTD' and t.data_value >= t1.red_mtd) then 'green' 
+                               when (t.data_type = 'HEADLINES' and t.data_date = 'MTD' and t.data_value < t1.red_mtd) then 'green' 
+                               
+                               when (t.data_type = 'IPQA' and t.data_date <> 'MTD' and t.data_value > t1.red_day) then 'red'
+                               when (t.data_type = 'IPQA' and t.data_date <> 'MTD' and t.data_value >= t1.green_day and t.data_value <= t1.red_day) then 'yellow'
+                               when (t.data_type = 'IPQA' and t.data_date <> 'MTD' and t.data_value < t1.green_day) then 'green' 
+                               when (t.data_type = 'IPQA' and t.data_date = 'MTD' and t.data_value > t1.red_mtd) then 'red'
+                               when (t.data_type = 'IPQA' and t.data_date = 'MTD' and t.data_value >= t1.green_mtd and t.data_value <= t1.red_mtd) then 'yellow'
+                               when (t.data_type = 'IPQA' and t.data_date = 'MTD' and t.data_value < t1.green_mtd) then 'green'
                                end||'/'||t.data_value as data_value
                                from
                           (
@@ -85,7 +90,8 @@ class iSFPHotIPQAInfo(BaseType):
                             
                             union
                             
-                            select 'MTD' as date_time,substr('{1}',4,2) as month_dat,t.data_type,to_char(round(decode(t.data_type,'燈號',round(sum(t.data_value)/count(*),0),sum(t.data_value)/count(*)),1),'FM990.0') as data_value,t.item_name
+                            select 'MTD' as date_time,substr('20211128',4,2) as month_dat,t.data_type,
+                            decode(t.data_type,'HEADLINES',to_char(sum(t.data_value)),to_char(round(decode(t.data_type,'燈號',round(sum(t.data_value)/count(*),0),sum(t.data_value)/count(*)),1),'FM990.0')) as data_value,t.item_name
                             from WAYNE_TEST_TV t
                             where item_name in ('HEADLINES','IPQA') 
                             and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss')

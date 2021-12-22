@@ -97,6 +97,7 @@ class iSFPFPYNLightInfo(BaseType):
 
                     datadict = dict(zip(colnumjson, dataResult))
                     datajson.append(datadict)     
+                    dataResult=[]
                            
             else:
                 datadict = dict(zip(colnumjson, ""))
