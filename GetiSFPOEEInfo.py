@@ -43,6 +43,7 @@ class iSFPOEEInfo(BaseType):
             dataList=[]
             dataListArray=[]
             colnumjson.append("DATA_DATE")
+            ResultColnumjson.append("")
             sColnumName = ""
             iCount = 0
             if(len(data) != 0):
@@ -153,13 +154,28 @@ class iSFPOEEInfo(BaseType):
                 datajson.append(datadict) 
 
             data_result = json.dumps(datajson, sort_keys=False, indent=2,cls=ComplexEncoder)
+
+            #取燈號 Size
+            self.writeLog(f'{self.__class__.__name__} {sys._getframe().f_code.co_name} Start')
+            sql =  """select t.data_type,t.data_value from wayne_test_size t"""
+            
+            self.writeLog(f'SQL:\n {sql}')
+            self.getConnection(self.__indentity)
+            data_RGB_Size = self.Select(sql)
+            self.closeConnection()
+
+            for da in data_RGB_Size:
+                if(da[0] == 'circleSize'):
+                    ResultCircleSize = da[1]
+                elif(da[0] == 'fontSize'):
+                    ResultFontSize = da[1]
           
             #組元件所需資料格式          
             responseResult = {}
             dataitem[0] = "設備OEE%(%)"
             ResuleSide.append(dataitem)
             ResuleSide.append(dataTitle)
-            responseResult = dict(borderType = 1,titleArray = ResultColnumjson,sideArray = ResuleSide,listArray = dataListArray)
+            responseResult = dict(circleSize = ResultCircleSize, fontSize = ResultFontSize, borderType = 1,titleArray = ResultColnumjson,sideArray = ResuleSide,listArray = dataListArray)
             
 
 
