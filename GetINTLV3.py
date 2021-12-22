@@ -1648,7 +1648,7 @@ class INTLV3(BaseType):
                 "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
                 "PROD_NBR": PROD_NBR,
                 "LCM_OWNER": {"$in": LCMOWNER},
-                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]}
+                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList["denominator"]]}
             }
         }
         passGroup1 = {
@@ -1730,7 +1730,7 @@ class INTLV3(BaseType):
                 "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
                 "LCM_OWNER": {"$in": LCMOWNER},
                 "PROD_NBR": PROD_NBR,
-                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]},
+                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList["numerator"]]},
                 "DFCT_CODE": {"$in": yellowList}
             }
         }
@@ -1786,7 +1786,7 @@ class INTLV3(BaseType):
             [deftMatch1, deftGroup1, deftProject1, deftAdd, deftSort])
         passAggregate.extend(
             [passMatch1, passGroup1, passProject1, passGroup2, passProject2, passAdd, passSort])
-
+        print(passAggregate)
         try:
             self.getMongoConnection()
             self.setMongoDb("IAMP")
@@ -1980,7 +1980,7 @@ class INTLV3(BaseType):
                     "FACTORY_ID": tmpFACTORY_ID,
                     "PROD_NBR": tmpPROD_NBR,
                     "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
-                    "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]},
+                    "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList["denominator"]]},
                     "LCM_OWNER": {"$in": LCMOWNER}
                 }
             },
@@ -2031,7 +2031,7 @@ class INTLV3(BaseType):
                     "PROD_NBR": tmpPROD_NBR,
                     "LCM_OWNER": {"$in": LCMOWNER},
                     "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
-                    "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, OPERList]},
+                    "$expr": {"$in": [{"$toInt": "$MAIN_WC"},  OPERList["numerator"]]},
                     "DFCT_REASON": { "$regex": "F"}
                 }
             },
