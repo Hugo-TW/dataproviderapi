@@ -94,6 +94,7 @@ from GetiSFPFPYYInfo import iSFPFPYYInfo
 from GetiSFPFPYScrapInfo import iSFPFPYScrapInfo
 from GetiSFPOQCLightInfo import iSFPOQCLightInfo
 from GetiSFPOQCInfo import iSFPOQCInfo
+from GetiSFPOQCChartInfo import iSFPOQCChartInfo
 from GetiSFPHotIPQAInfo import iSFPHotIPQAInfo
 from GetiSFPHoldLightInfo import iSFPHoldLightInfo
 from GetiSFPHoldInfo import iSFPHoldInfo
@@ -3025,7 +3026,44 @@ class GetOQCInfo(Resource):
         end_time = jsonData["END_TIME"]
         log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
         isfpOQCInfo = iSFPOQCInfo(identity, start_time, end_time)
-        return isfpOQCInfo.getData()        
+        return isfpOQCInfo.getData()   
+
+isfpOQCChartInfoNS = api.namespace('GetiSFPOQCChartInfo', description = '廠晨會看板- OQC 判退推移圖 For 堆疊')
+isfpOQCChartInfoML = api.model('GetiSFPOQCChartInfo', {
+"COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+"SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
+"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123000000', example = '20211123000000'),
+"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128000000', example = '20211128000000'),
+})
+@isfpOQCChartInfoNS.route('', methods = ['POST'])
+@isfpOQCChartInfoNS.response(200, 'Sucess')
+@isfpOQCChartInfoNS.response(201, 'Created Sucess')
+@isfpOQCChartInfoNS.response(204, 'No Content')
+@isfpOQCChartInfoNS.response(400, 'Bad Request')
+@isfpOQCChartInfoNS.response(401, 'Unauthorized')
+@isfpOQCChartInfoNS.response(403, 'Forbidden')
+@isfpOQCChartInfoNS.response(404, 'Not Found')
+@isfpOQCChartInfoNS.response(405, 'Method Not Allowed')
+@isfpOQCChartInfoNS.response(409, 'Conflict')
+@isfpOQCChartInfoNS.response(500, 'Internal Server Error')
+class GetOQCChartInfo(Resource):
+    @isfpOQCChartInfoNS.doc('AppConfSysMain')
+    @isfpOQCChartInfoNS.expect(isfpOQCChartInfoML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        jsonData = BaseType.validateType(request.json)
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData:  
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        identity = jsonData["COMPANY_CODE"] + "-" + jsonData["SITE"] + "-" + jsonData["FACTORY_ID"]
+        start_time = jsonData["START_TIME"]
+        end_time = jsonData["END_TIME"]
+        log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
+        isfpOQCChartInfo = iSFPOQCChartInfo(identity, start_time, end_time)
+        return isfpOQCChartInfo.getData()              
 
 isfpHotIPQAInfoNS = api.namespace('GetiSFPHotIPQAInfo', description = '廠晨會看板- 今日頭條 & IPQA(%) 區塊')
 isfpHotIPQAInfoML = api.model('GetiSFPHotIPQAInfo', {
