@@ -169,7 +169,7 @@ class iSFPHotIPQAInfo(BaseType):
                             Color_Value = da[iNum_data_list].split("/", 1)
                             Testdatadict={
                                     "color" : Color_Value[0],
-                                    "value" : float(Color_Value[1])
+                                    "value" : Color_Value[1]
                                 } 
 
                         iNum_data_list = iNum_data_list + 1   

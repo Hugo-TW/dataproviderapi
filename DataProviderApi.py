@@ -79,6 +79,7 @@ from GetiSFPAttendanceInfo import iSFPAttendanceInfo
 from GetiSFPReAtInfo import iSFPReAtInfo
 from GetiSFPScrapLightInfo import iSFPScrapLightInfo
 from GetiSFPScrapInfo import iSFPScrapInfo
+from GetiSFPScrapChartInfo import iSFPScrapChartInfo
 from GetiSFPWOInfo import iSFPWOInfo
 from GetiSFPWIP30Info import iSFPWIP30Info
 from GetiSFPWIP14Info import iSFPWIP14Info
@@ -2466,6 +2467,43 @@ class GetScrapInfo(Resource):
         log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
         isfpScrapInfo = iSFPScrapInfo(identity, start_time, end_time)
         return isfpScrapInfo.getData()
+
+isfpScrapChartInfoNS = api.namespace('GetiSFPScrapChartInfo', description = '廠晨會看板-報廢推移圖 For 堆疊')
+isfpScrapChartInfoML = api.model('GetiSFPScrapChartInfo', {
+"COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+"SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
+"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123000000', example = '20211123000000'),
+"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128000000', example = '20211128000000'),
+})
+@isfpScrapChartInfoNS.route('', methods = ['POST'])
+@isfpScrapChartInfoNS.response(200, 'Sucess')
+@isfpScrapChartInfoNS.response(201, 'Created Sucess')
+@isfpScrapChartInfoNS.response(204, 'No Content')
+@isfpScrapChartInfoNS.response(400, 'Bad Request')
+@isfpScrapChartInfoNS.response(401, 'Unauthorized')
+@isfpScrapChartInfoNS.response(403, 'Forbidden')
+@isfpScrapChartInfoNS.response(404, 'Not Found')
+@isfpScrapChartInfoNS.response(405, 'Method Not Allowed')
+@isfpScrapChartInfoNS.response(409, 'Conflict')
+@isfpScrapChartInfoNS.response(500, 'Internal Server Error')
+class GetScrapChartInfo(Resource):
+    @isfpScrapChartInfoNS.doc('AppConfSysMain')
+    @isfpScrapChartInfoNS.expect(isfpScrapChartInfoML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        jsonData = BaseType.validateType(request.json)
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData:  
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        identity = jsonData["COMPANY_CODE"] + "-" + jsonData["SITE"] + "-" + jsonData["FACTORY_ID"]
+        start_time = jsonData["START_TIME"]
+        end_time = jsonData["END_TIME"]
+        log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
+        isfpScrapChartInfo = iSFPScrapChartInfo(identity, start_time, end_time)
+        return isfpScrapChartInfo.getData()        
 
 isfpWOInfoNS = api.namespace('GetiSFPWOInfo', description = '廠晨會看板-工單結案率(%)')
 isfpWOInfoML = api.model('GetiSFPWOInfo', {
