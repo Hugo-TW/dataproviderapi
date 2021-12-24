@@ -1848,10 +1848,15 @@ class INTRelation(BaseType):
         return List
 
     def _OPER_Limit(self, OPER_List, PANEL_TOTAL_COUNT):
-        # (PANEL_TOTAL_COUNT*70%)/(MAX(B2:N2)*35%)/PANEL_TOTAL_COUNT
+        # A = (PANEL_TOTAL_COUNT*80%) / OPER_List_MAX
+        # B = (PANEL_TOTAL_COUNT*20%) / 1
+        # C = PANEL_TOTAL_COUNT
         if len(OPER_List) != 0:
-            OPER_List_MAX = max(OPER_List.values()) * 0.35
-            cal = (PANEL_TOTAL_COUNT * 0.7) / OPER_List_MAX / PANEL_TOTAL_COUNT
+            OPER_List_MAX = max(OPER_List.values())
+            a = (PANEL_TOTAL_COUNT * 0.8) / OPER_List_MAX
+            b = (PANEL_TOTAL_COUNT * 0.2) / 1
+            c = PANEL_TOTAL_COUNT
+            cal = (a + b) / PANEL_TOTAL_COUNT
             returnData = cal if cal < 0.5 else 0.5
             return returnData
         else:
