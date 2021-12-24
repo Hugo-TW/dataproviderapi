@@ -1285,23 +1285,14 @@ class INTRelation(BaseType):
                     return {'Result': 'Fail', 'Reason': 'No Panel ID DATA LIST'}, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
             
             elif tmpFuncType == "REASON_CELL_HP":
-                OPERDATA = {
-                        "BONDING":{"OPER": [1300,1301]},
-                        "LAM":{"OPER": [1340,1370]},
-                        "AAFC":{"OPER": [1419,1420]},
-                        "TPI":{"OPER": [1510]},
-                        "OTPC":{"OPER": [1590]},
-                        "CKEN":{"OPER": [1600]}                         
-                    }         
-                OPERList = []
-                if tmpOPER == "ALL":
-                    for key, value in OPERDATA.items():
-                        OPERList.extend(value.get("OPER"))
-                else:
-                    OPERList.extend(OPERDATA[tmpOPER]["OPER"])
-                
+                EFASet= self._getEFASet( tmpCOMPANY_CODE, tmpSITE, tmpFACTORY_ID, tmpOPER)
+                OPERList = []  
+                numerator = EFASet["OPERLIST"]["numerator"]
+                denominator = EFASet["OPERLIST"]["denominator"]                
                 _OPERList_LIST = ""
-                for x in OPERList:
+                for x in numerator:
+                    _OPERList_LIST = _OPERList_LIST + f"'{x}',"
+                for x in denominator:
                     _OPERList_LIST = _OPERList_LIST + f"'{x}',"
                 if _OPERList_LIST != "":
                     _OPERList_LIST = _OPERList_LIST[:-1]
@@ -1371,7 +1362,7 @@ class INTRelation(BaseType):
                     _NodeName = ""
                     if tmpCATEGORY == '0':
                         _NodeName = tmpNODENAME[3:]
-                        _NodeName = _NodeName if _NodeName[0:3] != 'AUTO' else 'AUTO'
+                        _NodeName = _NodeName if _NodeName[0:4] != 'AUTO' else 'AUTO'
                     elif tmpCATEGORY == '2':
                         _NodeName = tmpNODENAME
 
@@ -1431,6 +1422,113 @@ class INTRelation(BaseType):
                 else:
                     return {'Result': 'Fail', 'Reason': 'No Panel ID DATA LIST'}, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
             
+            elif tmpFuncType == "REASON_CELL_TIME":
+                tmpCATEGORY = self.jsonData["CATEGORY"]
+                tmpNODENAME = self.jsonData["NODENAME"]
+                EFASet= self._getEFASet( tmpCOMPANY_CODE, tmpSITE, tmpFACTORY_ID, tmpOPER)
+                OPERList = []  
+                numerator = EFASet["OPERLIST"]["numerator"]
+                denominator = EFASet["OPERLIST"]["denominator"]                
+                _OPERList_LIST = ""
+                for x in numerator:
+                    _OPERList_LIST = _OPERList_LIST + f"'{x}',"
+                for x in denominator:
+                    _OPERList_LIST = _OPERList_LIST + f"'{x}',"
+                if _OPERList_LIST != "":
+                    _OPERList_LIST = _OPERList_LIST[:-1]
+
+                # step0: 取得 與 defect / Reason 相關的 panel id
+                # step0: 取得 與 defect / Reason 相關的 panel id
+                whereString = f"where {whereComSiteFac} and PROD_NBR = '{tmpPROD_NBR}' and  DEFT_REASON = '{tmpCHECKCODE}' "\
+                    f" and MAIN_OPER in ({_OPERList_LIST})  and MFGDATE = '{tmpACCT_DATE}' "
+                if tmpRWCOUNT == "=1" : whereString += " and RW_COUNT = 1 "
+                sql = "select PANELID "\
+                      " from INTMP_DB.PANELHISDAILY_REASON " \
+                      f"{whereString} " \
+                      "group by PANELID " \
+                      "order by PANELID "
+                description , data = self.pSelectAndDescription(sql)            
+                panelIDData = self._zipDescriptionAndData(description, data)
+
+                PANELID_Group = self._Group_PANELID_List(panelIDData)
+                PANELID_Group_SQL_LIST = ""
+                for x in PANELID_Group:
+                    PANELID_Group_SQL_LIST = PANELID_Group_SQL_LIST + f"'{x}',"
+                if PANELID_Group_SQL_LIST != "":
+                    PANELID_Group_SQL_LIST = PANELID_Group_SQL_LIST[:-1]
+
+                if len(panelIDData) > 0:
+                    _NodeName = ""
+                    _OPER = ""
+                    if tmpCATEGORY == '0':
+                        _NodeName = tmpNODENAME[3:]            
+                        if _NodeName[0:4] != 'AUTO':
+                            _OPER = ""
+                            _NodeName = _NodeName 
+                        else:
+                            _OPER = _NodeName[4:]
+                            _NodeName = 'AUTO'
+                    elif tmpCATEGORY == '2':
+                        _NodeName = tmpNODENAME
+
+                    whereString = f"where {whereComSiteFac} and  PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and PANELID in ({PANELID_Group_SQL_LIST}) "
+                    if _OPER != "" : whereString += f" and OPER = '{_OPER}' "
+                    if tmpRWCOUNT == "=1" : whereString += " and RW_COUNT = 0 "
+                    if tmpCATEGORY == '0': whereString += f" and OPERATOR = '{_NodeName}' "
+                    elif tmpCATEGORY == '2': whereString += f" and EQPID = '{_NodeName}' "
+                    sql = f"with panel_his_daily as (select * from INTMP_DB.PANELHISDAILY {whereString} ) " \
+                        "select PROD_NBR, MFGDATE, PANELID, OPER, TRANSDT, OPERATOR, EQPID, RW_COUNT, " \
+                        "OUTPUT_FG from panel_his_daily order by PANELID, TRANSDT asc"
+
+                    data1 = self.pSelect(sql)
+                    hisData = []
+                    if(len(data1) != 0):
+                        for da in data1:
+                            d = datetime.datetime
+                            TIMECLUST_d = d.strptime(da[4], '%Y%m%d%H%M%S')
+                            TIMECLUST_YYYYMMDD = d.strftime(TIMECLUST_d, '%Y%m%d')
+                            TIMECLUST_HH = d.strftime(TIMECLUST_d, '%H')
+                            datadict = {
+                                "PROD_NBR": da[0],
+                                "MFGDATE": da[1],
+                                "PANELID": da[2],
+                                "OPER": da[3],
+                                "TRANSDT": da[4],
+                                "OPERATOR": da[5],
+                                "EQPID": da[6],
+                                "RW_COUNT": da[7],
+                                "OUTPUT_FG": da[8],
+                                "YMD": TIMECLUST_YYYYMMDD,
+                                "HH": TIMECLUST_HH
+                            }
+                            hisData.append(datadict)
+                    del data1
+                    gc.collect()
+
+                    nnData = []
+                    if tmpCATEGORY == '0':
+                        nnData = self._get_NODE_PANELID(hisData, 'OPERATOR',_NodeName)
+                    elif tmpCATEGORY == '2':
+                        nnData = self._get_NODE_PANELID(hisData,'EQPID',_NodeName)
+                    returnData = {
+                        "RELATIONTYPE": tmpFuncType,
+                        "COMPANY_CODE": tmpCOMPANY_CODE,
+                        "SITE": tmpSITE,
+                        "FACTORY_ID": tmpFACTORY_ID,
+                        "APPLICATION": tmpAPPLICATION,
+                        "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
+                        "PROD_NBR": tmpPROD_NBR if tmpRWCOUNT != "=1" else f'直行品 {tmpPROD_NBR}',
+                        "CATEGORY": tmpCATEGORY,
+                        "NODENAME": tmpNODENAME,
+                        "XAXIS" : nnData["XAXIS"],
+                        "DATASERIES": nnData["DATASERIES"]
+                    }
+                    end = time.time()
+                    return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+                else:
+                    return {'Result': 'Fail', 'Reason': 'No Panel ID DATA LIST'}, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+            
+
 
             else:
                 return {'Result': 'Fail', 'Reason': 'Parametes[KPITYPE] not in Rule'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
