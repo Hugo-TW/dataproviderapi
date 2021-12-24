@@ -1338,6 +1338,99 @@ class INTRelation(BaseType):
                 else:
                     return {'Result': 'Fail', 'Reason': 'No Panel ID DATA LIST'}, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
             
+            elif tmpFuncType == "DEFT_CELL_TIME":
+                tmpCATEGORY = self.jsonData["CATEGORY"]
+                tmpNODENAME = self.jsonData["NODENAME"]
+                getFabData = self.operSetData[tmpFACTORY_ID]
+                numeratorData = getFabData["FPY"]["numerator"][tmpOPER]
+                fromt = numeratorData["fromt"]
+                to = numeratorData["tot"]
+                denominatorValue = getFabData["FPY"]["denominator"][tmpOPER]
+                # step0: 取得 與 defect / Reason 相關的 panel id
+                whereString = f"where  {whereComSiteFac} and PROD_NBR = '{tmpPROD_NBR}' and  DEFT = '{tmpCHECKCODE}' "\
+                    f" and TO_NUMBER(MAIN_OPER) >= {fromt} "\
+                    f" and TO_NUMBER(MAIN_OPER) <= {to} "\
+                    f" and MFGDATE = '{tmpACCT_DATE}' "
+                if tmpRWCOUNT == "=1" : whereString += " and RW_COUNT = 1 "
+                sql = "select PANELID "\
+                      " from INTMP_DB.PANELHISDAILY_DEFT " \
+                      f"{whereString} " \
+                      "group by PANELID " \
+                      "order by PANELID "
+                description , data = self.pSelectAndDescription(sql)            
+                panelIDData = self._zipDescriptionAndData(description, data)
+
+                PANELID_Group = self._Group_PANELID_List(panelIDData)
+                PANELID_Group_SQL_LIST = ""
+                for x in PANELID_Group:
+                    PANELID_Group_SQL_LIST = PANELID_Group_SQL_LIST + f"'{x}',"
+                if PANELID_Group_SQL_LIST != "":
+                    PANELID_Group_SQL_LIST = PANELID_Group_SQL_LIST[:-1]
+
+                if len(panelIDData) > 0:
+                    _NodeName = ""
+                    if tmpCATEGORY == '0':
+                        _NodeName = tmpNODENAME[3:]
+                        _NodeName = _NodeName if _NodeName[0:3] != 'AUTO' else 'AUTO'
+                    elif tmpCATEGORY == '2':
+                        _NodeName = tmpNODENAME
+
+                    whereString = f"where {whereComSiteFac} and  PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and PANELID in ({PANELID_Group_SQL_LIST}) "
+                    if tmpRWCOUNT == "=1" : whereString += " and RW_COUNT = 0 "
+                    if tmpCATEGORY == '0': whereString += f" and OPERATOR = '{_NodeName}' "
+                    elif tmpCATEGORY == '2': whereString += f" and EQPID = '{_NodeName}' "
+                    sql = f"with panel_his_daily as (select * from INTMP_DB.PANELHISDAILY {whereString} ) " \
+                        "select PROD_NBR, MFGDATE, PANELID, OPER, TRANSDT, OPERATOR, EQPID, RW_COUNT, " \
+                        "OUTPUT_FG from panel_his_daily order by PANELID, TRANSDT asc"
+
+                    data1 = self.pSelect(sql)
+                    hisData = []
+                    if(len(data1) != 0):
+                        for da in data1:
+                            d = datetime.datetime
+                            TIMECLUST_d = d.strptime(da[4], '%Y%m%d%H%M%S')
+                            TIMECLUST_YYYYMMDD = d.strftime(TIMECLUST_d, '%Y%m%d')
+                            TIMECLUST_HH = d.strftime(TIMECLUST_d, '%H')
+                            datadict = {
+                                "PROD_NBR": da[0],
+                                "MFGDATE": da[1],
+                                "PANELID": da[2],
+                                "OPER": da[3],
+                                "TRANSDT": da[4],
+                                "OPERATOR": da[5],
+                                "EQPID": da[6],
+                                "RW_COUNT": da[7],
+                                "OUTPUT_FG": da[8],
+                                "YMD": TIMECLUST_YYYYMMDD,
+                                "HH": TIMECLUST_HH
+                            }
+                            hisData.append(datadict)
+                    del data1
+                    gc.collect()
+
+                    nnData = []
+                    if tmpCATEGORY == '0':
+                        nnData = self._get_NODE_PANELID(hisData, 'OPERATOR',_NodeName)
+                    elif tmpCATEGORY == '2':
+                        nnData = self._get_NODE_PANELID(hisData,'EQPID',_NodeName)
+                    returnData = {
+                        "RELATIONTYPE": tmpFuncType,
+                        "COMPANY_CODE": tmpCOMPANY_CODE,
+                        "SITE": tmpSITE,
+                        "FACTORY_ID": tmpFACTORY_ID,
+                        "APPLICATION": tmpAPPLICATION,
+                        "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
+                        "PROD_NBR": tmpPROD_NBR if tmpRWCOUNT != "=1" else f'直行品 {tmpPROD_NBR}',
+                        "CATEGORY": tmpCATEGORY,
+                        "NODENAME": tmpNODENAME,
+                        "XAXIS" : nnData["XAXIS"],
+                        "DATASERIES": nnData["DATASERIES"]
+                    }
+                    end = time.time()
+                    return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+                else:
+                    return {'Result': 'Fail', 'Reason': 'No Panel ID DATA LIST'}, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+            
 
             else:
                 return {'Result': 'Fail', 'Reason': 'Parametes[KPITYPE] not in Rule'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
@@ -1353,6 +1446,63 @@ class INTRelation(BaseType):
             self.writeError(
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return {'Result': 'NG', 'Reason': f'{funcName} erro'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
+
+    def _get_NODE_PANELID (self, hisData, NODETYPE, NODENAME):
+        tempList = list({str(v[NODETYPE])+':'+str(v['YMD'])+','+str(v['HH'])+','+str(v['PANELID']):
+             {NODETYPE: v[NODETYPE],"YMD": v["YMD"], "HH": v["HH"],"PANELID": v["PANELID"]}      
+             for v in hisData}.values())   
+        
+        panelIDData = self._Count_NODE_YMD_HH_List( tempList, NODETYPE)
+        panelIDData.sort(key=operator.itemgetter("HH"), reverse=True)  
+        time = ['07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23','00','01','02','03','04','05','06']
+
+        YMD = tempList[0]["HH"]
+        DATASERIES = []
+        for x in time:
+            d = [dd for dd in panelIDData if x == dd["HH"]]
+            if d == []:
+                DATASERIES.append({
+                    "NODENAME": NODENAME,
+                    "YMD": YMD,
+                    "HH": x,
+                    "PANELID_COUNT": 0,
+                    "x": time.index(x)
+                }) 
+            else:
+                for y in d:
+                    DATASERIES.append({
+                        "NODENAME": NODENAME,
+                        "YMD": y["YMD"],
+                        "HH": y["HH"],
+                        "PANELID_COUNT": y["PANELID_COUNT"],
+                        "x": time.index(y["HH"])
+                    })  
+
+        returnData = returnData = {
+            "XAXIS": time,
+            "DATASERIES":DATASERIES
+        }
+        return returnData
+
+    def _Count_NODE_YMD_HH_List(self, DATA, NODENAME):
+        List = []
+        for x in DATA:
+            d = [dd for dd in List if x[NODENAME] == dd[NODENAME] and x["YMD"] == dd["YMD"] and x["HH"] == dd["HH"]]
+            if d == []:
+                data = {
+                    NODENAME: x[NODENAME],
+                    "YMD": x["YMD"],
+                    "HH": x["HH"],
+                    "PANELID_COUNT": 1
+                }
+                List.append(data)
+            else:
+                for cx in List:
+                    if (cx[NODENAME] == x[NODENAME] and cx["YMD"] == x["YMD"]
+                            and cx["HH"] == x["HH"]):
+                        cx["PANELID_COUNT"] += 1 
+        return List
+
 
     def _nnData (self, panelIDData):
         HEARMAP = []
