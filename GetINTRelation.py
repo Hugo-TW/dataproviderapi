@@ -413,13 +413,12 @@ class INTRelation(BaseType):
                 numeratorData = getFabData["FPY"]["numerator"][tmpOPER]
                 fromt = numeratorData["fromt"]
                 to = numeratorData["tot"]
-                denominatorValue = getFabData["FPY"]["denominator"][tmpOPER]
+                denominatorArray = getFabData["FPY"]["denominator"][tmpOPER]
 
                 # step0: 取得 與 defect / Reason 相關的 panel id
-                whereString = f"where  {whereComSiteFac} and PROD_NBR = '{tmpPROD_NBR}' and  DEFT = '{tmpCHECKCODE}' and RW_COUNT <= 1 "\
-                    f" and TO_NUMBER(MAIN_OPER) >= {fromt} "\
-                    f" and TO_NUMBER(MAIN_OPER) <= {to} "\
-                    f" and MFGDATE = '{tmpACCT_DATE}' "
+                whereString = f"where  {whereComSiteFac} and PROD_NBR = '{tmpPROD_NBR}' and  DEFT = '{tmpCHECKCODE}' "\
+                    f" and MFGDATE = '{tmpACCT_DATE}' "\
+                    f" and to_number(main_oper) >= {fromt} AND to_number(main_oper) <= {to} "
                 if tmpRWCOUNT == "=1" : whereString += " and RW_COUNT = 1 "
                 sql = "select PROD_NBR, DEFT, MFGDATE, MAIN_OPER, PANELID, RW_COUNT "\
                       " from INTMP_DB.PANELHISDAILY_DEFT " \
@@ -966,23 +965,14 @@ class INTRelation(BaseType):
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
             elif tmpFuncType == "REASON_PROD2":
-                OPERDATA = {
-                        "BONDING":{"OPER": [1300,1301]},
-                        "LAM":{"OPER": [1340,1370]},
-                        "AAFC":{"OPER": [1419,1420]},
-                        "TPI":{"OPER": [1510]},
-                        "OTPC":{"OPER": [1590]},
-                        "CKEN":{"OPER": [1600]}                         
-                    }         
-                OPERList = []
-                if tmpOPER == "ALL":
-                    for key, value in OPERDATA.items():
-                        OPERList.extend(value.get("OPER"))
-                else:
-                    OPERList.extend(OPERDATA[tmpOPER]["OPER"])
-                
+                EFASet= self._getEFASet( tmpCOMPANY_CODE, tmpSITE, tmpFACTORY_ID, tmpOPER)
+                OPERList = []  
+                numerator = EFASet["OPERLIST"]["numerator"]
+                denominator = EFASet["OPERLIST"]["denominator"]                
                 _OPERList_LIST = ""
-                for x in OPERList:
+                for x in numerator:
+                    _OPERList_LIST = _OPERList_LIST + f"'{x}',"
+                for x in denominator:
                     _OPERList_LIST = _OPERList_LIST + f"'{x}',"
                 if _OPERList_LIST != "":
                     _OPERList_LIST = _OPERList_LIST[:-1]
@@ -1262,7 +1252,7 @@ class INTRelation(BaseType):
                 to = numeratorData["tot"]
                 denominatorValue = getFabData["FPY"]["denominator"][tmpOPER]
                 # step0: 取得 與 defect / Reason 相關的 panel id
-                whereString = f"where  {whereComSiteFac} and PROD_NBR = '{tmpPROD_NBR}' and  DEFT = '{tmpCHECKCODE}' and RW_COUNT <= 1 "\
+                whereString = f"where  {whereComSiteFac} and PROD_NBR = '{tmpPROD_NBR}' and  DEFT = '{tmpCHECKCODE}' "\
                     f" and TO_NUMBER(MAIN_OPER) >= {fromt} "\
                     f" and TO_NUMBER(MAIN_OPER) <= {to} "\
                     f" and MFGDATE = '{tmpACCT_DATE}' "
@@ -2095,4 +2085,135 @@ class INTRelation(BaseType):
             self.writeError("File:[{0}] , Line:{1} , in {2} : [{3}] {4}".format(
                 fileName, lineNum, funcName, error_class, detail))
             return None
+
+    def _getEFASet(self, COMPANY_CODE, SITE, FACTORY_ID, OPER):
+        EFAOPERDATA = {
+            "M011": {
+                "numerator": {"BONDING": {"OPER": [1300]},
+                              "LAM": {"OPER": []},
+                              "AAFC": {"OPER": [1400]},
+                              "TPI": {"OPER": []},
+                              "OTPC": {"OPER": [1530]},
+                              "CKEN": {"OPER": [1600]}},
+                "denominator": {"BONDING": {"OPER": [1300]},
+                                "LAM": {"OPER": []},
+                                "AAFC": {"OPER": [1400]},
+                                "TPI": {"OPER": []},
+                                "OTPC": {"OPER": [1530]},
+                                "CKEN": {"OPER": [1600]}},
+                "LCM_OWNER": ["INT0", "PROY", "PROD", "QTAP", "RES0"]
+            },
+            "J001": {
+                "numerator": {"BONDING": {"OPER": [1300, 1301]},
+                              "LAM": {"OPER": [1340, 1370]},
+                              "AAFC": {"OPER": [1419, 1420]},
+                              "TPI": {"OPER": [1510]},
+                              "OTPC": {"OPER": [1590]},
+                              "CKEN": {"OPER": [1600]}},
+                "denominator": {"BONDING": {"OPER": [1300, 1301]},
+                                "LAM": {"OPER": [1340, 1370]},
+                                "AAFC": {"OPER": [1419, 1420]},
+                                "TPI": {"OPER": [1510]},
+                                "OTPC": {"OPER": [1590]},
+                                "CKEN": {"OPER": [1600]}},
+                "LCM_OWNER": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]
+            },
+            "J003": {
+                "numerator": {"BONDING": {"OPER": [1300]},
+                              "LAM": {"OPER": [1340]},
+                              "AAFC": {"OPER": [1420]},
+                              "TPI": {"OPER": [1510]},
+                              "OTPC": {"OPER": []},
+                              "CKEN": {"OPER": [1600]}},
+                "denominator": {"BONDING": {"OPER": [1300]},
+                                "LAM": {"OPER": [1340]},
+                                "AAFC": {"OPER": [1420]},
+                                "TPI": {"OPER": [1510]},
+                                "OTPC": {"OPER": []},
+                                "CKEN": {"OPER": [1600]}},
+                "LCM_OWNER": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]
+            },
+            "J004": {
+                "numerator": {"BONDING": {"OPER": [1300]},
+                              "LAM": {"OPER": [1340, 1370, 1380, 1398, 1399]},
+                              "AAFC": {"OPER": [1420, 1430, 1426, 1427]},
+                              "TPI": {"OPER": []},
+                              "OTPC": {"OPER": []},
+                              "CKEN": {"OPER": [1503, 1510, 1520, 1580, 1581, 1600, 1630, 1740, 1750, 1760, 1751, 1752]}},
+                "denominator": {"BONDING": {"OPER": [1300]},
+                                "LAM": {"OPER": [1355]},
+                                "AAFC": {"OPER": [1700]},
+                                "TPI": {"OPER": []},
+                                "OTPC": {"OPER": []},
+                                "CKEN": {"OPER": [1700]}},
+                "LCM_OWNER": ["LCME", "PROD", "QTAP", "RES0"]
+            },
+            "OTHER": {
+                "numerator": {"BONDING": {"OPER": [1300, 1301]},
+                              "LAM": {"OPER": [1340, 1370]},
+                              "AAFC": {"OPER": [1419, 1420]},
+                              "TPI": {"OPER": [1510]},
+                              "OTPC": {"OPER": [1590]},
+                              "CKEN": {"OPER": [1600]}},
+                "denominator": {"BONDING": {"OPER": [1300, 1301]},
+                                "LAM": {"OPER": [1340, 1370]},
+                                "AAFC": {"OPER": [1419, 1420]},
+                                "TPI": {"OPER": [1510]},
+                                "OTPC": {"OPER": [1590]},
+                                "CKEN": {"OPER": [1600]}},
+                "LCM_OWNER": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]
+            },
+        }
+        EFA_nu_setting = {}
+        EFA_de_setting = {}
+        EFA_lo_setting = []
+        if SITE == "TN":
+            EFA_nu_setting = EFAOPERDATA[FACTORY_ID]["numerator"]
+            EFA_de_setting = EFAOPERDATA[FACTORY_ID]["denominator"]
+            EFA_lo_setting = EFAOPERDATA[FACTORY_ID]["LCM_OWNER"]
+        else:
+            EFA_nu_setting = EFAOPERDATA["OTHER"]["numerator"]
+            EFA_de_setting = EFAOPERDATA["OTHER"]["denominator"]
+            EFA_lo_setting = EFAOPERDATA["OTHER"]["LCM_OWNER"]
+        _OPERLIST= {}
+        OPERCODEList_nu = []
+        OPERCODEList_de = []
+        OPERNAMEList_nu = ""
+        OPERNAMEList_de = ""
+        LCMOWNER = []
+        if OPER == "ALL":
+            LCMOWNER = ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]
+            for key, value in EFA_nu_setting.items():
+                OPERCODEList_nu.extend(value.get("OPER"))
+                OPERNAMEList_nu = OPERNAMEList_nu + f"'{key}',"
+            for key, value in EFA_de_setting.items():
+                OPERCODEList_de.extend(value.get("OPER"))
+                OPERNAMEList_de = OPERNAMEList_de + f"'{key}',"
+        else:
+            LCMOWNER = EFA_lo_setting
+            OPERCODEList_nu.extend(EFA_nu_setting[OPER]["OPER"])
+            OPERCODEList_de.extend(EFA_de_setting[OPER]["OPER"])
+            OPERNAMEList_nu = f"'{OPER}',"
+            OPERNAMEList_de = f"'{OPER}',"
+        if OPERNAMEList_nu != "":
+            OPERNAMEList_nu = OPERNAMEList_nu[:-1]
+        if OPERNAMEList_de != "":
+            OPERNAMEList_de = OPERNAMEList_de[:-1]
+                
+        _OPERLIST= {
+            "COMPANY_CODE": COMPANY_CODE,
+            "SITE": SITE,
+            "FACTORY_ID": FACTORY_ID,
+            "OPER": OPER,
+            "OPERLIST":{
+                "numerator": OPERCODEList_nu,
+                "denominator": OPERCODEList_de
+            },
+            "NAMELIST":{
+                "numerator": OPERNAMEList_nu,
+                "denominator": OPERNAMEList_de
+            },
+            "LCMOWNER": LCMOWNER
+        }
+        return _OPERLIST
 
