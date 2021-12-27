@@ -39,7 +39,8 @@ class iSFPRGBTableInfo(BaseType):
                                 FROM WAYNE_TEST_TV t 
                                 where item_name = '{2}' 
                                 and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss') 
-                                union""".format(self.__start_time, self.__end_time, Item_Value[iItemCount]) 
+                                and t.line_type = '{3}'
+                                union""".format(self.__start_time, self.__end_time, Item_Value[iItemCount], self.__line_type) 
                     
                 iItemCount = iItemCount + 1            
                 
@@ -93,7 +94,7 @@ class iSFPRGBTableInfo(BaseType):
                 sDataType = 'FPY_TOTAL'
                 sItemName = '''FPY_TOTAL','SCRAP_P'''  
             elif(self.__item_name == 'HEADLINES/IPQA'):    
-                sDataType = 'FPY_TOTAL'
+                sDataType = ''
                 sItemName = '''HEADLINES','IPQA''' 
             elif(self.__item_name == 'SCRAP_P'):    
                 sDataType = 'AA'
@@ -159,24 +160,27 @@ class iSFPRGBTableInfo(BaseType):
                             FROM WAYNE_TEST_TV t 
                             where item_name in ('{4}') 
                             and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss')
-                            
+                            and t.line_type = '{5}'
+
                             union """
 
             if(self.__item_name == 'HEADLINES/IPQA'):
                 sql = sql + """                
-                            select 'MTD' as date_time,substr('{0}}',4,2) as month_dat,t.data_type,
-                            decode(t.data_type,'HEADLINES',to_char(sum(t.data_value)),to_char(round(decode(t.data_type,'燈號',round(sum(t.data_value)/count(*),0),sum(t.data_value)/count(*)),1),'FM990.0')) as data_value,t.item_name
+                            select 'MTD' as date_time,substr('{0}',4,2) as month_dat,t.data_type,
+                            decode(t.data_type,'HEADLINES',to_char(sum(t.data_value)),to_char(round(decode(t.data_type,'COLOR',round(sum(t.data_value)/count(*),0),sum(t.data_value)/count(*)),1),'FM990.0')) as data_value,t.item_name
                             from WAYNE_TEST_TV t
                             where item_name in ('{4}') 
                             and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss')
+                            and t.line_type = '{5}'
                             group by t.data_type,t.item_name """
 
             else:     
                 sql = sql + """                
-                            select 'MTD' as date_time,substr('{1}',4,2) as month_dat,t.data_type,to_char(round(decode(t.data_type,'燈號',round(sum(t.data_value)/count(*),0),sum(t.data_value)/count(*)),1),'FM990.0') as data_value,t.item_name
+                            select 'MTD' as date_time,substr('{1}',4,2) as month_dat,t.data_type,to_char(round(decode(t.data_type,'COLOR',round(sum(t.data_value)/count(*),0),sum(t.data_value)/count(*)),1),'FM990.0') as data_value,t.item_name
                             from WAYNE_TEST_TV t
                             where item_name in ('{4}') 
                             and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss')
+                            and t.line_type = '{5}'
                             group by t.data_type,t.item_name """           
 
             sql = sql + """                 
@@ -196,7 +200,7 @@ class iSFPRGBTableInfo(BaseType):
             else:  
                 sql = sql + """  order by 1 desc """
 
-            sql = sql.format(self.__start_time, self.__end_time, self.__sColnumName, sDataType, sItemName) 
+            sql = sql.format(self.__start_time, self.__end_time, self.__sColnumName, sDataType, sItemName, self.__line_type) 
             
             self.writeLog(f'SQL:\n {sql}')
             self.getConnection(self.__indentity)
