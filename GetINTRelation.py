@@ -475,7 +475,7 @@ class INTRelation(BaseType):
                                 "EQPID": da[6],
                                 "RW_COUNT": da[7],
                                 "OUTPUT_FG": da[8],
-                                "TIMECLUST": TIMECLUST
+                                "TIMECLUST": da[4]
                             }
                             hisData.append(datadict)
                     del data1
@@ -645,7 +645,7 @@ class INTRelation(BaseType):
 
                     # 資料聚合
                     start = time.time()
-                    nodes = self._grouptNodes(
+                    tempNodes = self._grouptNodes(
                         PANEL_TOTAL_COUNT,
                         node_cal_OPERATOR_OPER,
                         node_cal_OPERATOR_TIMECLUST,
@@ -655,8 +655,8 @@ class INTRelation(BaseType):
                         node_cal_MAT_OPER
                     )
 
-                    links = self._grouptLinks(
-                        nodes,
+                    templinks = self._grouptLinks(
+                        tempNodes,
                         link_cal_OPERATOR_OPER,
                         link_cal_OPERATOR_TIMECLUST,
                         link_cal_EQPID_TIMECLUST,
@@ -664,6 +664,19 @@ class INTRelation(BaseType):
                         link_cal_OPER_OPERATOR,
                         link_cal_MAT_OPER
                     )
+
+                    #del 無連結分時
+                    dekNodeCheck = [dd["source"] for dd in templinks if dd["target"] == '0'] 
+
+                    nodes = []
+                    for x in tempNodes:
+                        if x["id"] in dekNodeCheck and x["category"] == 1:
+                            qq = 'del'
+                        else:
+                            nodes.append(x)                 
+
+                    links = d = list(
+                        filter(lambda d: d["source"] != "0" and d["target"] != "0", templinks))
 
                     categories = self._categories()
 
@@ -771,7 +784,7 @@ class INTRelation(BaseType):
                             "EQPID": da[6],
                             "RW_COUNT": da[7],
                             "OUTPUT_FG": da[8],
-                            "TIMECLUST": TIMECLUST
+                            "TIMECLUST": da[4]
                         }
                         hisData.append(datadict)
                 del data1
@@ -915,7 +928,7 @@ class INTRelation(BaseType):
                 #self.writeLog(link_cal_MAT_OPER)
 
                 # 資料聚合
-                nodes = self._grouptNodes(
+                tempNodes = self._grouptNodes(
                     PANEL_TOTAL_COUNT,
                     node_cal_OPERATOR_OPER,
                     node_cal_OPERATOR_TIMECLUST,
@@ -925,8 +938,8 @@ class INTRelation(BaseType):
                     node_cal_MAT_OPER
                 )
 
-                links = self._grouptLinks(
-                    nodes,
+                templinks = self._grouptLinks(
+                    tempNodes,
                     link_cal_OPERATOR_OPER,
                     link_cal_OPERATOR_TIMECLUST,
                     link_cal_EQPID_TIMECLUST,
@@ -934,6 +947,19 @@ class INTRelation(BaseType):
                     link_cal_OPER_OPERATOR,
                     link_cal_MAT_OPER
                 )
+
+                #del 無連結分時
+                dekNodeCheck = [dd["source"] for dd in templinks if dd["target"] == '0'] 
+
+                nodes = []
+                for x in tempNodes:
+                    if x["id"] in dekNodeCheck and x["category"] == 1:
+                        qq = 'del'
+                    else:
+                        nodes.append(x)                 
+
+                links = d = list(
+                    filter(lambda d: d["source"] != "0" and d["target"] != "0", templinks))
 
                 categories = self._categories()
 
@@ -1050,7 +1076,7 @@ class INTRelation(BaseType):
                                 "EQPID": da[6],
                                 "RW_COUNT": da[7],
                                 "OUTPUT_FG": da[8],
-                                "TIMECLUST": TIMECLUST
+                                "TIMECLUST": da[4]
                             }
                             hisData.append(datadict)
                     del data1
@@ -1194,7 +1220,7 @@ class INTRelation(BaseType):
                     #self.writeLog(link_cal_MAT_OPER)
 
                     # 資料聚合
-                    nodes = self._grouptNodes(
+                    tempNodes = self._grouptNodes(
                         PANEL_TOTAL_COUNT,
                         node_cal_OPERATOR_OPER,
                         node_cal_OPERATOR_TIMECLUST,
@@ -1204,8 +1230,8 @@ class INTRelation(BaseType):
                         node_cal_MAT_OPER
                     )
 
-                    links = self._grouptLinks(
-                        nodes,
+                    templinks = self._grouptLinks(
+                        tempNodes,
                         link_cal_OPERATOR_OPER,
                         link_cal_OPERATOR_TIMECLUST,
                         link_cal_EQPID_TIMECLUST,
@@ -1213,6 +1239,19 @@ class INTRelation(BaseType):
                         link_cal_OPER_OPERATOR,
                         link_cal_MAT_OPER
                     )
+
+                    #del 無連結分時
+                    dekNodeCheck = [dd["source"] for dd in templinks if dd["target"] == '0'] 
+
+                    nodes = []
+                    for x in tempNodes:
+                        if x["id"] in dekNodeCheck and x["category"] == 1:
+                            qq = 'del'
+                        else:
+                            nodes.append(x)                 
+
+                    links = d = list(
+                        filter(lambda d: d["source"] != "0" and d["target"] != "0", templinks))
 
                     categories = self._categories()
 
@@ -1910,37 +1949,78 @@ class INTRelation(BaseType):
         return returnData
 
     def _calNode_OPERATOR_TIMECLUSTR(self, OPERATOR_TIMECLUSTR, PANEL_TOTAL_COUNT):
-        DATASERIES = []
-        for oo in OPERATOR_TIMECLUSTR:
-            # aRate=>Pcs/All不良占%
-            aRate = oo["PANELID_COUNT"] / PANEL_TOTAL_COUNT
-            SymbolSize = oo["PANELID_COUNT"]*2
-            d = datetime.datetime
-            TIMECLUST_d = d.strptime(oo["TIMECLUST"], '%Y%m%d%H')
-            TIMECLUST = d.strftime(TIMECLUST_d, '%m/%d_%H')
-            data = {
-                "NAME": f'{TIMECLUST}時{oo["OPER"]}_人',
-                "OPERATOR": f'{oo["OPERATOR"]}',
-                "OPER": oo["OPER"],
-                "TIMECLUST": TIMECLUST,
-                "PANELID_COUNT": oo["PANELID_COUNT"],
-                "PANEL_TOTAL_COUNT": PANEL_TOTAL_COUNT,
-                "aRate": aRate,
-                "SymbolSize": SymbolSize,
-                "value": oo["PANELID_COUNT"]
-            }
-            DATASERIES.append(data)
+        GROUPSERIES = []
+        List = list({str(v['OPERATOR'])+':'+str(v['OPER']):{"OPERATOR": v["OPERATOR"],"OPER": v["OPER"]} 
+                    for v in OPERATOR_TIMECLUSTR}.values())
+        List.sort(key=operator.itemgetter("OPER", "OPER"), reverse=False)
+        groupID = 0
+        panelCount = 0
+        for x in List:
+            DATASERIES = []
+            d = [dd for dd in OPERATOR_TIMECLUSTR if x["OPER"] == dd["OPER"] and x["OPERATOR"] == dd["OPERATOR"]] 
+            d.sort(key=operator.itemgetter("TIMECLUST", "TIMECLUST"), reverse=False)
+            for i in range(0, len(d)):
+                dt = datetime.datetime
+                TIMECLUST_d = dt.strptime(d[i]["TIMECLUST"], '%Y%m%d%H%M%S')
+                TIMECLUST_b = None if i == 0 else dt.strptime(d[i-1]["TIMECLUST"], '%Y%m%d%H%M%S')
+                TIMECLUST_a = None if i == len(d)-1 else dt.strptime(d[i+1]["TIMECLUST"], '%Y%m%d%H%M%S')
+                d[i]["BEF"] = 99999 if TIMECLUST_b == None else (TIMECLUST_d-TIMECLUST_b).total_seconds()
+                d[i]["AFT"] = 99999 if TIMECLUST_a == None else (TIMECLUST_a-TIMECLUST_d).total_seconds()
+                panelCount += d[i]["PANELID_COUNT"]
+                if d[i]["BEF"] > 1200:        
+                    if d[i]["AFT"] > 1200:                          
+                        groupID = groupID + 1
+                        d[i]["groupID"] = groupID
+                        DATASERIES.append(d[i])
+                        DATASERIES.sort(key=operator.itemgetter("TIMECLUST", "TIMECLUST"), reverse=False)
+                        TIMECLUST_s = dt.strptime(DATASERIES[0]["TIMECLUST"], '%Y%m%d%H%M%S')
+                        TIMECLUST_ss = dt.strftime(TIMECLUST_s, '%d %H:%M')                                                
+                        TIMECLUST_e = dt.strptime(DATASERIES[-1]["TIMECLUST"], '%Y%m%d%H%M%S')
+                        TIMECLUST_ee = dt.strftime(TIMECLUST_e, '%d %H:%M')
+                        GROUPSERIES.append({
+                            "NAME": f'{TIMECLUST_ss}~{TIMECLUST_ee}分{x["OPER"]}_人',
+                            "GROUPID":groupID,
+                            "OPER":x["OPER"], 
+                            "OPERATOR":x["OPERATOR"],
+                            "TOTALPANELCOUNT": panelCount, 
+                            "SymbolSize": panelCount,
+                            "value": panelCount,
+                            "DATASERIES":DATASERIES}) 
+                        DATASERIES = []
+                        panelCount= 0
+                    else:
+                        groupID = groupID + 1
+                        d[i]["groupID"] = groupID
+                        DATASERIES.append(d[i])
+                else:
+                    if d[i]["AFT"] > 1200:  
+                        groupID = groupID
+                        d[i]["groupID"] = groupID
+                        DATASERIES.append(d[i])
+                        DATASERIES.sort(key=operator.itemgetter("TIMECLUST", "TIMECLUST"), reverse=False)
+                        TIMECLUST_s = dt.strptime(DATASERIES[0]["TIMECLUST"], '%Y%m%d%H%M%S')
+                        TIMECLUST_ss = dt.strftime(TIMECLUST_s, '%d %H:%M')                                                
+                        TIMECLUST_e = dt.strptime(DATASERIES[-1]["TIMECLUST"], '%Y%m%d%H%M%S')
+                        TIMECLUST_ee = dt.strftime(TIMECLUST_e, '%d %H:%M')
+                        GROUPSERIES.append({
+                            "NAME": f'{TIMECLUST_ss}~{TIMECLUST_ee}分{x["OPER"]}_人',
+                            "GROUPID":groupID,
+                            "OPER":x["OPER"], 
+                            "OPERATOR":x["OPERATOR"],
+                            "TOTALPANELCOUNT": panelCount, 
+                            "SymbolSize": panelCount,
+                            "value": panelCount,
+                            "DATASERIES":DATASERIES})                       
+                        DATASERIES = []                        
+                        panelCount= 0
+                    else:
+                        groupID = groupID
+                        d[i]["groupID"] = groupID
+                        DATASERIES.append(d[i])
 
-        DATASERIES.sort(key=operator.itemgetter(
-            "aRate", "aRate"), reverse=True)
-
-        aRateList = []
-        for x in DATASERIES:
-            aRateList.append(f'{x.get("aRate")}')
-        qq = sorted(aRateList, reverse=True)
-        top3 = float(qq[2]) if len(qq) > 0 else 0
-        top3Filter = list(filter(lambda d: d["aRate"] >= top3, DATASERIES))
-        returnData = list(filter(lambda d: d["aRate"] >= 0.36, top3Filter))
+        aRate = PANEL_TOTAL_COUNT * 0.3
+        returnData = [dd for dd in GROUPSERIES if aRate <= dd["TOTALPANELCOUNT"]] 
+        returnData = returnData
         return returnData
 
     def _calLink_OPERATOR_TIMECLUSTR(self, node_cal_OPERATOR_TIMECLUSTR):
@@ -1959,37 +2039,80 @@ class INTRelation(BaseType):
         return returnData
 
     def _calNode_EQPID_TIMECLUSTR(self, EQPID_TIMECLUSTR, PANEL_TOTAL_COUNT):
-        DATASERIES = []
-        for oo in EQPID_TIMECLUSTR:
-            # aRate=>Pcs/All不良占%
-            aRate = oo["PANELID_COUNT"] / PANEL_TOTAL_COUNT
-            SymbolSize = oo["PANELID_COUNT"]*2
-            d = datetime.datetime
-            TIMECLUST_d = d.strptime(oo["TIMECLUST"], '%Y%m%d%H')
-            TIMECLUST = d.strftime(TIMECLUST_d, '%m/%d_%H')
-            data = {
-                "NAME": f'{TIMECLUST}時{oo["OPER"]}',
-                "EQPID": f'{oo["EQPID"]}',
-                "OPER": oo["OPER"],
-                "TIMECLUST": TIMECLUST,
-                "PANELID_COUNT": oo["PANELID_COUNT"],
-                "PANEL_TOTAL_COUNT": PANEL_TOTAL_COUNT,
-                "aRate": aRate,
-                "SymbolSize": SymbolSize,
-                "value": oo["PANELID_COUNT"]
-            }
-            DATASERIES.append(data)
+        GROUPSERIES = []
+        List = list({str(v['EQPID'])+':'+str(v['OPER']):{"EQPID": v["EQPID"],"OPER": v["OPER"]} 
+                    for v in EQPID_TIMECLUSTR}.values())
+        List.sort(key=operator.itemgetter("OPER", "OPER"), reverse=False)
+        groupID = 0
+        panelCount = 0
+        for x in List:
+            DATASERIES = []
+            d = [dd for dd in EQPID_TIMECLUSTR if x["OPER"] == dd["OPER"] and x["EQPID"] == dd["EQPID"]] 
+            d.sort(key=operator.itemgetter("TIMECLUST", "TIMECLUST"), reverse=False)
+            for i in range(0, len(d)):
+                dt = datetime.datetime
+                TIMECLUST_d = dt.strptime(d[i]["TIMECLUST"], '%Y%m%d%H%M%S')
+                TIMECLUST_b = None if i == 0 else dt.strptime(d[i-1]["TIMECLUST"], '%Y%m%d%H%M%S')
+                TIMECLUST_a = None if i == len(d)-1 else dt.strptime(d[i+1]["TIMECLUST"], '%Y%m%d%H%M%S')
+                d[i]["BEF"] = 99999 if TIMECLUST_b == None else (TIMECLUST_d-TIMECLUST_b).total_seconds()
+                d[i]["AFT"] = 99999 if TIMECLUST_a == None else (TIMECLUST_a-TIMECLUST_d).total_seconds()
+                panelCount += d[i]["PANELID_COUNT"]
+                if d[i]["BEF"] > 1200:        
+                    if d[i]["AFT"] > 1200:                          
+                        groupID = groupID + 1
+                        d[i]["groupID"] = groupID
+                        DATASERIES.append(d[i])
+                        DATASERIES.sort(key=operator.itemgetter("TIMECLUST", "TIMECLUST"), reverse=False)
+                        TIMECLUST_s = dt.strptime(DATASERIES[0]["TIMECLUST"], '%Y%m%d%H%M%S')
+                        TIMECLUST_ss = dt.strftime(TIMECLUST_s, '%d %H:%M')                                                
+                        TIMECLUST_e = dt.strptime(DATASERIES[-1]["TIMECLUST"], '%Y%m%d%H%M%S')
+                        TIMECLUST_ee = dt.strftime(TIMECLUST_e, '%d %H:%M')
+                        DATASERIES[-1]
+                        GROUPSERIES.append({
+                            "NAME": f'{TIMECLUST_ss}~{TIMECLUST_ee}分{x["OPER"]}',
+                            "GROUPID":groupID,
+                            "OPER":x["OPER"], 
+                            "EQPID":x["EQPID"],
+                            "TOTALPANELCOUNT": panelCount, 
+                            "SymbolSize": panelCount,
+                            "value": panelCount,
+                            "DATASERIES":DATASERIES})   
+                        DATASERIES = []
+                        panelCount= 0
+                    else:
+                        groupID = groupID + 1
+                        d[i]["groupID"] = groupID
+                        DATASERIES.append(d[i])
+                else:
+                    if d[i]["AFT"] > 1200:  
+                        groupID = groupID
+                        d[i]["groupID"] = groupID
+                        DATASERIES.append(d[i])
+                        DATASERIES.sort(key=operator.itemgetter("TIMECLUST", "TIMECLUST"), reverse=False)
+                        TIMECLUST_s = dt.strptime(DATASERIES[0]["TIMECLUST"], '%Y%m%d%H%M%S')
+                        TIMECLUST_ss = dt.strftime(TIMECLUST_s, '%d %H:%M')                                                
+                        TIMECLUST_e = dt.strptime(DATASERIES[-1]["TIMECLUST"], '%Y%m%d%H%M%S')
+                        TIMECLUST_ee = dt.strftime(TIMECLUST_e, '%d %H:%M')
+                        DATASERIES[-1]
+                        GROUPSERIES.append({
+                            "NAME": f'{TIMECLUST_ss}~{TIMECLUST_ee}分{x["OPER"]}',
+                            "GROUPID":groupID,
+                            "OPER":x["OPER"], 
+                            "EQPID":x["EQPID"],
+                            "TOTALPANELCOUNT": panelCount, 
+                            "SymbolSize": panelCount,
+                            "value": panelCount,
+                            "DATASERIES":DATASERIES})                       
+                        DATASERIES = []                        
+                        panelCount= 0
+                    else:
+                        groupID = groupID
+                        d[i]["groupID"] = groupID
+                        DATASERIES.append(d[i])
 
-        DATASERIES.sort(key=operator.itemgetter(
-            "aRate", "aRate"), reverse=True)
-
-        aRateList = []
-        for x in DATASERIES:
-            aRateList.append(f'{x.get("aRate")}')
-        qq = sorted(aRateList, reverse=True)
-        top3 = float(qq[2]) if len(qq) > 0 else 0
-        top3Filter = list(filter(lambda d: d["aRate"] >= top3, DATASERIES))
-        returnData = list(filter(lambda d: d["aRate"] >= 0.36, top3Filter))
+        aRate = PANEL_TOTAL_COUNT * 0.3
+        returnData = [dd for dd in GROUPSERIES if aRate <= dd["TOTALPANELCOUNT"]] 
+        returnData = returnData
         return returnData
 
     def _calLink_EQPID_TIMECLUSTR(self, node_cal_EQPID_TIMECLUSTR):
@@ -2253,7 +2376,7 @@ class INTRelation(BaseType):
             magerData.append(self._getLinkData(nodes, d))
         for d in n2d:
             magerData.append(self._getLinkData(nodes, d))
-        for d in n3d:
+        for d in n3d:            
             magerData.append(self._getLinkData(nodes, d))
         for d in n4d:
             magerData.append(self._getLinkData(nodes, d))
@@ -2261,10 +2384,7 @@ class INTRelation(BaseType):
             magerData.append(self._getLinkData(nodes, d))
         for d in n6d:
             magerData.append(self._getLinkData(nodes, d))
-
-        returnData = d = list(
-            filter(lambda d: d["source"] != "0" and d["target"] != "0", magerData))
-
+        returnData = magerData
         return returnData
 
     def _getLinkData(self, nodes, data):
