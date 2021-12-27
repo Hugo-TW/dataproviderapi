@@ -164,7 +164,7 @@ class iSFPRGBTableInfo(BaseType):
 
             if(self.__item_name == 'HEADLINES/IPQA'):
                 sql = sql + """                
-                            select 'MTD' as date_time,substr('20211128',4,2) as month_dat,t.data_type,
+                            select 'MTD' as date_time,substr('{0}}',4,2) as month_dat,t.data_type,
                             decode(t.data_type,'HEADLINES',to_char(sum(t.data_value)),to_char(round(decode(t.data_type,'燈號',round(sum(t.data_value)/count(*),0),sum(t.data_value)/count(*)),1),'FM990.0')) as data_value,t.item_name
                             from WAYNE_TEST_TV t
                             where item_name in ('{4}') 
