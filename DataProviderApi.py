@@ -102,6 +102,7 @@ from GetiSFPHoldInfo import iSFPHoldInfo
 from GetiSFPScrapPInfo import iSFPScrapPInfo
 from GetiSFPFPYNLightInfo import iSFPFPYNLightInfo
 from GetiSFPFPYNInfo import iSFPFPYNInfo
+from GetiSFPLightInfo import iSFPLightInfo
 
 os.environ['NLS_LANG'] = 'TRADITIONAL CHINESE_TAIWAN.UTF8'
 from Logger import Logger
@@ -3324,6 +3325,47 @@ class GetFPYNInfo(Resource):
         log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
         isfpFPYNInfo = iSFPFPYNInfo(identity, start_time, end_time)
         return isfpFPYNInfo.getData()
+
+isfpLightInfoNS = api.namespace('GetiSFPLightInfo', description = '廠晨會看板- 燈號')
+isfpLightInfoML = api.model('GetiSFPLightInfo', {
+"COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+"SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
+"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123000000', example = '20211123000000'),
+"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128000000', example = '20211128000000'),
+"LINE_TYPE":fields.String( required = True, description = 'LINE_TYPE', default = 'ALL', example = 'ALL'),
+"ITEM_NAME":fields.String( required = True, description = 'ITEM_NAME', default = 'ALL', example = 'OUTPUT_LIGHT')
+})
+@isfpLightInfoNS.route('', methods = ['POST'])
+@isfpLightInfoNS.response(200, 'Sucess')
+@isfpLightInfoNS.response(201, 'Created Sucess')
+@isfpLightInfoNS.response(204, 'No Content')
+@isfpLightInfoNS.response(400, 'Bad Request')
+@isfpLightInfoNS.response(401, 'Unauthorized')
+@isfpLightInfoNS.response(403, 'Forbidden')
+@isfpLightInfoNS.response(404, 'Not Found')
+@isfpLightInfoNS.response(405, 'Method Not Allowed')
+@isfpLightInfoNS.response(409, 'Conflict')
+@isfpLightInfoNS.response(500, 'Internal Server Error')
+class GetLightInfo(Resource):
+    @isfpLightInfoNS.doc('AppConfSysMain')
+    @isfpLightInfoNS.expect(isfpLightInfoML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        jsonData = BaseType.validateType(request.json)
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData:  
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        identity = jsonData["COMPANY_CODE"] + "-" + jsonData["SITE"] + "-" + jsonData["FACTORY_ID"]
+        start_time = jsonData["START_TIME"]
+        end_time = jsonData["END_TIME"]
+        line_type = jsonData["LINE_TYPE"]
+        item_name = jsonData["ITEM_NAME"]
+        log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
+        isfpLightInfo = iSFPLightInfo(identity, start_time, end_time, line_type, item_name)
+        return isfpLightInfo.getData()
 
 intSDETLNs = api.namespace('intSDETL', description = 'intSDETL')
 intSDETLML_local = api.model('intSDETLML_local', {
