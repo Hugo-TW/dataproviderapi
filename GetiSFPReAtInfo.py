@@ -24,45 +24,6 @@ class iSFPReAtInfo(BaseType):
         
     def getData(self):
         try:
-            #取RGB Data
-            self.writeLog(f'{self.__class__.__name__} {sys._getframe().f_code.co_name} Start')
-            sql =  """with Result_data as (
-                        SELECT to_char(t.data_date,'mm/dd') as data_date,to_char(t.data_date,'mm') as month_date,t.data_type,to_char(t.data_value) as  data_value
-                        FROM WAYNE_TEST_TV t 
-                        where item_name in ('RESIGN','ATTENDANCE') 
-                        and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss')
-                        
-                        union
-                        
-                        select 'MTD' as date_time,substr('{1}',4,2) as month_date,t.data_type,to_char(round(decode(t.data_type,'燈號',round(sum(t.data_value)/count(*),0),sum(t.data_value)/count(*)),1)) as data_value
-                        from WAYNE_TEST_TV t
-                        where item_name in ('RESIGN','ATTENDANCE') 
-                        and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss')
-                        group by t.data_type
-                        )
-                        , Target_Data as (
-                        select to_char(t.data_date,'MM') as data_date,t.item_desc,t.red_day,t.green_day,t.red_mtd,t.green_mtd from isfp_target_upload t 
-                        where t.data_date between to_date(substr('{0}',0,6),'yyyy/mm') and to_date(substr('{1}',0,6),'yyyy/mm') 
-                        and t.item_name in ('RESIGN','ATTENDANCE')
-                        )
-                        select t.data_date,t.data_type,
-                        case when (t.data_date <> 'MTD' and t.data_value > t1.red_day) then 'red'
-                            when (t.data_date <> 'MTD' and t.data_value >= t1.green_day and t.data_value <= t1.red_day) then 'yellow'
-                            when (t.data_date <> 'MTD' and t.data_value < t1.green_day) then 'green' 
-                            when (t.data_date = 'MTD' and t.data_value > t1.red_mtd) then 'red'
-                            when (t.data_date = 'MTD' and t.data_value >= t1.green_mtd and t.data_value <= t1.red_mtd) then 'yellow'
-                            when (t.data_date = 'MTD' and t.data_value < t1.green_mtd) then 'green' 
-                            end as RGB
-                        from Result_data t,Target_Data t1
-                        where t.month_date = t1.data_date
-                        and t.data_type = t1.item_desc""".format(self.__start_time, self.__end_time) 
-            
-            self.writeLog(f'SQL:\n {sql}')
-            self.getConnection(self.__indentity)
-            data_RGB = self.Select(sql)
-            self.closeConnection()
-
-
             #取欄位名稱
             self.writeLog(f'{self.__class__.__name__} {sys._getframe().f_code.co_name} Start')
             sql =  """SELECT distinct '1' as A,to_char(t.data_date,'mm/dd') as data_date 

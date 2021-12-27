@@ -103,6 +103,7 @@ from GetiSFPScrapPInfo import iSFPScrapPInfo
 from GetiSFPFPYNLightInfo import iSFPFPYNLightInfo
 from GetiSFPFPYNInfo import iSFPFPYNInfo
 from GetiSFPLightInfo import iSFPLightInfo
+from GetiSFPRGBTableInfo import iSFPRGBTableInfo
 
 os.environ['NLS_LANG'] = 'TRADITIONAL CHINESE_TAIWAN.UTF8'
 from Logger import Logger
@@ -3366,6 +3367,47 @@ class GetLightInfo(Resource):
         log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
         isfpLightInfo = iSFPLightInfo(identity, start_time, end_time, line_type, item_name)
         return isfpLightInfo.getData()
+
+isfpRGBTableInfoNS = api.namespace('GetiSFPRGBTableInfo', description = '廠晨會看板- RGB Table')
+isfpRGBTableInfoML = api.model('GetiSFPRGBTableInfo', {
+"COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+"SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
+"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123000000', example = '20211123000000'),
+"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128000000', example = '20211128000000'),
+"LINE_TYPE":fields.String( required = True, description = 'LINE_TYPE', default = 'ALL', example = 'ALL'),
+"ITEM_NAME":fields.String( required = True, description = 'ITEM_NAME', default = 'ALL', example = 'WO/WIP')
+})
+@isfpRGBTableInfoNS.route('', methods = ['POST'])
+@isfpRGBTableInfoNS.response(200, 'Sucess')
+@isfpRGBTableInfoNS.response(201, 'Created Sucess')
+@isfpRGBTableInfoNS.response(204, 'No Content')
+@isfpRGBTableInfoNS.response(400, 'Bad Request')
+@isfpRGBTableInfoNS.response(401, 'Unauthorized')
+@isfpRGBTableInfoNS.response(403, 'Forbidden')
+@isfpRGBTableInfoNS.response(404, 'Not Found')
+@isfpRGBTableInfoNS.response(405, 'Method Not Allowed')
+@isfpRGBTableInfoNS.response(409, 'Conflict')
+@isfpRGBTableInfoNS.response(500, 'Internal Server Error')
+class GetRGBTableInfo(Resource):
+    @isfpRGBTableInfoNS.doc('AppConfSysMain')
+    @isfpRGBTableInfoNS.expect(isfpRGBTableInfoML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        jsonData = BaseType.validateType(request.json)
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData:  
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        identity = jsonData["COMPANY_CODE"] + "-" + jsonData["SITE"] + "-" + jsonData["FACTORY_ID"]
+        start_time = jsonData["START_TIME"]
+        end_time = jsonData["END_TIME"]
+        line_type = jsonData["LINE_TYPE"]
+        item_name = jsonData["ITEM_NAME"]
+        log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
+        isfpRGBTableInfo = iSFPRGBTableInfo(identity, start_time, end_time, line_type, item_name)
+        return isfpRGBTableInfo.getData()          
 
 intSDETLNs = api.namespace('intSDETL', description = 'intSDETL')
 intSDETLML_local = api.model('intSDETLML_local', {
