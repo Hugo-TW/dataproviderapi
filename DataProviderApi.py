@@ -74,14 +74,11 @@ from CompensateDb2 import compensate
 from GetWayneTestInfo import WayneTestInfo
 
 from GetiSFPUpphInfo import iSFPUpphInfo
-from GetiSFPScrapChartInfo import iSFPScrapChartInfo
 from GetiSFPOutputInfo import iSFPOutputInfo
-from GetiSFPFPYYChartInfo import iSFPFPYYChartInfo
-from GetiSFPOQCChartInfo import iSFPOQCChartInfo
 from GetiSFPHoldInfo import iSFPHoldInfo
-from GetiSFPFPYNInfo import iSFPFPYNInfo
 from GetiSFPLightInfo import iSFPLightInfo
 from GetiSFPRGBTableInfo import iSFPRGBTableInfo
+from GetiSFPChartDynamicInfo import iSFPChartDynamicInfo
 
 os.environ['NLS_LANG'] = 'TRADITIONAL CHINESE_TAIWAN.UTF8'
 from Logger import Logger
@@ -2228,45 +2225,6 @@ class GetUpphInfo(Resource):
         isfpUpphInfo = iSFPUpphInfo(identity, start_time, end_time)
         return isfpUpphInfo.getData()     
 
-
-
-isfpScrapChartInfoNS = api.namespace('GetiSFPScrapChartInfo', description = '廠晨會看板-報廢推移圖 For 堆疊')
-isfpScrapChartInfoML = api.model('GetiSFPScrapChartInfo', {
-"COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
-"SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
-"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
-"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123000000', example = '20211123000000'),
-"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128000000', example = '20211128000000'),
-})
-@isfpScrapChartInfoNS.route('', methods = ['POST'])
-@isfpScrapChartInfoNS.response(200, 'Sucess')
-@isfpScrapChartInfoNS.response(201, 'Created Sucess')
-@isfpScrapChartInfoNS.response(204, 'No Content')
-@isfpScrapChartInfoNS.response(400, 'Bad Request')
-@isfpScrapChartInfoNS.response(401, 'Unauthorized')
-@isfpScrapChartInfoNS.response(403, 'Forbidden')
-@isfpScrapChartInfoNS.response(404, 'Not Found')
-@isfpScrapChartInfoNS.response(405, 'Method Not Allowed')
-@isfpScrapChartInfoNS.response(409, 'Conflict')
-@isfpScrapChartInfoNS.response(500, 'Internal Server Error')
-class GetScrapChartInfo(Resource):
-    @isfpScrapChartInfoNS.doc('AppConfSysMain')
-    @isfpScrapChartInfoNS.expect(isfpScrapChartInfoML)
-    def post(self):
-        if not request:
-            abort(400)
-        elif not request.json:
-            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
-        jsonData = BaseType.validateType(request.json)
-        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData:  
-            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
-        identity = jsonData["COMPANY_CODE"] + "-" + jsonData["SITE"] + "-" + jsonData["FACTORY_ID"]
-        start_time = jsonData["START_TIME"]
-        end_time = jsonData["END_TIME"]
-        log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
-        isfpScrapChartInfo = iSFPScrapChartInfo(identity, start_time, end_time)
-        return isfpScrapChartInfo.getData()        
-
 isfpOutputInfoNS = api.namespace('GetiSFPOutputInfo', description = '廠晨會看板- OutPut')
 isfpOutputInfoML = api.model('GetiSFPOutputInfo', {
 "COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
@@ -2304,81 +2262,7 @@ class GetOutputInfo(Resource):
         line_type = jsonData["LINE_TYPE"]
         log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
         isfpOutputInfo = iSFPOutputInfo(identity, start_time, end_time, line_type)
-        return isfpOutputInfo.getData()                                      
-
-isfpFPYYChartInfoNS = api.namespace('GetiSFPFPYYChartInfo', description = '廠晨會看板- FPY(含快修) 推移圖 For Chart')
-isfpFPYYChartInfoML = api.model('GetiSFPFPYYChartInfo', {
-"COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
-"SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
-"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
-"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123000000', example = '20211123000000'),
-"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128000000', example = '20211128000000'),
-})
-@isfpFPYYChartInfoNS.route('', methods = ['POST'])
-@isfpFPYYChartInfoNS.response(200, 'Sucess')
-@isfpFPYYChartInfoNS.response(201, 'Created Sucess')
-@isfpFPYYChartInfoNS.response(204, 'No Content')
-@isfpFPYYChartInfoNS.response(400, 'Bad Request')
-@isfpFPYYChartInfoNS.response(401, 'Unauthorized')
-@isfpFPYYChartInfoNS.response(403, 'Forbidden')
-@isfpFPYYChartInfoNS.response(404, 'Not Found')
-@isfpFPYYChartInfoNS.response(405, 'Method Not Allowed')
-@isfpFPYYChartInfoNS.response(409, 'Conflict')
-@isfpFPYYChartInfoNS.response(500, 'Internal Server Error')
-class GetFPYYChartInfo(Resource):
-    @isfpFPYYChartInfoNS.doc('AppConfSysMain')
-    @isfpFPYYChartInfoNS.expect(isfpFPYYChartInfoML)
-    def post(self):
-        if not request:
-            abort(400)
-        elif not request.json:
-            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
-        jsonData = BaseType.validateType(request.json)
-        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData:  
-            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
-        identity = jsonData["COMPANY_CODE"] + "-" + jsonData["SITE"] + "-" + jsonData["FACTORY_ID"]
-        start_time = jsonData["START_TIME"]
-        end_time = jsonData["END_TIME"]
-        log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
-        isfpFPYYChartInfo = iSFPFPYYChartInfo(identity, start_time, end_time)
-        return isfpFPYYChartInfo.getData()         
-
-isfpOQCChartInfoNS = api.namespace('GetiSFPOQCChartInfo', description = '廠晨會看板- OQC 判退推移圖 For 堆疊')
-isfpOQCChartInfoML = api.model('GetiSFPOQCChartInfo', {
-"COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
-"SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
-"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
-"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123000000', example = '20211123000000'),
-"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128000000', example = '20211128000000'),
-})
-@isfpOQCChartInfoNS.route('', methods = ['POST'])
-@isfpOQCChartInfoNS.response(200, 'Sucess')
-@isfpOQCChartInfoNS.response(201, 'Created Sucess')
-@isfpOQCChartInfoNS.response(204, 'No Content')
-@isfpOQCChartInfoNS.response(400, 'Bad Request')
-@isfpOQCChartInfoNS.response(401, 'Unauthorized')
-@isfpOQCChartInfoNS.response(403, 'Forbidden')
-@isfpOQCChartInfoNS.response(404, 'Not Found')
-@isfpOQCChartInfoNS.response(405, 'Method Not Allowed')
-@isfpOQCChartInfoNS.response(409, 'Conflict')
-@isfpOQCChartInfoNS.response(500, 'Internal Server Error')
-class GetOQCChartInfo(Resource):
-    @isfpOQCChartInfoNS.doc('AppConfSysMain')
-    @isfpOQCChartInfoNS.expect(isfpOQCChartInfoML)
-    def post(self):
-        if not request:
-            abort(400)
-        elif not request.json:
-            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
-        jsonData = BaseType.validateType(request.json)
-        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData:  
-            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
-        identity = jsonData["COMPANY_CODE"] + "-" + jsonData["SITE"] + "-" + jsonData["FACTORY_ID"]
-        start_time = jsonData["START_TIME"]
-        end_time = jsonData["END_TIME"]
-        log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
-        isfpOQCChartInfo = iSFPOQCChartInfo(identity, start_time, end_time)
-        return isfpOQCChartInfo.getData()              
+        return isfpOutputInfo.getData()                                                 
 
 isfpHoldInfoNS = api.namespace('GetiSFPHoldInfo', description = '廠晨會看板- Hold 推移圖')
 isfpHoldInfoML = api.model('GetiSFPHoldInfo', {
@@ -2416,43 +2300,6 @@ class GetHoldInfo(Resource):
         log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
         isfpHoldInfo = iSFPHoldInfo(identity, start_time, end_time)
         return isfpHoldInfo.getData()
-
-isfpFPYNInfoNS = api.namespace('GetiSFPFPYNInfo', description = '廠晨會看板- FPY(不含快修) 推移圖')
-isfpFPYNInfoML = api.model('GetiSFPFPYNInfo', {
-"COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
-"SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
-"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
-"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123000000', example = '20211123000000'),
-"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128000000', example = '20211128000000'),
-})
-@isfpFPYNInfoNS.route('', methods = ['POST'])
-@isfpFPYNInfoNS.response(200, 'Sucess')
-@isfpFPYNInfoNS.response(201, 'Created Sucess')
-@isfpFPYNInfoNS.response(204, 'No Content')
-@isfpFPYNInfoNS.response(400, 'Bad Request')
-@isfpFPYNInfoNS.response(401, 'Unauthorized')
-@isfpFPYNInfoNS.response(403, 'Forbidden')
-@isfpFPYNInfoNS.response(404, 'Not Found')
-@isfpFPYNInfoNS.response(405, 'Method Not Allowed')
-@isfpFPYNInfoNS.response(409, 'Conflict')
-@isfpFPYNInfoNS.response(500, 'Internal Server Error')
-class GetFPYNInfo(Resource):
-    @isfpFPYNInfoNS.doc('AppConfSysMain')
-    @isfpFPYNInfoNS.expect(isfpFPYNInfoML)
-    def post(self):
-        if not request:
-            abort(400)
-        elif not request.json:
-            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
-        jsonData = BaseType.validateType(request.json)
-        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData:  
-            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
-        identity = jsonData["COMPANY_CODE"] + "-" + jsonData["SITE"] + "-" + jsonData["FACTORY_ID"]
-        start_time = jsonData["START_TIME"]
-        end_time = jsonData["END_TIME"]
-        log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
-        isfpFPYNInfo = iSFPFPYNInfo(identity, start_time, end_time)
-        return isfpFPYNInfo.getData()
 
 isfpLightInfoNS = api.namespace('GetiSFPLightInfo', description = '廠晨會看板- 燈號')
 isfpLightInfoML = api.model('GetiSFPLightInfo', {
@@ -2534,7 +2381,48 @@ class GetRGBTableInfo(Resource):
         item_name = jsonData["ITEM_NAME"]
         log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
         isfpRGBTableInfo = iSFPRGBTableInfo(identity, start_time, end_time, line_type, item_name)
-        return isfpRGBTableInfo.getData()          
+        return isfpRGBTableInfo.getData()  
+
+isfpChartDynamicInfoNS = api.namespace('GetiSFPChartDynamicInfo', description = '廠晨會看板- Dynamic Chart')
+isfpChartDynamicInfoML = api.model('GetiSFPChartDynamicInfo', {
+"COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
+"SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
+"FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
+"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123000000', example = '20211123000000'),
+"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128000000', example = '20211128000000'),
+"LINE_TYPE":fields.String( required = True, description = 'LINE_TYPE', default = 'ALL', example = 'ALL'),
+"ITEM_NAME":fields.String( required = True, description = 'ITEM_NAME', default = 'ALL', example = 'WO/WIP')
+})
+@isfpChartDynamicInfoNS.route('', methods = ['POST'])
+@isfpChartDynamicInfoNS.response(200, 'Sucess')
+@isfpChartDynamicInfoNS.response(201, 'Created Sucess')
+@isfpChartDynamicInfoNS.response(204, 'No Content')
+@isfpChartDynamicInfoNS.response(400, 'Bad Request')
+@isfpChartDynamicInfoNS.response(401, 'Unauthorized')
+@isfpChartDynamicInfoNS.response(403, 'Forbidden')
+@isfpChartDynamicInfoNS.response(404, 'Not Found')
+@isfpChartDynamicInfoNS.response(405, 'Method Not Allowed')
+@isfpChartDynamicInfoNS.response(409, 'Conflict')
+@isfpChartDynamicInfoNS.response(500, 'Internal Server Error')
+class GetChartDynamicInfo(Resource):
+    @isfpChartDynamicInfoNS.doc('AppConfSysMain')
+    @isfpChartDynamicInfoNS.expect(isfpChartDynamicInfoML)
+    def post(self):
+        if not request:
+            abort(400)
+        elif not request.json:
+            return {'Result':'NG', 'Reason': 'Input is Empty or Type is not JSON'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        jsonData = BaseType.validateType(request.json)
+        if "COMPANY_CODE" not in jsonData or "SITE" not in jsonData or "FACTORY_ID" not in jsonData:  
+            return {'Result': 'NG','Reason':'Miss Parameter'}, 400,{"Content-Type": "application/json",'Connection':'close','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'x-requested-with,content-type'}
+        identity = jsonData["COMPANY_CODE"] + "-" + jsonData["SITE"] + "-" + jsonData["FACTORY_ID"]
+        start_time = jsonData["START_TIME"]
+        end_time = jsonData["END_TIME"]
+        line_type = jsonData["LINE_TYPE"]
+        item_name = jsonData["ITEM_NAME"]
+        log.logger.info(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
+        isfpChartDynamicInfo = iSFPChartDynamicInfo(identity, start_time, end_time, line_type, item_name)
+        return isfpChartDynamicInfo.getData()                 
 
 intSDETLNs = api.namespace('intSDETL', description = 'intSDETL')
 intSDETLML_local = api.model('intSDETLML_local', {
