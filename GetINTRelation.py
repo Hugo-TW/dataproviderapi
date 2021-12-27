@@ -991,299 +991,362 @@ class INTRelation(BaseType):
                 return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
             elif tmpFuncType == "REASON_PROD2":
-                EFASet= self._getEFASet( tmpCOMPANY_CODE, tmpSITE, tmpFACTORY_ID, tmpOPER)
-                OPERList = []  
-                numerator = EFASet["OPERLIST"]["numerator"]
-                denominator = EFASet["OPERLIST"]["denominator"]                
-                _OPERList_LIST = ""
-                for x in numerator:
-                    _OPERList_LIST = _OPERList_LIST + f"'{x}',"
-                for x in denominator:
-                    _OPERList_LIST = _OPERList_LIST + f"'{x}',"
-                if _OPERList_LIST != "":
-                    _OPERList_LIST = _OPERList_LIST[:-1]
+                returnData = {}
+                tmpSITE = self.jsonData["SITE"]
+                if tmpSITE == "TN":
+                    EFASet= self._getEFASet( tmpCOMPANY_CODE, tmpSITE, tmpFACTORY_ID, tmpOPER)
+                    numerator = EFASet["OPERLIST"]["numerator"]
+                    denominator = EFASet["OPERLIST"]["denominator"]                
+                    _OPERList_LIST = ""
+                    for x in numerator:
+                        _OPERList_LIST = _OPERList_LIST + f"'{x}',"
+                    for x in denominator:
+                        _OPERList_LIST = _OPERList_LIST + f"'{x}',"
+                    if _OPERList_LIST != "":
+                        _OPERList_LIST = _OPERList_LIST[:-1]
 
-                # region 準備數據
-                # comm data: 權種數據
-                whereString = f" and REASONCODE = '{tmpCHECKCODE}' "
-                sql = "select REASONCODE, COMPARECODE, WEIGHT from INTMP_DB.REASON_WEIGHT " \
-                      f"where {whereComSiteFac} {whereString} " \
-                      "order by REASONCODE, COMPARECODE "
-                commData = self.pSelect(sql)
-                weightData = {}
-                if(len(commData) != 0):
-                    for da in commData:
-                        weightData[da[1]] = float(da[2])
-                del commData
-                gc.collect()
+                    # region 準備數據
+                    # comm data: 權種數據
+                    whereString = f" and REASONCODE = '{tmpCHECKCODE}' "
+                    sql = "select REASONCODE, COMPARECODE, WEIGHT from INTMP_DB.REASON_WEIGHT " \
+                        f"where {whereComSiteFac} {whereString} " \
+                        "order by REASONCODE, COMPARECODE "
+                    commData = self.pSelect(sql)
+                    weightData = {}
+                    if(len(commData) != 0):
+                        for da in commData:
+                            weightData[da[1]] = float(da[2])
+                    del commData
+                    gc.collect()
 
-                # step0: 取得 與 defect / Reason 相關的 panel id
-                whereString = f"where {whereComSiteFac} and PROD_NBR = '{tmpPROD_NBR}' and  DEFT_REASON = '{tmpCHECKCODE}' "\
-                    f" and MAIN_OPER in ({_OPERList_LIST})  and MFGDATE = '{tmpACCT_DATE}' "
-                if tmpRWCOUNT == "=1" : whereString += " and RW_COUNT = 1 "
-                sql = "select PROD_NBR, DEFT_REASON, MFGDATE, MAIN_OPER, PANELID, RW_COUNT "\
-                      " from INTMP_DB.PANELHISDAILY_REASON " \
-                      f"{whereString} " \
-                      "group by PROD_NBR, DEFT_REASON, MFGDATE, MAIN_OPER, PANELID, RW_COUNT " \
-                      "order by PANELID "
-                idData = self.pSelect(sql)
-                panelData = []
-                if(len(idData) != 0):
-                    for da in idData:
-                        datadict = {
-                            "PROD_NBR": da[0],
-                            "DEFT_REASON": da[1],
-                            "MFGDATE": da[2],
-                            "MAIN_OPER": da[3],
-                            "PANELID": da[4],
-                            "RW_COUNT": da[5]
+                    # step0: 取得 與 defect / Reason 相關的 panel id
+                    whereString = f"where {whereComSiteFac} and PROD_NBR = '{tmpPROD_NBR}' and  DEFT_REASON = '{tmpCHECKCODE}' "\
+                        f" and MAIN_OPER in ({_OPERList_LIST})  and MFGDATE = '{tmpACCT_DATE}' "
+                    if tmpRWCOUNT == "=1" : whereString += " and RW_COUNT = 1 "
+                    sql = "select PROD_NBR, DEFT_REASON, MFGDATE, MAIN_OPER, PANELID, RW_COUNT "\
+                        " from INTMP_DB.PANELHISDAILY_REASON " \
+                        f"{whereString} " \
+                        "group by PROD_NBR, DEFT_REASON, MFGDATE, MAIN_OPER, PANELID, RW_COUNT " \
+                        "order by PANELID "
+                    idData = self.pSelect(sql)
+                    panelData = []
+                    if(len(idData) != 0):
+                        for da in idData:
+                            datadict = {
+                                "PROD_NBR": da[0],
+                                "DEFT_REASON": da[1],
+                                "MFGDATE": da[2],
+                                "MAIN_OPER": da[3],
+                                "PANELID": da[4],
+                                "RW_COUNT": da[5]
+                            }
+                            panelData.append(datadict)
+                    del idData
+                    gc.collect()
+
+                    PANELID_Group = self._Group_PANELID_List(panelData)
+                    #self.writeLog("panelData")
+                    #self.writeLog(panelData)
+
+                    PANELID_Group_SQL_LIST = ""
+                    for x in PANELID_Group:
+                        PANELID_Group_SQL_LIST = PANELID_Group_SQL_LIST + f"'{x}',"
+                    if PANELID_Group_SQL_LIST != "":
+                        PANELID_Group_SQL_LIST = PANELID_Group_SQL_LIST[:-1]
+
+                    if len(PANELID_Group) > 0:
+                        # step1: 取得 panel his
+                        whereString = f"where {whereComSiteFac} and PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and PANELID in ({PANELID_Group_SQL_LIST}) "
+                        if tmpRWCOUNT == "=1" : whereString += " and RW_COUNT = 0 "
+                        sql = f"with panel_his_daily as (select * from INTMP_DB.PANELHISDAILY {whereString} ) " \
+                            "select PROD_NBR, MFGDATE, PANELID, OPER, TRANSDT, OPERATOR, EQPID, RW_COUNT, " \
+                            "OUTPUT_FG from panel_his_daily order by PANELID, TRANSDT asc"
+                        data1 = self.pSelect(sql)
+                        hisData = []
+                        if(len(data1) != 0):
+                            for da in data1:
+                                d = datetime.datetime
+                                TIMECLUST_d = d.strptime(da[4], '%Y%m%d%H%M%S')
+                                TIMECLUST = d.strftime(TIMECLUST_d, '%Y%m%d%H')
+                                datadict = {
+                                    "PROD_NBR": da[0],
+                                    "MFGDATE": da[1],
+                                    "PANELID": da[2],
+                                    "OPER": da[3],
+                                    "TRANSDT": da[4],
+                                    "OPERATOR": da[5],
+                                    "EQPID": da[6],
+                                    "RW_COUNT": da[7],
+                                    "OUTPUT_FG": da[8],
+                                    "TIMECLUST": da[4]
+                                }
+                                hisData.append(datadict)
+                        del data1
+                        gc.collect()
+                        #self.writeLog("hisData")
+                        #self.writeLog(hisData)
+
+                        # step2: 取得panel use mat
+                        whereString = f" and PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and OPER in ('1050','1300','1301') and PANELID in ({PANELID_Group_SQL_LIST}) "
+                        sql = f"with panel_his_mat as (select * from INTMP_DB.PANELHISDAILY_MAT where {whereComSiteFac} {whereString}) " \
+                            "select PROD_NBR, MFGDATE, PANELID, OPER, MAT_ID, MAT_LOTID from panel_his_mat " \
+                            "order by MAT_ID, MAT_LOTID asc"
+                        data2 = self.pSelect(sql)
+                        matData = []
+                        if(len(data2) != 0):
+                            for da in data2:
+                                datadict = {
+                                    "PROD_NBR": da[0],
+                                    "MFGDATE": da[1],
+                                    "PANELID": da[2],
+                                    "OPER": da[3],
+                                    "MAT_ID": da[4],
+                                    "MAT_LOTID": da[5]
+                                }
+                                matData.append(datadict)
+                        del data2
+                        gc.collect()
+                        #self.writeLog("matData")
+                        #self.writeLog(matData)
+                        # endregion
+
+                        # temp list
+                        # 分群
+                        self.BASE_GROUPList = self._Group_OPERATOR_OPER_EQPID_TIMECLUST_PANELID_List(
+                            hisData)
+                        PANEL_TOTAL_COUNT = len(PANELID_Group)
+                        #self.writeLog("BASE_GROUPList")
+                        #self.writeLog(self.BASE_GROUPList)
+
+                        # 人
+                        node_cal_OPERATOR_OPER = []
+                        link_cal_OPERATOR_OPER = []
+                        OPERATOR_OPER_PANELID_Group = self._Group_OPERATOR_OPER_PANELID_List()
+                        OPERATOR_OPER_EQPID_PANELID_Group = self._Group_OPERATOR_OPER_EQPID_PANELID_List()
+                        notInOPER1 = ["1050", "1100", "1200", "2110"]
+                        OPERATOR_OPER_Count = self._Count_OPERATOR_OPER_List(
+                            notInOPER1, OPERATOR_OPER_PANELID_Group)
+                        OPERATOR_OPER_EQPID_Count = self._Count_OPERATOR_OPER_EQPID_List(
+                            notInOPER1, OPERATOR_OPER_EQPID_PANELID_Group)
+                        OPER_Count = self._Count_OPER_List(
+                            notInOPER1, OPERATOR_OPER_Count)
+                        o_A_Limit = self._OPER_Limit(
+                            OPER_Count, PANEL_TOTAL_COUNT)
+                        o_T_Limit = 0.3
+                        node_cal_OPERATOR_OPER = self._calNode_OPERATOR_OPER(
+                            OPERATOR_OPER_Count, PANEL_TOTAL_COUNT, o_A_Limit, o_T_Limit, weightData)
+                        link_cal_OPERATOR_OPER = self._calLink_OPERATOR_OPER(
+                            node_cal_OPERATOR_OPER, OPERATOR_OPER_EQPID_Count)
+                        #self.writeLog("人")
+                        #self.writeLog(node_cal_OPERATOR_OPER)
+                        #self.writeLog(link_cal_OPERATOR_OPER)
+
+                        node_cal_OPERATOR_TIMECLUST = []
+                        link_cal_OPERATOR_TIMECLUST = []
+                        node_cal_EQPID_TIMECLUST = []
+                        link_cal_EQPID_TIMECLUST = []
+                        if PANEL_TOTAL_COUNT > 10:  # 沒大於10片 不計算分時
+                            # 人時
+                            OPERATOR_OPER_TIMECLUST_PANELID_Group = self._Group_OPERATOR_OPER_TIMECLUST_PANELID_List()
+                            notInOPER2 = ["1050", "1100", "1200", "2110"]
+                            OPERATOR_OPER_TIMECLUST_Count = self._Count_OPERATOR_OPER_TIMECLUST_List(
+                                notInOPER2, OPERATOR_OPER_TIMECLUST_PANELID_Group)
+                            node_cal_OPERATOR_TIMECLUST = self._calNode_OPERATOR_TIMECLUSTR(
+                                OPERATOR_OPER_TIMECLUST_Count, PANEL_TOTAL_COUNT)
+                            link_cal_OPERATOR_TIMECLUST = self._calLink_OPERATOR_TIMECLUSTR(
+                                node_cal_OPERATOR_TIMECLUST)
+                            #self.writeLog("人時")
+                            #self.writeLog(node_cal_OPERATOR_TIMECLUST)
+                            #self.writeLog(link_cal_OPERATOR_TIMECLUST)
+                        # 機時
+                            EQPID_OPER_TIMECLUST_PANELID_Group = self._Group_EQPID_OPER_TIMECLUST_PANELID_List()
+                            notInOPER3 = ["1050", "1100", "1200", "2110"]
+                            EQPID_OPER_TIMECLUST_Count = self._Count_EQPID_OPER_TIMECLUST_List(
+                                notInOPER3, EQPID_OPER_TIMECLUST_PANELID_Group)
+                            node_cal_EQPID_TIMECLUST = self._calNode_EQPID_TIMECLUSTR(
+                                EQPID_OPER_TIMECLUST_Count, PANEL_TOTAL_COUNT)
+                            link_cal_EQPID_TIMECLUST = self._calLink_EQPID_TIMECLUSTR(
+                                node_cal_EQPID_TIMECLUST)
+                            #self.writeLog("人機")
+                            #self.writeLog(node_cal_EQPID_TIMECLUST)
+                            #self.writeLog(link_cal_EQPID_TIMECLUST)
+
+                        # 機
+                        node_cal_EQPID_OPER = []
+                        link_cal_EQPID_OPER = []
+                        EQPID_OPER_PANELID_Group = self._Group_EQPID_OPER_PANELID_List()
+                        notInOPER4 = ["1050", "1100", "2110"]
+                        EQPID_OPER_Count = self._Count_EQPID_OPER_List(
+                            notInOPER4, EQPID_OPER_PANELID_Group)
+                        OPER_Count = self._Count_OPER_List(
+                            notInOPER4, EQPID_OPER_Count)
+                        g_A_Limit = self._OPER_Limit(
+                            OPER_Count, PANEL_TOTAL_COUNT)
+                        g_T_Limit = 0.3
+                        node_cal_EQPID_OPER = self._calNode_EQPID_OPER(
+                            EQPID_OPER_Count, PANEL_TOTAL_COUNT, g_A_Limit, g_T_Limit, weightData)
+                        link_cal_EQPID_OPER = self._calLink_EQPID_OPER(
+                            node_cal_EQPID_OPER)
+                        #self.writeLog("機")
+                        #self.writeLog(node_cal_EQPID_OPER)
+                        #self.writeLog(link_cal_EQPID_OPER)
+
+                        # 站
+                        node_cal_OPER_OPERATOR = []
+                        link_cal_OPER_OPERATOR = []
+                        notInOPER5 = ["1050", "1100", "2110"]
+                        OPER_OPERATOR_Count = self._Count_OPERATOR_OPER_List(
+                            notInOPER5, OPERATOR_OPER_PANELID_Group)
+                        node_cal_OPER_OPERATOR = self._calNode_OPER_OPERATOR(
+                            OPER_OPERATOR_Count, PANEL_TOTAL_COUNT, o_A_Limit, o_T_Limit, weightData)
+                        link_cal_OPER_OPERATOR = self._calLink_OPER_OPERATOR(
+                            node_cal_OPER_OPERATOR)
+                        #self.writeLog("站")
+                        #self.writeLog(node_cal_OPER_OPERATOR)
+                        #self.writeLog(link_cal_OPER_OPERATOR)
+
+                        # 料
+                        node_cal_MAT_OPER = []
+                        link_cal_MAT_OPER = []
+                        MAT_OPER_PANELID_Group = self._Group_MAT_OPER_PANELID_List(
+                            matData)
+                        MAT_OPER_Count = self._Count_MAT_OPER_List(
+                            MAT_OPER_PANELID_Group)
+                        m_A_Limit = 0.6
+                        m_T_Limit = 0.6
+                        node_cal_MAT_OPER = self._calNode_MAT_OPER(
+                            MAT_OPER_Count, PANEL_TOTAL_COUNT, m_A_Limit, m_T_Limit, weightData)
+                        link_cal_MAT_OPER = self._calLink_MAT_OPER(node_cal_MAT_OPER)
+                        #self.writeLog("料")
+                        #self.writeLog(node_cal_MAT_OPER)
+                        #self.writeLog(link_cal_MAT_OPER)
+
+                        # 資料聚合
+                        tempNodes = self._grouptNodes(
+                            PANEL_TOTAL_COUNT,
+                            node_cal_OPERATOR_OPER,
+                            node_cal_OPERATOR_TIMECLUST,
+                            node_cal_EQPID_TIMECLUST,
+                            node_cal_EQPID_OPER,
+                            node_cal_OPER_OPERATOR,
+                            node_cal_MAT_OPER
+                        )
+
+                        templinks = self._grouptLinks(
+                            tempNodes,
+                            link_cal_OPERATOR_OPER,
+                            link_cal_OPERATOR_TIMECLUST,
+                            link_cal_EQPID_TIMECLUST,
+                            link_cal_EQPID_OPER,
+                            link_cal_OPER_OPERATOR,
+                            link_cal_MAT_OPER
+                        )
+
+                        #del 無連結分時
+                        dekNodeCheck = [dd["source"] for dd in templinks if dd["target"] == '0'] 
+
+                        nodes = []
+                        for x in tempNodes:
+                            if x["id"] in dekNodeCheck and x["category"] == 1:
+                                qq = 'del'
+                            else:
+                                nodes.append(x)                 
+
+                        links = d = list(
+                            filter(lambda d: d["source"] != "0" and d["target"] != "0", templinks))
+
+                        categories = self._categories()
+
+                        C_DESC = self._code2Desc("REASONCODE",tmpCHECKCODE)
+                        returnData = {
+                            "RELATIONTYPE": tmpFuncType,
+                            "COMPANY_CODE": tmpCOMPANY_CODE,
+                            "SITE": tmpSITE,
+                            "FACTORY_ID": tmpFACTORY_ID,
+                            "APPLICATION": tmpAPPLICATION,
+                            "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
+                            "PROD_NBR": tmpPROD_NBR if tmpRWCOUNT != "=1" else f'直行品 {tmpPROD_NBR}',
+                            "OPER": tmpOPER,
+                            "C_CODE": tmpCHECKCODE,
+                            "C_DESCR": C_DESC if C_DESC != None else tmpCHECKCODE,
+                            "nodes": nodes,
+                            "links": links,
+                            "categories": categories
                         }
-                        panelData.append(datadict)
-                del idData
-                gc.collect()
+                else:
+                    whereComSiteFac = f" dll.COMPANY_CODE = '{tmpCOMPANY_CODE}' "
+                    whereComSiteFac += f" and dll.SITE_CODE = '{tmpSITE}' "
+                    whereComSiteFac += f" and dll.FACTORY_CODE = '{tmpFACTORY_ID}' "
 
-                PANELID_Group = self._Group_PANELID_List(panelData)
-                #self.writeLog("panelData")
-                #self.writeLog(panelData)
-
-                PANELID_Group_SQL_LIST = ""
-                for x in PANELID_Group:
-                    PANELID_Group_SQL_LIST = PANELID_Group_SQL_LIST + f"'{x}',"
-                if PANELID_Group_SQL_LIST != "":
-                    PANELID_Group_SQL_LIST = PANELID_Group_SQL_LIST[:-1]
-
-                if len(PANELID_Group) > 0:
-                    # step1: 取得 panel his
-                    whereString = f"where {whereComSiteFac} and PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and PANELID in ({PANELID_Group_SQL_LIST}) "
-                    if tmpRWCOUNT == "=1" : whereString += " and RW_COUNT = 0 "
-                    sql = f"with panel_his_daily as (select * from INTMP_DB.PANELHISDAILY {whereString} ) " \
-                        "select PROD_NBR, MFGDATE, PANELID, OPER, TRANSDT, OPERATOR, EQPID, RW_COUNT, " \
-                        "OUTPUT_FG from panel_his_daily order by PANELID, TRANSDT asc"
-                    data1 = self.pSelect(sql)
-                    hisData = []
-                    if(len(data1) != 0):
-                        for da in data1:
-                            d = datetime.datetime
-                            TIMECLUST_d = d.strptime(da[4], '%Y%m%d%H%M%S')
-                            TIMECLUST = d.strftime(TIMECLUST_d, '%Y%m%d%H')
-                            datadict = {
-                                "PROD_NBR": da[0],
-                                "MFGDATE": da[1],
-                                "PANELID": da[2],
-                                "OPER": da[3],
-                                "TRANSDT": da[4],
-                                "OPERATOR": da[5],
-                                "EQPID": da[6],
-                                "RW_COUNT": da[7],
-                                "OUTPUT_FG": da[8],
-                                "TIMECLUST": da[4]
-                            }
-                            hisData.append(datadict)
-                    del data1
-                    gc.collect()
-                    #self.writeLog("hisData")
-                    #self.writeLog(hisData)
-
-                    # step2: 取得panel use mat
-                    whereString = f" and PROD_NBR = '{tmpPROD_NBR}' and MFGDATE = '{tmpACCT_DATE}' and OPER in ('1050','1300','1301') and PANELID in ({PANELID_Group_SQL_LIST}) "
-                    sql = f"with panel_his_mat as (select * from INTMP_DB.PANELHISDAILY_MAT where {whereComSiteFac} {whereString}) " \
-                        "select PROD_NBR, MFGDATE, PANELID, OPER, MAT_ID, MAT_LOTID from panel_his_mat " \
-                        "order by MAT_ID, MAT_LOTID asc"
-                    data2 = self.pSelect(sql)
-                    matData = []
-                    if(len(data2) != 0):
-                        for da in data2:
-                            datadict = {
-                                "PROD_NBR": da[0],
-                                "MFGDATE": da[1],
-                                "PANELID": da[2],
-                                "OPER": da[3],
-                                "MAT_ID": da[4],
-                                "MAT_LOTID": da[5]
-                            }
-                            matData.append(datadict)
-                    del data2
-                    gc.collect()
-                    #self.writeLog("matData")
-                    #self.writeLog(matData)
-                    # endregion
-
-                    # temp list
-                    # 分群
-                    self.BASE_GROUPList = self._Group_OPERATOR_OPER_EQPID_TIMECLUST_PANELID_List(
-                        hisData)
-                    PANEL_TOTAL_COUNT = len(PANELID_Group)
-                    #self.writeLog("BASE_GROUPList")
-                    #self.writeLog(self.BASE_GROUPList)
-
-                    # 人
-                    node_cal_OPERATOR_OPER = []
-                    link_cal_OPERATOR_OPER = []
-                    OPERATOR_OPER_PANELID_Group = self._Group_OPERATOR_OPER_PANELID_List()
-                    OPERATOR_OPER_EQPID_PANELID_Group = self._Group_OPERATOR_OPER_EQPID_PANELID_List()
-                    notInOPER1 = ["1050", "1100", "1200", "2110"]
-                    OPERATOR_OPER_Count = self._Count_OPERATOR_OPER_List(
-                        notInOPER1, OPERATOR_OPER_PANELID_Group)
-                    OPERATOR_OPER_EQPID_Count = self._Count_OPERATOR_OPER_EQPID_List(
-                        notInOPER1, OPERATOR_OPER_EQPID_PANELID_Group)
-                    OPER_Count = self._Count_OPER_List(
-                        notInOPER1, OPERATOR_OPER_Count)
-                    o_A_Limit = self._OPER_Limit(
-                        OPER_Count, PANEL_TOTAL_COUNT)
-                    o_T_Limit = 0.3
-                    node_cal_OPERATOR_OPER = self._calNode_OPERATOR_OPER(
-                        OPERATOR_OPER_Count, PANEL_TOTAL_COUNT, o_A_Limit, o_T_Limit, weightData)
-                    link_cal_OPERATOR_OPER = self._calLink_OPERATOR_OPER(
-                        node_cal_OPERATOR_OPER, OPERATOR_OPER_EQPID_Count)
-                    #self.writeLog("人")
-                    #self.writeLog(node_cal_OPERATOR_OPER)
-                    #self.writeLog(link_cal_OPERATOR_OPER)
-
-                    node_cal_OPERATOR_TIMECLUST = []
-                    link_cal_OPERATOR_TIMECLUST = []
-                    node_cal_EQPID_TIMECLUST = []
-                    link_cal_EQPID_TIMECLUST = []
-                    if PANEL_TOTAL_COUNT > 10:  # 沒大於10片 不計算分時
-                        # 人時
-                        OPERATOR_OPER_TIMECLUST_PANELID_Group = self._Group_OPERATOR_OPER_TIMECLUST_PANELID_List()
-                        notInOPER2 = ["1050", "1100", "1200", "2110"]
-                        OPERATOR_OPER_TIMECLUST_Count = self._Count_OPERATOR_OPER_TIMECLUST_List(
-                            notInOPER2, OPERATOR_OPER_TIMECLUST_PANELID_Group)
-                        node_cal_OPERATOR_TIMECLUST = self._calNode_OPERATOR_TIMECLUSTR(
-                            OPERATOR_OPER_TIMECLUST_Count, PANEL_TOTAL_COUNT)
-                        link_cal_OPERATOR_TIMECLUST = self._calLink_OPERATOR_TIMECLUSTR(
-                            node_cal_OPERATOR_TIMECLUST)
-                        #self.writeLog("人時")
-                        #self.writeLog(node_cal_OPERATOR_TIMECLUST)
-                        #self.writeLog(link_cal_OPERATOR_TIMECLUST)
-                    # 機時
-                        EQPID_OPER_TIMECLUST_PANELID_Group = self._Group_EQPID_OPER_TIMECLUST_PANELID_List()
-                        notInOPER3 = ["1050", "1100", "1200", "2110"]
-                        EQPID_OPER_TIMECLUST_Count = self._Count_EQPID_OPER_TIMECLUST_List(
-                            notInOPER3, EQPID_OPER_TIMECLUST_PANELID_Group)
-                        node_cal_EQPID_TIMECLUST = self._calNode_EQPID_TIMECLUSTR(
-                            EQPID_OPER_TIMECLUST_Count, PANEL_TOTAL_COUNT)
-                        link_cal_EQPID_TIMECLUST = self._calLink_EQPID_TIMECLUSTR(
-                            node_cal_EQPID_TIMECLUST)
-                        #self.writeLog("人機")
-                        #self.writeLog(node_cal_EQPID_TIMECLUST)
-                        #self.writeLog(link_cal_EQPID_TIMECLUST)
-
-                    # 機
-                    node_cal_EQPID_OPER = []
-                    link_cal_EQPID_OPER = []
-                    EQPID_OPER_PANELID_Group = self._Group_EQPID_OPER_PANELID_List()
-                    notInOPER4 = ["1050", "1100", "2110"]
-                    EQPID_OPER_Count = self._Count_EQPID_OPER_List(
-                        notInOPER4, EQPID_OPER_PANELID_Group)
-                    OPER_Count = self._Count_OPER_List(
-                        notInOPER4, EQPID_OPER_Count)
-                    g_A_Limit = self._OPER_Limit(
-                        OPER_Count, PANEL_TOTAL_COUNT)
-                    g_T_Limit = 0.3
-                    node_cal_EQPID_OPER = self._calNode_EQPID_OPER(
-                        EQPID_OPER_Count, PANEL_TOTAL_COUNT, g_A_Limit, g_T_Limit, weightData)
-                    link_cal_EQPID_OPER = self._calLink_EQPID_OPER(
-                        node_cal_EQPID_OPER)
-                    #self.writeLog("機")
-                    #self.writeLog(node_cal_EQPID_OPER)
-                    #self.writeLog(link_cal_EQPID_OPER)
-
-                    # 站
-                    node_cal_OPER_OPERATOR = []
-                    link_cal_OPER_OPERATOR = []
-                    notInOPER5 = ["1050", "1100", "2110"]
-                    OPER_OPERATOR_Count = self._Count_OPERATOR_OPER_List(
-                        notInOPER5, OPERATOR_OPER_PANELID_Group)
-                    node_cal_OPER_OPERATOR = self._calNode_OPER_OPERATOR(
-                        OPER_OPERATOR_Count, PANEL_TOTAL_COUNT, o_A_Limit, o_T_Limit, weightData)
-                    link_cal_OPER_OPERATOR = self._calLink_OPER_OPERATOR(
-                        node_cal_OPER_OPERATOR)
-                    #self.writeLog("站")
-                    #self.writeLog(node_cal_OPER_OPERATOR)
-                    #self.writeLog(link_cal_OPER_OPERATOR)
-
-                    # 料
-                    node_cal_MAT_OPER = []
-                    link_cal_MAT_OPER = []
-                    MAT_OPER_PANELID_Group = self._Group_MAT_OPER_PANELID_List(
-                        matData)
-                    MAT_OPER_Count = self._Count_MAT_OPER_List(
-                        MAT_OPER_PANELID_Group)
-                    m_A_Limit = 0.6
-                    m_T_Limit = 0.6
-                    node_cal_MAT_OPER = self._calNode_MAT_OPER(
-                        MAT_OPER_Count, PANEL_TOTAL_COUNT, m_A_Limit, m_T_Limit, weightData)
-                    link_cal_MAT_OPER = self._calLink_MAT_OPER(node_cal_MAT_OPER)
-                    #self.writeLog("料")
-                    #self.writeLog(node_cal_MAT_OPER)
-                    #self.writeLog(link_cal_MAT_OPER)
-
-                    # 資料聚合
-                    tempNodes = self._grouptNodes(
-                        PANEL_TOTAL_COUNT,
-                        node_cal_OPERATOR_OPER,
-                        node_cal_OPERATOR_TIMECLUST,
-                        node_cal_EQPID_TIMECLUST,
-                        node_cal_EQPID_OPER,
-                        node_cal_OPER_OPERATOR,
-                        node_cal_MAT_OPER
-                    )
-
-                    templinks = self._grouptLinks(
-                        tempNodes,
-                        link_cal_OPERATOR_OPER,
-                        link_cal_OPERATOR_TIMECLUST,
-                        link_cal_EQPID_TIMECLUST,
-                        link_cal_EQPID_OPER,
-                        link_cal_OPER_OPERATOR,
-                        link_cal_MAT_OPER
-                    )
-
-                    #del 無連結分時
-                    dekNodeCheck = [dd["source"] for dd in templinks if dd["target"] == '0'] 
-
+                    # step0: get Node
+                    whereString = f"where {whereComSiteFac} and frn.MODELCODE = '{tmpPROD_NBR}' "\
+                        f" and  frn.CHECKCODE = '{tmpCHECKCODE}' "\
+                        f" and frn.OPER = '{tmpOPER}'  and frn.MFGDATE = '{tmpACCT_DATE}' "
+                    sql = "select NODE_ID, NAME, SYMBOLSIZE, SYMBOL, VALUE, CATEGORY, MODELCODE "\
+                        " from INTMP_DB.FACT_REASONREL_NODE frn " \
+                        " left join INTMP_DB.DIME_LOCAL dll on dll.LOCAL_ID = frn.LOCAL_ID " \
+                        f"{whereString} " \
+                        "order by NODE_ID "
+                    idData = self.pSelect(sql)
                     nodes = []
-                    for x in tempNodes:
-                        if x["id"] in dekNodeCheck and x["category"] == 1:
-                            qq = 'del'
-                        else:
-                            nodes.append(x)                 
-
-                    links = d = list(
-                        filter(lambda d: d["source"] != "0" and d["target"] != "0", templinks))
-
+                    if(len(idData) != 0):
+                        for da in idData:
+                            datadict = {
+                                "id": da[0],
+                                "name": da[1],
+                                "symbolSize": da[2],
+                                "symbol": da[3],
+                                "value": da[4],
+                                "category": da[5]
+                            }
+                            nodes.append(datadict)
+                    del idData
+                    gc.collect()
+                    # step0: get Link
+                    whereString = f"where {whereComSiteFac} and frn.MODELCODE = '{tmpPROD_NBR}' "\
+                        f" and  frn.CHECKCODE = '{tmpCHECKCODE}' "\
+                        f" and frn.OPER = '{tmpOPER}'  and frn.MFGDATE = '{tmpACCT_DATE}' "
+                    sql = "select SOURCE, TARGET, VALUE "\
+                        " from INTMP_DB.FACT_REASONREL_LINK frn " \
+                        " left join INTMP_DB.DIME_LOCAL dll on dll.LOCAL_ID = frn.LOCAL_ID " \
+                        f"{whereString} " \
+                        "order by SOURCE "
+                    idData = self.pSelect(sql)
+                    links = []
+                    if(len(idData) != 0):
+                        for da in idData:
+                            datadict = {
+                                "source": da[0],
+                                "target": da[1],
+                                "value": da[2]
+                            }
+                            links.append(datadict)
+                    del idData
+                    gc.collect()
                     categories = self._categories()
-
                     C_DESC = self._code2Desc("REASONCODE",tmpCHECKCODE)
                     returnData = {
-                        "RELATIONTYPE": tmpFuncType,
-                        "COMPANY_CODE": tmpCOMPANY_CODE,
-                        "SITE": tmpSITE,
-                        "FACTORY_ID": tmpFACTORY_ID,
-                        "APPLICATION": tmpAPPLICATION,
-                        "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
-                        "PROD_NBR": tmpPROD_NBR if tmpRWCOUNT != "=1" else f'直行品 {tmpPROD_NBR}',
-                        "OPER": tmpOPER,
-                        "C_CODE": tmpCHECKCODE,
-                        "C_DESCR": C_DESC if C_DESC != None else tmpCHECKCODE,
-                        "nodes": nodes,
-                        "links": links,
-                        "categories": categories
-                    }
-                    """
-                    self.getRedisConnection()
-                    if self.searchRedisKeys(redisKey):     
-                        self.setRedisData(redisKey, json.dumps(
-                            returnData, sort_keys=True, indent=2), expirSecond)
-                    else:
-                        self.setRedisData(redisKey, json.dumps(
-                            returnData, sort_keys=True, indent=2), expirSecond)
-                    """
+                            "RELATIONTYPE": tmpFuncType,
+                            "COMPANY_CODE": tmpCOMPANY_CODE,
+                            "SITE": tmpSITE,
+                            "FACTORY_ID": tmpFACTORY_ID,
+                            "APPLICATION": tmpAPPLICATION,
+                            "ACCT_DATE": datetime.datetime.strptime(tmpACCT_DATE, '%Y%m%d').strftime('%Y-%m-%d'),
+                            "PROD_NBR": tmpPROD_NBR if tmpRWCOUNT != "=1" else f'直行品 {tmpPROD_NBR}',
+                            "OPER": tmpOPER,
+                            "C_CODE": tmpCHECKCODE,
+                            "C_DESCR": C_DESC if C_DESC != None else tmpCHECKCODE,
+                            "nodes": nodes,
+                            "links": links,
+                            "categories": categories
+                        }
+
+                
+                if returnData != {}:
                     return returnData, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
                 else:
                     return {'Result': 'Fail', 'Reason': 'No Panel ID DATA LIST'}, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
-  
+
             elif tmpFuncType == "DEFT_CELL_HP":
                 getFabData = self.operSetData[tmpFACTORY_ID]
                 numeratorData = getFabData["FPY"]["numerator"][tmpOPER]
@@ -1567,8 +1630,6 @@ class INTRelation(BaseType):
                 else:
                     return {'Result': 'Fail', 'Reason': 'No Panel ID DATA LIST'}, 200, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
             
-
-
             else:
                 return {'Result': 'Fail', 'Reason': 'Parametes[KPITYPE] not in Rule'}, 400, {"Content-Type": "application/json", 'Connection': 'close', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'x-requested-with,content-type'}
 
