@@ -67,7 +67,7 @@ class iSFPLightInfo(BaseType):
 
                         union
                         
-                        select 'MTD' as date_time,t.data_type,to_char(decode(t.data_type,'燈號',round(sum(t.data_value)/count(*),0),sum(t.data_value)/count(*))) as data_value
+                        select 'MTD' as date_time,t.data_type,to_char(decode(t.data_type,'COLOR',round(sum(t.data_value)/count(*),0),sum(t.data_value)/count(*))) as data_value
                         from WAYNE_TEST_TV t
                         where item_name = '{4}' 
                         and t.line_type = '{3}'
