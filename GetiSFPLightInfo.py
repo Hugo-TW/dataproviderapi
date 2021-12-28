@@ -31,8 +31,8 @@ class iSFPLightInfo(BaseType):
             sql =  """SELECT distinct t.data_type 
                         FROM WAYNE_TEST_TV t 
                         where item_name = '{3}' 
-                        and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss') 
                         and t.line_type = '{2}'
+                        and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss') 
                         order by 1""".format(self.__start_time, self.__end_time, self.__line_type, self.__item_name) 
             
             self.writeLog(f'SQL:\n {sql}')

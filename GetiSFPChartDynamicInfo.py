@@ -39,8 +39,8 @@ class iSFPChartDynamicInfo(BaseType):
             sql =  """select to_char(t.data_date,'mm/dd') as data_date,t.data_type,t.data_value as YVALUE,DENSE_RANK() over (order by t.data_date )-1 as XVALUE
                         from wayne_test_tv t 
                         where t.item_name='{3}'
-                        and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss') 
                         and t.line_type = '{2}'
+                        and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss') 
                         and t.data_type not in ('{4}')""".format(self.__start_time, self.__end_time, self.__line_type, self.__item_name, sDataType) 
             
             self.writeLog(f'SQL:\n {sql}')
@@ -75,8 +75,8 @@ class iSFPChartDynamicInfo(BaseType):
             sql =  """select to_char(t.data_date,'mm/dd') as data_date,t.data_type,t.data_value as YVALUE,DENSE_RANK() over (order by t.data_date )-1 as XVALUE
                         from wayne_test_tv t 
                         where t.item_name='{3}'
-                        and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss') 
                         and t.line_type = '{2}'
+                        and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss') 
                         and t.data_type in ('{4}')""".format(self.__start_time, self.__end_time, self.__line_type, self.__item_name, sDataType) 
             
             self.writeLog(f'SQL:\n {sql}')
