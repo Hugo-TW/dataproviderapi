@@ -1480,7 +1480,7 @@ class INTLV3(BaseType):
         DEFTCODEData = []
         description , data = self.pSelectAndDescription(sql)            
         DEFTCODEData = self._zipDescriptionAndData(description, data)
-        reurnData = DEFTCODEData[0]["DEFTCODE_DESC"] if len(DEFTCODEData) > 0 else "無對應DESC"
+        reurnData = DEFTCODEData[0]["CDESC"] if len(DEFTCODEData) > 0 else "無對應DESC"
         return reurnData
 
     def _getEFALV2DRLINEData(self, OPER, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE):
