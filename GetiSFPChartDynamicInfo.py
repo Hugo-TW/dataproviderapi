@@ -14,23 +14,34 @@ from flask_cors import CORS
 from BaseType import BaseType
 from datetime import date, datetime
 os.environ['NLS_LANG'] = 'TRADITIONAL CHINESE_TAIWAN.UTF8'
-class iSFPFPYYChartInfo(BaseType):
-    def __init__(self,indentity, start_time, end_time):
+class iSFPChartDynamicInfo(BaseType):
+    def __init__(self,indentity, start_time, end_time, line_type, item_name):
         super().__init__()
         self.writeLog(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
         self.__indentity = indentity
         self.__start_time = start_time
         self.__end_time = end_time
+        self.__line_type = line_type
+        self.__item_name = item_name
         
     def getData(self):
         try:
             #取需要堆疊的資料
             self.writeLog(f'{self.__class__.__name__} {sys._getframe().f_code.co_name} Start')
+
+            if(self.__item_name == 'SCRAP'):
+                sDataType = """Total報廢率','目標"""
+            elif(self.__item_name == 'FPY_Y' or self.__item_name == 'FPY_N'):
+                sDataType = """Target"""  
+            elif(self.__item_name == 'OQC'):
+                sDataType = """RATE','Input"""       
+
             sql =  """select to_char(t.data_date,'mm/dd') as data_date,t.data_type,t.data_value as YVALUE,DENSE_RANK() over (order by t.data_date )-1 as XVALUE
                         from wayne_test_tv t 
-                        where t.item_name='FPY_Y'
+                        where t.item_name='{3}'
+                        and t.line_type = '{2}'
                         and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss') 
-                        and t.data_type not in ('Target')""".format(self.__start_time, self.__end_time) 
+                        and t.data_type not in ('{4}')""".format(self.__start_time, self.__end_time, self.__line_type, self.__item_name, sDataType) 
             
             self.writeLog(f'SQL:\n {sql}')
             self.getConnection(self.__indentity)
@@ -63,27 +74,67 @@ class iSFPFPYYChartInfo(BaseType):
             self.writeLog(f'{self.__class__.__name__} {sys._getframe().f_code.co_name} Start')
             sql =  """select to_char(t.data_date,'mm/dd') as data_date,t.data_type,t.data_value as YVALUE,DENSE_RANK() over (order by t.data_date )-1 as XVALUE
                         from wayne_test_tv t 
-                        where t.item_name='FPY_Y'
+                        where t.item_name='{3}'
+                        and t.line_type = '{2}'
                         and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss') 
-                        and t.data_type in ('Target')""".format(self.__start_time, self.__end_time) 
+                        and t.data_type in ('{4}')""".format(self.__start_time, self.__end_time, self.__line_type, self.__item_name, sDataType) 
             
             self.writeLog(f'SQL:\n {sql}')
             self.getConnection(self.__indentity)
             data_line = self.Select(sql)
             self.closeConnection()
-
             dataLinejson=[]
+            dataLine1json=[]
+            dataLine2json=[]
 
             if(len(data) != 0):
                 for da in data_line:
-                    if(da[1] == 'Target'):
-                        datadict={
-                            "DATA_DATE" : da[0],
-                            "DATA_TYPE" : da[1],
-                            "YVALUE" : da[2],
-                            "XVALUE" : da[3]
-                        }
-                        dataLinejson.append(datadict)
+                    if(self.__item_name == 'SCRAP'):
+                        if(da[1] == 'Total報廢率'):
+                            datadict1={
+                                "DATA_DATE" : da[0],
+                                "DATA_TYPE" : da[1],
+                                "YVALUE" : da[2],
+                                "XVALUE" : da[3]
+                            }
+                            dataLine1json.append(datadict1)
+                        elif(da[1] == '目標'):   
+                            datadict2={
+                                "DATA_DATE" : da[0],
+                                "DATA_TYPE" : da[1],
+                                "YVALUE" : da[2],
+                                "XVALUE" : da[3]
+                            }
+                            dataLine2json.append(datadict2) 
+
+                    elif(self.__item_name == 'FPY_Y' or self.__item_name == 'FPY_N'):
+                        if(da[1] == 'Target'):
+                            datadict={
+                                "DATA_DATE" : da[0],
+                                "DATA_TYPE" : da[1],
+                                "YVALUE" : da[2],
+                                "XVALUE" : da[3]
+                            }
+                            dataLinejson.append(datadict)  
+
+                    elif(self.__item_name == 'OQC'):       
+                        if(da[1] == 'RATE'):
+                            datadict1={
+                                "DATA_DATE" : da[0],
+                                "DATA_TYPE" : da[1],
+                                "YVALUE" : da[2],
+                                "XVALUE" : da[3]
+                            }
+                            dataLine1json.append(datadict1)
+                        elif(da[1] == 'Input'):   
+                            datadict2={
+                                "DATA_DATE" : da[0],
+                                "DATA_TYPE" : da[1],
+                                "YVALUE" : da[2],
+                                "XVALUE" : da[3]
+                            }
+                            dataLine2json.append(datadict2)       
+                    
             else:
                 datadict={
                         "DATA_DATE" : "",
@@ -91,11 +142,16 @@ class iSFPFPYYChartInfo(BaseType):
                         "YVALUE" : "",
                         "XVALUE" : ""
                     }
-                dataLinejson.append(datadict)
+                dataLine1json.append(datadict)
+                dataLine2json.append(datadict)
 
             #組元件所需資料格式          
             responseResult = {}
-            responseResult = dict(DATASERIES = datajson, LINESERIES = dataLinejson)
+
+            if(self.__item_name == 'SCRAP' or self.__item_name == 'OQC'):
+                responseResult = dict(DATASERIES = datajson, LINESERIES1 = dataLine1json, LINESERIES2 = dataLine2json)
+            else:
+                responseResult = dict(DATASERIES = datajson, LINESERIES = dataLinejson)
 
             self.writeLog(f"Json:\n {data_result}")
             self.writeLog(f'{self.__class__.__name__} {sys._getframe().f_code.co_name} DONE')

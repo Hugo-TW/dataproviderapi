@@ -14,13 +14,15 @@ from flask_cors import CORS
 from BaseType import BaseType
 from datetime import date, datetime
 os.environ['NLS_LANG'] = 'TRADITIONAL CHINESE_TAIWAN.UTF8'
-class iSFPFPYNLightInfo(BaseType):
-    def __init__(self,indentity, start_time, end_time):
+class iSFPChartInfo(BaseType):
+    def __init__(self,indentity, start_time, end_time, line_type, item_name):
         super().__init__()
         self.writeLog(f'{self.__class__.__name__} {sys._getframe().f_code.co_name}')
         self.__indentity = indentity
         self.__start_time = start_time
         self.__end_time = end_time
+        self.__line_type = line_type
+        self.__item_name = item_name
         
     def getData(self):
         try:
@@ -28,16 +30,17 @@ class iSFPFPYNLightInfo(BaseType):
             self.writeLog(f'{self.__class__.__name__} {sys._getframe().f_code.co_name} Start')
             sql =  """SELECT distinct t.data_type 
                         FROM WAYNE_TEST_TV t 
-                        where item_name = 'FPY_N_LIGHT' 
+                        where item_name = '{2}'
+                        and t.line_type = '{3}' 
                         and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss') 
-                        order by 1""".format(self.__start_time, self.__end_time) 
+                        order by 1""".format(self.__start_time, self.__end_time, self.__item_name, self.__line_type) 
             
             self.writeLog(f'SQL:\n {sql}')
             self.getConnection(self.__indentity)
             data = self.Select(sql)
             self.closeConnection()
             colnumjson=[]
-            colnumjson.append("DATE")
+            colnumjson.append("DATA_DATE")
             sColnumName = ""
             iCount = 0
             if(len(data) != 0):
@@ -58,19 +61,21 @@ class iSFPFPYNLightInfo(BaseType):
                         (
                         SELECT to_char(t.data_date,'mm/dd') as data_date,t.data_type,to_char(t.data_value) as  data_value
                         FROM WAYNE_TEST_TV t 
-                        where item_name = 'FPY_N_LIGHT' 
+                        where item_name = '{3}' 
+                        and t.line_type = '{4}'
                         and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss')
-
+                        
                         union
                         
-                        select 'MTD' as date_time,t.data_type,to_char(decode(t.data_type,'燈號',round(sum(t.data_value)/count(*),0),sum(t.data_value)/count(*))) as data_value
+                        select 'MTD' as date_time,t.data_type,to_char(round(decode(t.data_type,'COLOR',round(sum(t.data_value)/count(*),0),sum(t.data_value)/count(*)),1)) as data_value
                         from WAYNE_TEST_TV t
-                        where item_name = 'FPY_N_LIGHT' 
+                        where item_name = '{3}' 
+                        and t.line_type = '{4}'
                         and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss')
                         group by t.data_type
                         )
                         PIVOT (SUM (data_value)FOR data_type IN ('{2}')) 
-                        order by decode(data_date,'MTD',1,2),data_date""".format(self.__start_time, self.__end_time, self.__sColnumName) 
+                        order by decode(data_date,'MTD',1,2),data_date""".format(self.__start_time, self.__end_time, self.__sColnumName, self.__item_name, self.__line_type) 
             
             self.writeLog(f'SQL:\n {sql}')
             self.getConnection(self.__indentity)
@@ -78,26 +83,14 @@ class iSFPFPYNLightInfo(BaseType):
             self.closeConnection()
 
             datajson=[]
-            dataResult=[]
+            dataTest=[]
             iNum_data = 0
             iNum_data_result = 0
             if(len(data_result) != 0):
 
                 for da in data_result:
-
-                    if(da[1] == 1):
-                        dataResult.append(da[0])
-                        dataResult.append('LimeGreen')
-                    elif(da[1] == 2): 
-                        dataResult.append(da[0])
-                        dataResult.append('YELLOW')
-                    else:
-                        dataResult.append(da[0])
-                        dataResult.append('RED') 
-
-                    datadict = dict(zip(colnumjson, dataResult))
+                    datadict = dict(zip(colnumjson, da))
                     datajson.append(datadict)     
-                    dataResult=[]
                            
             else:
                 datadict = dict(zip(colnumjson, ""))

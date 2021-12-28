@@ -38,8 +38,8 @@ class iSFPRGBTableInfo(BaseType):
                 sql = sql + """ SELECT distinct '1' as A,to_char(t.data_date,'mm/dd') as data_date 
                                 FROM WAYNE_TEST_TV t 
                                 where item_name = '{2}' 
-                                and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss') 
                                 and t.line_type = '{3}'
+                                and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss') 
                                 union""".format(self.__start_time, self.__end_time, Item_Value[iItemCount], self.__line_type) 
                     
                 iItemCount = iItemCount + 1            
@@ -159,8 +159,8 @@ class iSFPRGBTableInfo(BaseType):
                             SELECT to_char(t.data_date,'mm/dd') as data_date,to_char(t.data_date,'mm') as month_date,t.data_type,to_char(t.data_value) as  data_value,t.item_name
                             FROM WAYNE_TEST_TV t 
                             where item_name in ('{4}') 
-                            and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss')
                             and t.line_type = '{5}'
+                            and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss')
 
                             union """
 
@@ -170,8 +170,8 @@ class iSFPRGBTableInfo(BaseType):
                             decode(t.data_type,'HEADLINES',to_char(sum(t.data_value)),to_char(round(decode(t.data_type,'COLOR',round(sum(t.data_value)/count(*),0),sum(t.data_value)/count(*)),1),'FM990.0')) as data_value,t.item_name
                             from WAYNE_TEST_TV t
                             where item_name in ('{4}') 
-                            and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss')
                             and t.line_type = '{5}'
+                            and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss')
                             group by t.data_type,t.item_name """
 
             else:     
@@ -179,8 +179,8 @@ class iSFPRGBTableInfo(BaseType):
                             select 'MTD' as date_time,substr('{1}',4,2) as month_dat,t.data_type,to_char(round(decode(t.data_type,'COLOR',round(sum(t.data_value)/count(*),0),sum(t.data_value)/count(*)),1),'FM990.0') as data_value,t.item_name
                             from WAYNE_TEST_TV t
                             where item_name in ('{4}') 
-                            and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss')
                             and t.line_type = '{5}'
+                            and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss')
                             group by t.data_type,t.item_name """           
 
             sql = sql + """                 
