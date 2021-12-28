@@ -1476,7 +1476,7 @@ class INTLV3(BaseType):
         return magerData
 
     def _deftCodeInf(self, fabId, code):
-        sql = "select DEFTCODE as CODE, DEFTCODE_DESC as cDESC from INTMP_DB.DEFTCODE where DEFTCODE = '{code}'" 
+        sql = f"select DEFTCODE as CODE, DEFTCODE_DESC as cDESC from INTMP_DB.DEFTCODE where DEFTCODE = '{code}'" 
         DEFTCODEData = []
         description , data = self.pSelectAndDescription(sql)            
         DEFTCODEData = self._zipDescriptionAndData(description, data)
