@@ -2190,8 +2190,8 @@ isfpLightInfoML = api.model('GetiSFPLightInfo', {
 "COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
 "SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
 "FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
-"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123000000', example = '20211123'),
-"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128000000', example = '20211128'),
+"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123', example = '20211123'),
+"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128', example = '20211128'),
 "LINE_TYPE":fields.String( required = True, description = 'LINE_TYPE', default = 'ALL', example = 'ALL'),
 "ITEM_NAME":fields.String( required = True, description = 'ITEM_NAME', default = 'ALL', example = 'OUTPUT_LIGHT')
 })
@@ -2231,8 +2231,8 @@ isfpRGBTableInfoML = api.model('GetiSFPRGBTableInfo', {
 "COMPANY_CODE":fields.String( required = True, description = 'COMPANY_CODE', default = 'INX', example = 'INX'),
 "SITE":fields.String( required = True, description = 'SITE', default = 'TN', example = 'TN'),
 "FACTORY_ID":fields.String( required = True, description = 'FACTORY_ID', default = 'TEST', example = 'TEST'),
-"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123', example = '20211123000000'),
-"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128', example = '20211128000000'),
+"START_TIME":fields.String( required = True, description = 'START_TIME', default = '20211123', example = '20211123'),
+"END_TIME":fields.String( required = True, description = 'END_TIME', default = '20211128', example = '20211128'),
 "LINE_TYPE":fields.String( required = True, description = 'LINE_TYPE', default = 'ALL', example = 'ALL'),
 "ITEM_NAME":fields.String( required = True, description = 'ITEM_NAME', default = 'ALL', example = 'WO/WIP')
 })
