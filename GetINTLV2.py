@@ -237,6 +237,7 @@ class INTLV2(BaseType):
             tmpPROD_NBR = self.jsonData["PROD_NBR"]
             tmpOPER = self.jsonData["OPER"] if "OPER" in self.jsonData else "CKEN"
             tmpCHECKCODE = self.jsonData["CHECKCODE"] if "CHECKCODE" in self.jsonData else ""
+            tmpNG2NG = self.jsonData["NG2NG"] if "NG2NG" in self.jsonData else True
             expirTimeKey = tmpFACTORY_ID + '_PASS'
 
             # redisKey
@@ -250,6 +251,7 @@ class INTLV2(BaseType):
             tmp.append(tmpPROD_NBR)
             tmp.append(tmpOPER)
             tmp.append(tmpCHECKCODE)
+            tmp.append(f'{tmpNG2NG}')
             redisKey = bottomLine.join(tmp)
             """
             if tmpFACTORY_ID not in self.operSetData.keys():
@@ -774,6 +776,10 @@ class INTLV2(BaseType):
                 "ERRC_DESCR": 1
             }
         }
+        
+        tmpNG2NG = self.jsonData["NG2NG"] if "NG2NG" in self.jsonData else True
+        if tmpNG2NG is not True:
+            deftMatch1["$match"]["TRANS_TYPE"] = {"$ne":"QRWK"}
 
         passAggregate.extend(
             [passMatch1, passGroup1, passProject1, passGroup2, passProject2, passAdd, passSort])

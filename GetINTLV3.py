@@ -242,6 +242,7 @@ class INTLV3(BaseType):
             tmpOPER = self.jsonData["OPER"]  # or RESPTYPE
             # Defect or Reason Code
             tmpCHECKCODE = self.jsonData["CHECKCODE"] if "CHECKCODE" in self.jsonData else None
+            tmpNG2NG = self.jsonData["NG2NG"] if "NG2NG" in self.jsonData else True
             expirTimeKey = tmpFACTORY_ID + '_PASS'
 
             # redisKey
@@ -254,6 +255,7 @@ class INTLV3(BaseType):
             tmp.append(tmpACCT_DATE)
             tmp.append(tmpPROD_NBR)
             tmp.append(tmpOPER)
+            tmp.append(f'{tmpNG2NG}')
             if tmpCHECKCODE != None:
                 tmp.append(tmpCHECKCODE)
             redisKey = bottomLine.join(tmp)
@@ -2411,6 +2413,10 @@ class INTLV3(BaseType):
             }
         }
 
+        tmpNG2NG = self.jsonData["NG2NG"] if "NG2NG" in self.jsonData else True
+        if tmpNG2NG is not True:
+            deftMatch1["$match"]["TRANS_TYPE"] = {"$ne":"QRWK"}
+
         deftAggregate.extend(
             [deftMatch1, deftGroup1, deftProject1, deftAdd, deftSort])
         passAggregate.extend(
@@ -2975,6 +2981,10 @@ class INTLV3(BaseType):
                 "ERRC_DESCR": 1
             }
         }
+
+        tmpNG2NG = self.jsonData["NG2NG"] if "NG2NG" in self.jsonData else True
+        if tmpNG2NG is not True:
+            deftMatch1["$match"]["TRANS_TYPE"] = {"$ne":"QRWK"}
 
         deftAggregate.extend(
             [deftMatch1, deftGroup1, deftProject1, deftAdd, deftSort])
