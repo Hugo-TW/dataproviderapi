@@ -234,7 +234,8 @@ class INTKPI(BaseType):
             tmpKPITYPE = self.jsonData["KPITYPE"]
             tmpACCT_DATE = self.jsonData["ACCT_DATE"]
             tmpOPER = self.jsonData["OPER"] if "OPER" in self.jsonData else "CKEN"
-            tmpPROD_NBR = self.jsonData["tmpPROD_NBR"] if "tmpPROD_NBR" in self.jsonData else ""
+            tmpPROD_NBR = self.jsonData["PROD_NBR"] if "PROD_NBR" in self.jsonData else ""
+            tmpNG2NG = self.jsonData["NG2NG"] if "NG2NG" in self.jsonData else True
 
             # redisKey
             tmp.append(className)
@@ -245,8 +246,10 @@ class INTKPI(BaseType):
             tmp.append(tmpKPITYPE)
             tmp.append(tmpACCT_DATE)
             tmp.append(tmpOPER)
-            tmp.append(tmpPROD_NBR)            
+            tmp.append(tmpPROD_NBR) 
+            tmp.append(f'{tmpNG2NG}')              
             redisKey = bottomLine.join(tmp)
+            print(redisKey)
             expirTimeKey = tmpFACTORY_ID + '_PASS'
             """
             if tmpFACTORY_ID not in self.operSetData.keys():
@@ -585,7 +588,8 @@ class INTKPI(BaseType):
         tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
         tmpKPITYPE = self.jsonData["KPITYPE"]
         tmpACCT_DATE = self.jsonData["ACCT_DATE"]
-        tmpAPPLICATION = self.jsonData["APPLICATION"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]        
+        tmpNG2NG = self.jsonData["NG2NG"] if "NG2NG" in self.jsonData else True
 
         getFabData = self.operSetData[tmpFACTORY_ID]
         numeratorData = getFabData["FPY"]["numerator"][OPER]
@@ -767,6 +771,10 @@ class INTKPI(BaseType):
         if tmpAPPLICATION != "ALL":
             passMatch1["$match"]["APPLICATION"] = tmpAPPLICATION
             deftMatch1["$match"]["APPLICATION"] = tmpAPPLICATION
+
+        if tmpNG2NG is not True:
+            deftMatch1["$match"]["TRANS_TYPE"] = {"$ne":"QRWK"}
+
 
         passAggregate.extend(
             [passMatch1, passGroup1, passProject1, passGroup2, passProject2, passSort])
