@@ -3245,8 +3245,11 @@ class INTLV3(BaseType):
         try:
             data = {}
             if tmpSITE == "TN":
-                if tmpFACTORY_ID == "J001" and tmpACCT_DATE >= "20211228" and TYPE in typeQQ[:qq] : 
-                    data = self._getMSHIPLV2LINEFromMongoDBbyDeft(getFabData, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE)
+                if tmpFACTORY_ID == "J001" and tmpACCT_DATE >= "20211228": 
+                    if TYPE in typeQQ[:qq] : 
+                        data = self._getMSHIPLV2LINEFromMongoDBbyDeft(getFabData, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE)
+                    else:
+                        data = self._getMSHIPLV2LINEFromMongoDB(getFabData, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE)
                 else:
                     data = self._getMSHIPLV2LINEFromMongoDB(getFabData, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE)
             else:
