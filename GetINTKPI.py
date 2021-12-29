@@ -771,7 +771,7 @@ class INTKPI(BaseType):
         if tmpAPPLICATION != "ALL":
             passMatch1["$match"]["APPLICATION"] = tmpAPPLICATION
             deftMatch1["$match"]["APPLICATION"] = tmpAPPLICATION
-
+            
         if tmpNG2NG is not True:
             deftMatch1["$match"]["TRANS_TYPE"] = {"$ne":"QRWK"}
 

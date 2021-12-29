@@ -4500,6 +4500,10 @@ class INTLV3(BaseType):
         if tmpAPPLICATION != "ALL":
             passMatch1["$match"]["APPLICATION"] = tmpAPPLICATION
             deftMatch1["$match"]["APPLICATION"] = tmpAPPLICATION
+            
+        tmpNG2NG = self.jsonData["NG2NG"] if "NG2NG" in self.jsonData else True
+        if tmpNG2NG is not True:
+            deftMatch1["$match"]["TRANS_TYPE"] = {"$ne":"QRWK"}
 
         passAggregate.extend(
             [passMatch1, passGroup1, passProject1, passGroup2, passProject2, passSort])
