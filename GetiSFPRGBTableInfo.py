@@ -110,7 +110,7 @@ class iSFPRGBTableInfo(BaseType):
                             select t.data_date,t.data_type,
                             case when (t.data_type = 'HEADLINES' and t.data_date <> 'MTD' and t.data_value >= t1.red_day) then 'red'
                                 when (t.data_type = 'HEADLINES' and t.data_date <> 'MTD' and t.data_value < t1.red_day) then 'green'
-                                when (t.data_type = 'HEADLINES' and t.data_date = 'MTD' and t.data_value >= t1.red_mtd) then 'green' 
+                                when (t.data_type = 'HEADLINES' and t.data_date = 'MTD' and t.data_value >= t1.red_mtd) then 'red' 
                                 when (t.data_type = 'HEADLINES' and t.data_date = 'MTD' and t.data_value < t1.red_mtd) then 'green' 
                                 
                                 when (t.data_type = 'IPQA' and t.data_date <> 'MTD' and t.data_value > t1.red_day) then 'red'
