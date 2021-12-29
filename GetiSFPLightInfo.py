@@ -29,10 +29,10 @@ class iSFPLightInfo(BaseType):
             #取欄位名稱
             self.writeLog(f'{self.__class__.__name__} {sys._getframe().f_code.co_name} Start')
             sql =  """SELECT distinct t.data_type 
-                        FROM WAYNE_TEST_TV t 
+                        FROM isfp_data_upload t 
                         where item_name = '{3}' 
                         and t.line_type = '{2}'
-                        and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss') 
+                        and t.data_date between '{0}' and '{1}' 
                         order by 1""".format(self.__start_time, self.__end_time, self.__line_type, self.__item_name) 
             
             self.writeLog(f'SQL:\n {sql}')
@@ -59,22 +59,23 @@ class iSFPLightInfo(BaseType):
             self.writeLog(f'{self.__class__.__name__} {sys._getframe().f_code.co_name} Start')
             sql =  """select * from 
                         (
-                        SELECT to_char(t.data_date,'mm/dd') as data_date,t.data_type,to_char(t.data_value) as  data_value
-                        FROM WAYNE_TEST_TV t 
+                        SELECT to_char(to_date(t.data_date,'yyyy/mm/dd'),'mm/dd') as data_date,t.data_type,t.rgb_type as  data_value
+                        FROM isfp_data_upload t 
                         where item_name = '{4}' 
                         and t.line_type = '{3}'
-                        and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss')
+                        and t.data_date between '{0}' and '{1}'
+                        and t.date_type = 'D'
 
                         union
                         
-                        select 'MTD' as date_time,t.data_type,to_char(decode(t.data_type,'COLOR',round(sum(t.data_value)/count(*),0),sum(t.data_value)/count(*))) as data_value
-                        from WAYNE_TEST_TV t
+                        select 'MTD' as date_time,t.data_type,t.rgb_type as data_value
+                        from isfp_data_upload t
                         where item_name = '{4}' 
                         and t.line_type = '{3}'
-                        and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss')
-                        group by t.data_type
+                        and t.data_date = 'MTD'
+                        and t.date_type = 'MTD'
                         )
-                        PIVOT (SUM (data_value)FOR data_type IN ('{2}')) 
+                        PIVOT (max (data_value)FOR data_type IN ('{2}')) 
                         order by decode(data_date,'MTD',1,2),data_date""".format(self.__start_time, self.__end_time, self.__sColnumName, self.__line_type, self.__item_name) 
             
             self.writeLog(f'SQL:\n {sql}')
@@ -90,10 +91,10 @@ class iSFPLightInfo(BaseType):
 
                 for da in data_result:
                     
-                    if(da[1] == 1):
+                    if(da[1] == "GREEN"):
                         dataResult.append(da[0])
                         dataResult.append('LimeGreen')
-                    elif(da[1] == 2): 
+                    elif(da[1] == "YELLOW"): 
                         dataResult.append(da[0])
                         dataResult.append('YELLOW')
                     else:

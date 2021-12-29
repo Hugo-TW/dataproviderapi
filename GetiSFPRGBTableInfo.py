@@ -35,11 +35,11 @@ class iSFPRGBTableInfo(BaseType):
 
             
             for da in Item_Value:
-                sql = sql + """ SELECT distinct '1' as A,to_char(t.data_date,'mm/dd') as data_date 
-                                FROM WAYNE_TEST_TV t 
+                sql = sql + """ SELECT distinct '1' as A,to_char(to_date(t.data_date,'yyyy/mm/dd'),'mm/dd') as data_date
+                                FROM isfp_data_upload t 
                                 where item_name = '{2}' 
                                 and t.line_type = '{3}'
-                                and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss') 
+                                and t.data_date between '{0}' and '{1}'
                                 union""".format(self.__start_time, self.__end_time, Item_Value[iItemCount], self.__line_type) 
                     
                 iItemCount = iItemCount + 1            
@@ -110,7 +110,7 @@ class iSFPRGBTableInfo(BaseType):
                             select t.data_date,t.data_type,
                             case when (t.data_type = 'HEADLINES' and t.data_date <> 'MTD' and t.data_value >= t1.red_day) then 'red'
                                 when (t.data_type = 'HEADLINES' and t.data_date <> 'MTD' and t.data_value < t1.red_day) then 'green'
-                                when (t.data_type = 'HEADLINES' and t.data_date = 'MTD' and t.data_value >= t1.red_mtd) then 'green' 
+                                when (t.data_type = 'HEADLINES' and t.data_date = 'MTD' and t.data_value >= t1.red_mtd) then 'red' 
                                 when (t.data_type = 'HEADLINES' and t.data_date = 'MTD' and t.data_value < t1.red_mtd) then 'green' 
                                 
                                 when (t.data_type = 'IPQA' and t.data_date <> 'MTD' and t.data_value > t1.red_day) then 'red'
@@ -156,37 +156,38 @@ class iSFPRGBTableInfo(BaseType):
                                 from """
             sql = sql + """                   
                           (
-                            SELECT to_char(t.data_date,'mm/dd') as data_date,to_char(t.data_date,'mm') as month_date,t.data_type,to_char(t.data_value) as  data_value,t.item_name
-                            FROM WAYNE_TEST_TV t 
+                            SELECT to_char(to_date(t.data_date,'yyyy/mm/dd'),'mm/dd') as data_date,to_char(to_date(t.data_date,'yyyy/mm/dd'),'mm') as month_date,t.data_type,to_char(t.data_value) as  data_value,t.item_name
+                            FROM isfp_data_upload t 
                             where item_name in ('{4}') 
                             and t.line_type = '{5}'
-                            and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss')
+                            and t.data_date between '{0}' and '{1}'
+                            and t.date_type = 'D'
 
                             union """
 
             if(self.__item_name == 'HEADLINES/IPQA'):
                 sql = sql + """                
-                            select 'MTD' as date_time,substr('{0}',4,2) as month_dat,t.data_type,
-                            decode(t.data_type,'HEADLINES',to_char(sum(t.data_value)),to_char(round(decode(t.data_type,'COLOR',round(sum(t.data_value)/count(*),0),sum(t.data_value)/count(*)),1),'FM990.0')) as data_value,t.item_name
-                            from WAYNE_TEST_TV t
+                            select 'MTD' as date_time,substr('{0}',4,2) as month_dat,t.data_type,to_char(t.data_value) as data_value,t.item_name
+                            from isfp_data_upload t
                             where item_name in ('{4}') 
                             and t.line_type = '{5}'
-                            and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss')
-                            group by t.data_type,t.item_name """
+                            and t.data_date = 'MTD'
+                            and t.date_type = 'MTD' """
 
             else:     
                 sql = sql + """                
-                            select 'MTD' as date_time,substr('{1}',4,2) as month_dat,t.data_type,to_char(round(decode(t.data_type,'COLOR',round(sum(t.data_value)/count(*),0),sum(t.data_value)/count(*)),1),'FM990.0') as data_value,t.item_name
-                            from WAYNE_TEST_TV t
+                            select 'MTD' as date_time,substr('{0}',4,2) as month_dat,t.data_type,to_char(t.data_value) as data_value,t.item_name
+                            from isfp_data_upload t
                             where item_name in ('{4}') 
                             and t.line_type = '{5}'
-                            and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss')
-                            group by t.data_type,t.item_name """           
+                            and t.data_date = 'MTD'
+                            and t.date_type = 'MTD' """           
 
             sql = sql + """                 
                           )t,
                           (
-                            select to_char(t.data_date,'MM') as data_date,t.item_name,t.item_desc,t.red_day,t.green_day,t.red_mtd,t.green_mtd from isfp_target_upload t 
+                            select to_char(t.data_date,'MM') as data_date,t.item_name,t.item_desc,t.red_day,t.green_day,t.red_mtd,t.green_mtd 
+                            from isfp_target_upload t 
                             where t.data_date between to_date(substr('{0}',0,6),'yyyy/mm') and to_date(substr('{1}',0,6),'yyyy/mm') 
                             and t.item_name in ('{4}')
                           )t1
@@ -231,9 +232,14 @@ class iSFPRGBTableInfo(BaseType):
                     elif(da[0] == 'FPY_TOTAL'):
                         dataitem = 'FPYTotal(%)'
                     elif(da[0] == 'HEADLINES'):  
-                        dataitem = '今日頭條%'
+                        dataitem = '今日頭條'
                     elif(da[0] == 'IPQA'):
-                        dataitem = 'IPQA(%)'           
+                        dataitem = 'IPQA(%)'   
+                    elif(da[0] == '離職率'):
+                        dataitem = '離職率(%)'
+                    elif(da[0] == '出勤率'):
+                        dataitem = '出勤率(%)'     
+
                     else: 
                         dataitem = da[0]     
                          
