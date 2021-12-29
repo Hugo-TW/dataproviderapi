@@ -232,9 +232,14 @@ class iSFPRGBTableInfo(BaseType):
                     elif(da[0] == 'FPY_TOTAL'):
                         dataitem = 'FPYTotal(%)'
                     elif(da[0] == 'HEADLINES'):  
-                        dataitem = '今日頭條%'
+                        dataitem = '今日頭條'
                     elif(da[0] == 'IPQA'):
-                        dataitem = 'IPQA(%)'           
+                        dataitem = 'IPQA(%)'   
+                    elif(da[0] == '離職率'):
+                        dataitem = '離職率(%)'
+                    elif(da[0] == '出勤率'):
+                        dataitem = '出勤率(%)'     
+
                     else: 
                         dataitem = da[0]     
                          
