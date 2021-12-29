@@ -3237,10 +3237,18 @@ class INTLV3(BaseType):
         (3)  來料責：SQE
         """       
 
+        d = datetime.datetime
+        sd = d.strptime(tmpACCT_DATE,'%Y%m%d')
+        ed = d.strptime("20211227",'%Y%m%d')
+        qq = (sd - ed).days
+        typeQQ = [11,10,9,8,7,6]
         try:
             data = {}
             if tmpSITE == "TN":
-                data =  self._getMSHIPLV2LINEFromMongoDB(getFabData, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE)
+                if tmpFACTORY_ID == "J001" and tmpACCT_DATE >= "20211228" and TYPE in typeQQ[:qq] : 
+                    data = self._getMSHIPLV2LINEFromMongoDBbyDeft(getFabData, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE)
+                else:
+                    data = self._getMSHIPLV2LINEFromMongoDB(getFabData, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE)
             else:
                 data = self._getMSHIPLV2LINEFromOracle(getFabData, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE)
 
@@ -3533,10 +3541,172 @@ class INTLV3(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
+    def _getMSHIPLV2LINEFromMongoDBbyDeft(self, getFabData, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE):
+        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
+        tmpSITE = self.jsonData["SITE"]
+        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
+        tmpKPITYPE = self.jsonData["KPITYPE"]
+        tmpAPPLICATION = self.jsonData["APPLICATION"]
+
+        scrapAggregate = []
+
+        # scrap
+        scrapMatch = {
+            "$match": {
+                "COMPANY_CODE": tmpCOMPANY_CODE,
+                "SITE": tmpSITE,
+                "FACTORY_ID": tmpFACTORY_ID,
+                "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
+                "LCM_OWNER": {"$in": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                'RESP_OWNER': {'$regex': getFabData["in"], '$options': 'i'},
+                "PROD_NBR": PROD_NBR
+            }
+        }
+        scrapGroup = {
+            "$group": {
+                "_id": {
+                    "COMPANY_CODE": "$COMPANY_CODE",
+                    "SITE": "$SITE",
+                    "FACTORY_ID": "$FACTORY_ID",
+                    "APPLICATION": "$APPLICATION",
+                    "PROD_NBR": "$PROD_NBR",
+                    "SCRAP_DESCR": "$ERRC_DESCR",
+                    "SCRAP_CODE": "$DEFT_CODE"
+                },
+                "TOBESCRAP_QTY": {
+                    "$sum": {"$toInt": "$TOBESCRAP_QTY"}
+                }
+            }
+        }
+        scrapProject = {
+            "$project": {
+                "_id": 0,
+                "COMPANY_CODE": "$_id.COMPANY_CODE",
+                "SITE": "$_id.SITE",
+                "FACTORY_ID": "$_id.FACTORY_ID",
+                "APPLICATION": "$_id.APPLICATION",
+                "PROD_NBR": "$_id.PROD_NBR",
+                "SCRAP_DESCR": "$_id.SCRAP_DESCR",
+                "SCRAP_CODE": "$_id.SCRAP_CODE",
+                "TOBESCRAP_SUMQTY": "$TOBESCRAP_QTY"
+            }
+        }
+        scrapAdd = {
+            "$addFields": {
+                "RESP_OWNER": getFabData["name"],
+                "RESP_OWNER_E":  getFabData["id"],
+                "DATARANGE": DATARANGENAME,
+                "XVALUE": TYPE
+            }
+        }
+        scrapSort = {
+            "$sort": {
+                "COMPANY_CODE": 1,
+                "SITE": 1,
+                "FACTORY_ID": 1,
+                "APPLICATION": 1,
+                "PROD_NBR": 1
+            }
+        }
+
+        shipAggregate = []
+        # ship
+        shipAggregate = []
+        shipMatch = {
+            "$match": {
+                "COMPANY_CODE": tmpCOMPANY_CODE,
+                "SITE": tmpSITE,
+                "FACTORY_ID": tmpFACTORY_ID,
+                "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
+                "TRANS_TYPE": "SHIP",
+                "LCM_OWNER": {"$in": ["INT0", "LCM0", "LCME", "PROD", "QTAP", "RES0"]},
+                "PROD_NBR": PROD_NBR
+            }
+        }
+        shipGroup = {
+            "$group": {
+                "_id": {
+                    "COMPANY_CODE": "$COMPANY_CODE",
+                    "SITE": "$SITE",
+                    "FACTORY_ID": "$FACTORY_ID",
+                    "APPLICATION": "$APPLICATION",
+                    "PROD_NBR": "$PROD_NBR"
+                },
+                "SHIPSUM": {
+                    "$sum": {"$toInt": "$QTY"}
+                }
+            }
+        }
+        shipProject = {
+            "$project": {
+                "_id": 0,
+                "COMPANY_CODE": "$_id.COMPANY_CODE",
+                "SITE": "$_id.SITE",
+                "FACTORY_ID": "$_id.FACTORY_ID",
+                "APPLICATION": "$_id.APPLICATION",
+                "PROD_NBR": "$_id.PROD_NBR",
+                "SHIP_SUMQTY": "$SHIPSUM"
+            }
+        }
+        shipAdd = {
+            "$addFields": {
+                "DATARANGE": DATARANGENAME,
+                "XVALUE": TYPE
+            }
+        }
+        shipSort = {
+            "$sort": {
+                "COMPANY_CODE": 1,
+                "SITE": 1,
+                "FACTORY_ID": 1,
+                "APPLICATION": 1,
+                "PROD_NBR": 1
+            }
+        }
+
+        if tmpAPPLICATION != "ALL":
+            scrapMatch["$match"]["APPLICATION"] = tmpAPPLICATION
+            shipMatch["$match"]["APPLICATION"] = tmpAPPLICATION
+
+        scrapAggregate.extend(
+            [scrapMatch, scrapGroup, scrapProject, scrapAdd, scrapSort])
+        shipAggregate.extend(
+            [shipMatch, shipGroup, shipProject, shipAdd, shipSort])
+
+        try:
+            self.getMongoConnection()
+            self.setMongoDb("IAMP")
+            self.setMongoCollection("scrapHisAndCurrent")
+            scrapData = self.aggregate(scrapAggregate)
+            self.setMongoCollection("passHisAndCurrent")
+            shipData = self.aggregate(shipAggregate)
+            self.closeMongoConncetion()
+
+            returnData = {
+                "scData": scrapData,
+                "shData": shipData
+            }
+
+            return returnData
+
+        except Exception as e:
+            error_class = e.__class__.__name__  # 取得錯誤類型
+            detail = e.args[0]  # 取得詳細內容
+            cl, exc, tb = sys.exc_info()  # 取得Call Stack
+            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
+            fileName = lastCallStack[0]  # 取得發生的檔案名稱
+            lineNum = lastCallStack[1]  # 取得發生的行號
+            funcName = lastCallStack[2]  # 取得發生的函數名稱
+            self.writeError(
+                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
+            return "error"
+
+
     def _groupMSHIPLV2LINE(self, scData, shData):
         scapData = []
         for sc in scData:
-            scapData.append(sc)
+            if "SCRAP_CODE" in sc and "SCRAP_DESCR" in sc: 
+                scapData.append(sc)
         shipData = []
         for sh in shData:
             shipData.append(sh)
