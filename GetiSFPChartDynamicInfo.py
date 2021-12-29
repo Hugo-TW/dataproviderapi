@@ -36,11 +36,11 @@ class iSFPChartDynamicInfo(BaseType):
             elif(self.__item_name == 'OQC'):
                 sDataType = """RATE','Input"""       
 
-            sql =  """select to_char(t.data_date,'mm/dd') as data_date,t.data_type,t.data_value as YVALUE,DENSE_RANK() over (order by t.data_date )-1 as XVALUE
-                        from wayne_test_tv t 
+            sql =  """select to_char(to_date(t.data_date,'yyyy/mm/dd'),'mm/dd') as data_date,t.data_type,t.data_value as YVALUE,DENSE_RANK() over (order by t.data_date )-1 as XVALUE
+                        from isfp_data_upload t 
                         where t.item_name='{3}'
                         and t.line_type = '{2}'
-                        and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss') 
+                        and t.data_date between '{0}' and '{1}' 
                         and t.data_type not in ('{4}')""".format(self.__start_time, self.__end_time, self.__line_type, self.__item_name, sDataType) 
             
             self.writeLog(f'SQL:\n {sql}')
@@ -72,11 +72,11 @@ class iSFPChartDynamicInfo(BaseType):
 
             #取Line的資料
             self.writeLog(f'{self.__class__.__name__} {sys._getframe().f_code.co_name} Start')
-            sql =  """select to_char(t.data_date,'mm/dd') as data_date,t.data_type,t.data_value as YVALUE,DENSE_RANK() over (order by t.data_date )-1 as XVALUE
-                        from wayne_test_tv t 
+            sql =  """select to_char(to_date(t.data_date,'yyyy/mm/dd'),'mm/dd') as data_date,t.data_type,t.data_value as YVALUE,DENSE_RANK() over (order by t.data_date )-1 as XVALUE
+                        from isfp_data_upload t 
                         where t.item_name='{3}'
                         and t.line_type = '{2}'
-                        and t.data_date between to_date('{0}','yyyy/mm/dd hh24miss') and to_date('{1}','yyyy/mm/dd hh24miss') 
+                        and t.data_date between '{0}' and '{1}' 
                         and t.data_type in ('{4}')""".format(self.__start_time, self.__end_time, self.__line_type, self.__item_name, sDataType) 
             
             self.writeLog(f'SQL:\n {sql}')
