@@ -93,13 +93,13 @@ class iSFPLightInfo(BaseType):
                     
                     if(da[1] == "GREEN"):
                         dataResult.append(da[0])
-                        dataResult.append('LimeGreen')
+                        dataResult.append('Green')
                     elif(da[1] == "YELLOW"): 
                         dataResult.append(da[0])
-                        dataResult.append('YELLOW')
+                        dataResult.append('Yellow') 
                     else:
                         dataResult.append(da[0])
-                        dataResult.append('RED') 
+                        dataResult.append('Red') 
 
                     datadict = dict(zip(colnumjson, dataResult))
                     datajson.append(datadict)
