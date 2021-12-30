@@ -3329,8 +3329,8 @@ class INTLV3(BaseType):
                             dmo.code           AS prod_nbr, \
                             '{getFabData['name']}' AS RESP_OWNER, \
                             '{getFabData['id']}'   AS RESP_OWNER_E, \
-                            dsc.scrapcode        AS SCRAP_DESCR, \
-                            dsc.scrapcode_desc   AS SCRAP_CODE, \
+                            ddc.deftcode       AS DESCR, \
+                            ddc.deftcode_desc   AS CODE, \
                             '{DATARANGENAME}' AS DATARANGE, \
                             {TYPE} AS XVALUE, \
                             dmo.application    AS APPLICATION, \
@@ -3340,7 +3340,7 @@ class INTLV3(BaseType):
                             LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = msc.local_id \
                             LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = msc.model_id \
                             LEFT JOIN INTMP_DB.dime_respcode drc ON drc.respcode = msc.respcode \
-                            LEFT JOIN INTMP_DB.dime_scrapcode dsc ON dsc.scrapcode = msc.scrapcode \
+                            LEFT JOIN INTMP_DB.dime_deftcode ddc ON ddc.deftcode = msc.deftcode \
                         WHERE \
                             dlo.company_code = '{tmpCOMPANY_CODE}' \
                             AND dlo.site_code = '{tmpSITE}' \
@@ -3356,8 +3356,8 @@ class INTLV3(BaseType):
                             dmo.code, \
                             '{getFabData['name']}',\
                             '{getFabData['id']}',\
-                            dsc.scrapcode,\
-                            dsc.scrapcode_desc ,\
+                            ddc.deftcode,\
+                            ddc.deftcode_desc ,\
                             '{DATARANGENAME}',\
                                 {TYPE} ,\
                             dmo.application \
@@ -3413,8 +3413,8 @@ class INTLV3(BaseType):
                     "FACTORY_ID": "$FACTORY_ID",
                     "APPLICATION": "$APPLICATION",
                     "PROD_NBR": "$PROD_NBR",
-                    "SCRAP_DESCR": "$SCRAP_DESCR",
-                    "SCRAP_CODE": "$SCRAP_CODE"
+                    "DESCR": "$SCRAP_DESCR",
+                    "CODE": "$SCRAP_CODE"
                 },
                 "TOBESCRAP_QTY": {
                     "$sum": {"$toInt": "$TOBESCRAP_QTY"}
@@ -3429,8 +3429,8 @@ class INTLV3(BaseType):
                 "FACTORY_ID": "$_id.FACTORY_ID",
                 "APPLICATION": "$_id.APPLICATION",
                 "PROD_NBR": "$_id.PROD_NBR",
-                "SCRAP_DESCR": "$_id.SCRAP_DESCR",
-                "SCRAP_CODE": "$_id.SCRAP_CODE",
+                "DESCR": "$_id.DESCR",
+                "CODE": "$_id.CODE",
                 "TOBESCRAP_SUMQTY": "$TOBESCRAP_QTY"
             }
         }
@@ -3573,8 +3573,8 @@ class INTLV3(BaseType):
                     "FACTORY_ID": "$FACTORY_ID",
                     "APPLICATION": "$APPLICATION",
                     "PROD_NBR": "$PROD_NBR",
-                    "SCRAP_DESCR": "$ERRC_DESCR",
-                    "SCRAP_CODE": "$DEFT_CODE"
+                    "DESCR": "$ERRC_DESCR",
+                    "CODE": "$DEFT_CODE"
                 },
                 "TOBESCRAP_QTY": {
                     "$sum": {"$toInt": "$TOBESCRAP_QTY"}
@@ -3589,8 +3589,8 @@ class INTLV3(BaseType):
                 "FACTORY_ID": "$_id.FACTORY_ID",
                 "APPLICATION": "$_id.APPLICATION",
                 "PROD_NBR": "$_id.PROD_NBR",
-                "SCRAP_DESCR": "$_id.SCRAP_DESCR",
-                "SCRAP_CODE": "$_id.SCRAP_CODE",
+                "DESCR": "$_id.DESCR",
+                "CODE": "$_id.CODE",
                 "TOBESCRAP_SUMQTY": "$TOBESCRAP_QTY"
             }
         }
@@ -3704,11 +3704,10 @@ class INTLV3(BaseType):
                 f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
             return "error"
 
-
     def _groupMSHIPLV2LINE(self, scData, shData):
         scapData = []
         for sc in scData:
-            if "SCRAP_CODE" in sc and "SCRAP_DESCR" in sc: 
+            if "CODE" in sc and "DESCR" in sc: 
                 scapData.append(sc)
         shipData = []
         for sh in shData:
@@ -3721,8 +3720,8 @@ class INTLV3(BaseType):
                     filter(lambda d: d["PROD_NBR"] == d["PROD_NBR"], shipData))
                 oData["RESP_OWNER"] = copy.deepcopy(d["XVALUE"])
                 oData["RESP_OWNER_E"] = copy.deepcopy(d["XVALUE"])
-                oData["SCRAP_DESCR"] = copy.deepcopy(d["SCRAP_DESCR"])
-                oData["SCRAP_CODE"] = copy.deepcopy(d["SCRAP_CODE"])
+                oData["DESCR"] = copy.deepcopy(d["DESCR"])
+                oData["CODE"] = copy.deepcopy(d["CODE"])
                 oData["XVALUE"] = copy.deepcopy(d["XVALUE"])
                 oData["DATARANGE"] = copy.deepcopy(d["DATARANGE"])
                 oData["COMPANY_CODE"] = copy.deepcopy(
@@ -3760,10 +3759,10 @@ class INTLV3(BaseType):
 
         allDFCTCount = {}
         for x in tempData:
-            if x["SCRAP_CODE"] in allDFCTCount.keys():
-                allDFCTCount[x["SCRAP_CODE"]] += x["TOBESCRAP_SUMQTY"]
+            if x["CODE"] in allDFCTCount.keys():
+                allDFCTCount[x["CODE"]] += x["TOBESCRAP_SUMQTY"]
             else:
-                allDFCTCount[x["SCRAP_CODE"]] = x["TOBESCRAP_SUMQTY"]
+                allDFCTCount[x["CODE"]] = x["TOBESCRAP_SUMQTY"]
         top10 = dict(sorted(allDFCTCount.items(),
                      key=lambda item: item[1], reverse=True)[:10])
 
@@ -3774,8 +3773,8 @@ class INTLV3(BaseType):
                 "YVALUE": 0,
                 "RANK": 0,
                 "DATARANGE": DATARANGE,
-                "SCRAP_CODE": "OTHER",
-                "SCRAP_DESCR": "OTHER",
+                "CODE": "OTHER",
+                "DESCR": "OTHER",
                 "PROD_NBR": tmpPROD_NBR,
                 "TOBESCRAP_SUMQTY": 0,
                 "SHIP_SUMQTY": 0,
@@ -3784,22 +3783,22 @@ class INTLV3(BaseType):
             DATASERIES.append(test)
         else:
             for x in tempData:
-                cDFct = x["SCRAP_CODE"] if x["SCRAP_CODE"] in top10.keys(
+                cDFct = x["CODE"] if x["CODE"] in top10.keys(
                 ) else "OTHER"
-                cERRC = x["SCRAP_DESCR"] if x["SCRAP_CODE"] in top10.keys(
+                cERRC = x["DESCR"] if x["CODE"] in top10.keys(
                 ) else "OTHER"
 
                 rank = 11
                 if cDFct in top10.keys():
                     rank = 1
                     for i in top10:
-                        if i != x["SCRAP_CODE"]:
+                        if i != x["CODE"]:
                             rank += 1
                         else:
                             break
 
                 d = list(filter(
-                    lambda d: d["SCRAP_CODE"] == cDFct and d["XVALUE"] == x["XVALUE"], DATASERIES))
+                    lambda d: d["CODE"] == cDFct and d["XVALUE"] == x["XVALUE"], DATASERIES))
                 if d == []:
                     ds = Decimal(x["TOBESCRAP_SUMQTY"])
                     ps = Decimal(x["SHIP_SUMQTY"])
@@ -3810,8 +3809,8 @@ class INTLV3(BaseType):
                         "YVALUE": dr*100,
                         "RANK": rank,
                         "DATARANGE": x["DATARANGE"],
-                        "SCRAP_CODE": cDFct,
-                        "SCRAP_DESCR": cERRC,
+                        "CODE": cDFct,
+                        "DESCR": cERRC,
                         "PROD_NBR": tmpPROD_NBR,
                         "SCRAP_SUMQTY": x["TOBESCRAP_SUMQTY"],
                         "SHIP_SUMQTY": x["SHIP_SUMQTY"],
@@ -3821,7 +3820,7 @@ class INTLV3(BaseType):
 
                 else:
                     for cx in DATASERIES:
-                        if cx["SCRAP_CODE"] == cDFct:
+                        if cx["CODE"] == cDFct:
                             cx["SCRAP_SUMQTY"] += x["TOBESCRAP_SUMQTY"]
                             ds = Decimal(cx["SCRAP_SUMQTY"])
                             ps = Decimal(cx["SHIP_SUMQTY"])
