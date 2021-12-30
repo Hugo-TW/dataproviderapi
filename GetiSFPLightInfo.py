@@ -96,7 +96,7 @@ class iSFPLightInfo(BaseType):
                         dataResult.append('Green')
                     elif(da[1] == "YELLOW"): 
                         dataResult.append(da[0])
-                        dataResult.append('Yellow')
+                        dataResult.append('Yellow') 
                     else:
                         dataResult.append(da[0])
                         dataResult.append('Red') 
