@@ -910,8 +910,12 @@ class INTKPI(BaseType):
         DEFTQTYSUM = 0
         PASSOPER = 0
         for prod in PRODList:
-            d1 = list(filter(lambda d: d["PROD_NBR"]
-                      == prod["PROD_NBR"], PCBI))
+            passQtyLimt = 300 if prod["APPLICATION"] == "NB" else 500
+            fpyLimt = 0.8 if prod["APPLICATION"] == "NB" else 0.8
+
+            d1 = list(filter(lambda d: d["PROD_NBR"] == prod["PROD_NBR"] 
+                      and d["FPY_RATE"] >= fpyLimt
+                      and d["PASSSUMQTY"] >= passQtyLimt, PCBI))
             if d1 == []:
                 PCBIFPY = 1
             else:
@@ -920,7 +924,9 @@ class INTKPI(BaseType):
                 DEFTQTYSUM += d1[0]["DEFTSUMQTY"]
                 PASSOPER += 1
 
-            d2 = list(filter(lambda d: d["PROD_NBR"] == prod["PROD_NBR"], LAM))
+            d2 = list(filter(lambda d: d["PROD_NBR"] == prod["PROD_NBR"] 
+                      and d["FPY_RATE"] >= fpyLimt
+                      and d["PASSSUMQTY"] >= passQtyLimt, LAM))
             if d2 == []:
                 LAMFPY = 1
             else:
@@ -929,8 +935,9 @@ class INTKPI(BaseType):
                 DEFTQTYSUM += d2[0]["DEFTSUMQTY"]
                 PASSOPER += 1
 
-            d3 = list(filter(lambda d: d["PROD_NBR"]
-                      == prod["PROD_NBR"], AAFC))
+            d3 = list(filter(lambda d: d["PROD_NBR"] == prod["PROD_NBR"] 
+                      and d["FPY_RATE"] >= fpyLimt
+                      and d["PASSSUMQTY"] >= passQtyLimt, AAFC))
             if d3 == []:
                 AAFCFPY = 1
             else:
@@ -939,8 +946,9 @@ class INTKPI(BaseType):
                 DEFTQTYSUM += d3[0]["DEFTSUMQTY"]
                 PASSOPER += 1
 
-            d4 = list(filter(lambda d: d["PROD_NBR"]
-                      == prod["PROD_NBR"], CKEN))
+            d4 = list(filter(lambda d: d["PROD_NBR"] == prod["PROD_NBR"] 
+                      and d["FPY_RATE"] >= fpyLimt
+                      and d["PASSSUMQTY"] >= passQtyLimt, CKEN))
             if d4 == []:
                 CKENFPY = 1
             else:
@@ -949,8 +957,9 @@ class INTKPI(BaseType):
                 DEFTQTYSUM += d4[0]["DEFTSUMQTY"]
                 PASSOPER += 1
 
-            d5 = list(filter(lambda d: d["PROD_NBR"]
-                      == prod["PROD_NBR"], DKEN))
+            d5 = list(filter(lambda d: d["PROD_NBR"] == prod["PROD_NBR"] 
+                      and d["FPY_RATE"] >= fpyLimt
+                      and d["PASSSUMQTY"] >= passQtyLimt, DKEN))
             if d5 == []:
                 DKENFPY = 1
             else:
@@ -961,18 +970,19 @@ class INTKPI(BaseType):
 
             FPY = round(PCBIFPY * LAMFPY * AAFCFPY * CKENFPY * DKENFPY, 4)
 
-            PRODData.append({
-                "PROD_NBR": prod['PROD_NBR'],
-                "APPLICATION": prod["APPLICATION"],
-                "PCBIFPY": PCBIFPY,
-                "LAMFPY": LAMFPY,
-                "AAFCFPY": AAFCFPY,
-                "CKENFPY": CKENFPY,
-                "DKENFPY": DKENFPY,
-                "FPY": FPY,
-                "AvegPASSQTY": round(PASSQTYSUM / PASSOPER, 0),
-                "DEFTSUM": DEFTQTYSUM
-            })
+            if PASSOPER > 0:
+                PRODData.append({
+                    "PROD_NBR": prod['PROD_NBR'],
+                    "APPLICATION": prod["APPLICATION"],
+                    "PCBIFPY": PCBIFPY,
+                    "LAMFPY": LAMFPY,
+                    "AAFCFPY": AAFCFPY,
+                    "CKENFPY": CKENFPY,
+                    "DKENFPY": DKENFPY,
+                    "FPY": FPY,
+                    "AvegPASSQTY": round(PASSQTYSUM / PASSOPER, 0),
+                    "DEFTSUM": DEFTQTYSUM
+                })
             PASSQTYSUM = 0
             PASSOPER = 0
 
