@@ -340,58 +340,83 @@ class INTLV3(BaseType):
 
                 n1d_DATA = self._getFPYLV2LINEDataALL(
                     tmpOPER, tmpPROD_NBR, dataRange["n1d"], dataRange["n1d_array"], 11)
+                cal_n1d_DATA = self._calDRLINEOPER(self._groupPassDeftByPRODandOPERALL(
+                        n1d_DATA["dData"], n1d_DATA["pData"]), tmpOPER, dataRange["n1d"], 11)    
                 n2d_DATA = self._getFPYLV2LINEDataALL(
                     tmpOPER, tmpPROD_NBR, dataRange["n2d"], dataRange["n2d_array"], 10)
+                cal_n2d_DATA = self._calDRLINEOPER(self._groupPassDeftByPRODandOPERALL(
+                        n2d_DATA["dData"], n2d_DATA["pData"]), tmpOPER, dataRange["n2d"], 10)   
                 n3d_DATA = self._getFPYLV2LINEDataALL(
                     tmpOPER, tmpPROD_NBR, dataRange["n3d"], dataRange["n3d_array"], 9)
+                cal_n3d_DATA = self._calDRLINEOPER(self._groupPassDeftByPRODandOPERALL(
+                        n3d_DATA["dData"], n3d_DATA["pData"]), tmpOPER, dataRange["n3d"], 9)  
                 n4d_DATA = self._getFPYLV2LINEDataALL(
                     tmpOPER, tmpPROD_NBR, dataRange["n4d"], dataRange["n4d_array"], 8)
+                cal_n4d_DATA = self._calDRLINEOPER(self._groupPassDeftByPRODandOPERALL(
+                        n4d_DATA["dData"], n4d_DATA["pData"]), tmpOPER, dataRange["n4d"], 8)
                 n5d_DATA = self._getFPYLV2LINEDataALL(
                     tmpOPER, tmpPROD_NBR, dataRange["n5d"], dataRange["n5d_array"], 7)
+                cal_n5d_DATA = self._calDRLINEOPER(self._groupPassDeftByPRODandOPERALL(
+                        n5d_DATA["dData"], n5d_DATA["pData"]), tmpOPER, dataRange["n5d"], 7)    
                 n6d_DATA = self._getFPYLV2LINEDataALL(
                     tmpOPER, tmpPROD_NBR, dataRange["n6d"], dataRange["n6d_array"], 6)
+                cal_n6d_DATA = self._calDRLINEOPER(self._groupPassDeftByPRODandOPERALL(
+                        n6d_DATA["dData"], n6d_DATA["pData"]), tmpOPER, dataRange["n6d"], 6)   
                 n1w_DATA = self._getFPYLV2LINEDataALL(
                     tmpOPER, tmpPROD_NBR, dataRange["n1w"], dataRange["n1w_array"], 5)
+                cal_n1w_DATA = self._calDRLINEOPER(self._groupPassDeftByPRODandOPERALL(
+                        n1w_DATA["dData"], n1w_DATA["pData"]), tmpOPER, dataRange["n1w"], 5)
                 n2w_DATA = self._getFPYLV2LINEDataALL(
                     tmpOPER, tmpPROD_NBR, dataRange["n2w"], dataRange["n2w_array"], 4)
+                cal_n2w_DATA =  self._calDRLINEOPER(self._groupPassDeftByPRODandOPERALL(
+                        n2w_DATA["dData"], n2w_DATA["pData"]), tmpOPER, dataRange["n2w"], 4)  
                 n3w_DATA = self._getFPYLV2LINEDataALL(
                     tmpOPER, tmpPROD_NBR, dataRange["n3w"], dataRange["n3w_array"], 3)
+                cal_n3w_DATA = self._calDRLINEOPER(self._groupPassDeftByPRODandOPERALL(
+                        n3w_DATA["dData"], n3w_DATA["pData"]), tmpOPER, dataRange["n3w"], 3)
                 n1m_DATA = self._getFPYLV2LINEDataALL(
                     tmpOPER, tmpPROD_NBR, dataRange["n1m"], dataRange["n1m_array"], 2)
+                cal_n1m_DATA =  self._calDRLINEOPER(self._groupPassDeftByPRODandOPERALL(
+                        n1m_DATA["dData"], n1m_DATA["pData"]), tmpOPER, dataRange["n1m"], 2) 
                 n2m_DATA = self._getFPYLV2LINEDataALL(
                     tmpOPER, tmpPROD_NBR, dataRange["n2m"], dataRange["n2m_array"], 1)
+                cal_n2m_DATA = self._calDRLINEOPER(self._groupPassDeftByPRODandOPERALL(
+                        n2m_DATA["dData"], n2m_DATA["pData"]), tmpOPER, dataRange["n2m"], 1)    
                 n1s_DATA = self._getFPYLV2LINEDataALL(
                     tmpOPER, tmpPROD_NBR, dataRange["n1s"], dataRange["n1s_array"], 0)
+                cal_n1s_DATA = self._calDRLINEOPER(self._groupPassDeftByPRODandOPERALL(
+                        n1s_DATA["dData"], n1s_DATA["pData"]), tmpOPER, dataRange["n1s"], 0) 
+
 
                 DATASERIES = self._groupDATALINE(
-                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPERALL(
-                        n1d_DATA["dData"], n1d_DATA["pData"]), tmpOPER, dataRange["n1d"], 11),
-                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPERALL(
-                        n2d_DATA["dData"], n2d_DATA["pData"]), tmpOPER, dataRange["n2d"], 10),
-                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPERALL(
-                        n3d_DATA["dData"], n3d_DATA["pData"]), tmpOPER, dataRange["n3d"], 9),
-                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPERALL(
-                        n4d_DATA["dData"], n4d_DATA["pData"]), tmpOPER, dataRange["n4d"], 8),
-                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPERALL(
-                        n5d_DATA["dData"], n5d_DATA["pData"]), tmpOPER, dataRange["n5d"], 7),
-                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPERALL(
-                        n6d_DATA["dData"], n6d_DATA["pData"]), tmpOPER, dataRange["n6d"], 6),
-                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPERALL(
-                        n1w_DATA["dData"], n1w_DATA["pData"]), tmpOPER, dataRange["n1w"], 5),
-                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPERALL(
-                        n2w_DATA["dData"], n2w_DATA["pData"]), tmpOPER, dataRange["n2w"], 4),
-                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPERALL(
-                        n3w_DATA["dData"], n3w_DATA["pData"]), tmpOPER, dataRange["n3w"], 3),
-                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPERALL(
-                        n1m_DATA["dData"], n1m_DATA["pData"]), tmpOPER, dataRange["n1m"], 2),
-                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPERALL(
-                        n2m_DATA["dData"], n2m_DATA["pData"]), tmpOPER, dataRange["n2m"], 1),
-                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPERALL(n1s_DATA["dData"], n1s_DATA["pData"]), tmpOPER, dataRange["n1s"], 0))
+                    cal_n1d_DATA["deft"],
+                    cal_n2d_DATA["deft"],
+                    cal_n3d_DATA["deft"],
+                    cal_n4d_DATA["deft"],
+                    cal_n5d_DATA["deft"],
+                    cal_n6d_DATA["deft"],
+                    cal_n1w_DATA["deft"],
+                    cal_n2w_DATA["deft"],
+                    cal_n3w_DATA["deft"],
+                    cal_n1m_DATA["deft"],
+                    cal_n2m_DATA["deft"],
+                    cal_n1s_DATA["deft"])
 
-                FPYLINE = self._getFPYLINEData(tmpPROD_NBR, dataRange)
+                FPYLINE = self._groupDATALINE(
+                    cal_n1d_DATA["fpy"],
+                    cal_n2d_DATA["fpy"],
+                    cal_n3d_DATA["fpy"],
+                    cal_n4d_DATA["fpy"],
+                    cal_n5d_DATA["fpy"],
+                    cal_n6d_DATA["fpy"],
+                    cal_n1w_DATA["fpy"],
+                    cal_n2w_DATA["fpy"],
+                    cal_n3w_DATA["fpy"],
+                    cal_n1m_DATA["fpy"],
+                    cal_n2m_DATA["fpy"],
+                    cal_n1s_DATA["fpy"])
 
-                getLimitData = self.operSetData[tmpFACTORY_ID]["FPY"]["limit"] if tmpSITE == "TN" else {
-                }
+                getLimitData = self.operSetData[tmpFACTORY_ID]["FPY"]["limit"] if tmpSITE == "TN" else {}
                 xLimit = None
                 yLimit = None
                 if self.__tmpAPPLICATION in getLimitData.keys():
@@ -2608,6 +2633,7 @@ class INTLV3(BaseType):
         top10 = dict(sorted(allDFCTCount.items(),
                      key=lambda item: item[1], reverse=True)[:10])
 
+
         DATASERIES = []
         if tempData == []:
             test = {
@@ -2624,7 +2650,7 @@ class INTLV3(BaseType):
                 "DEFECT_RATE": 0
             }
             DATASERIES.append(test)
-        else:
+        else:            
             for x in tempData:
                 cDFct = x["DFCT_CODE"] if x["DFCT_CODE"] in top10.keys(
                 ) else "OTHER"
@@ -2676,7 +2702,29 @@ class INTLV3(BaseType):
             DATASERIES.sort(key=operator.itemgetter(
                 "RANK", "RANK"), reverse=True)
 
-        returnData = DATASERIES
+        FPYDATASERIES = []
+        if len(DATASERIES) > 0:            
+            DEFECT_RATE = 0
+            DEFTQTYSUM = 0
+            PASSSUMQTY =  DATASERIES[0]["PassSUM"]
+            for x in DATASERIES:
+                DEFECT_RATE += x["DEFECT_RATE"]
+                DEFTQTYSUM += x["DeftSUM"]
+            FPY = 100 - DEFECT_RATE
+            FPYDATASERIES.append({
+                "XVALUE": DATARANGEID,
+                "YVALUE": FPY,
+                "RANK": 0,
+                "DATARANGE": DATARANGE,
+                "PROD_NBR": tmpPROD_NBR,
+                "FPY": FPY,
+                "DEFTSUMQTY": DEFTQTYSUM,
+                "PASSSUMQTY": PASSSUMQTY
+            })        
+        returnData = {
+            "deft":DATASERIES,
+            "fpy":FPYDATASERIES        
+            }
 
         return returnData
 
@@ -4383,547 +4431,6 @@ class INTLV3(BaseType):
     def _DecimaltoFloat(self, obj):
         if isinstance(obj, Decimal):
             return float(obj)
-
-    def _getFPYLINEData(self, PROD_NBR, dataRange):
-        try:
-            n1d_DATA = self._getFPYLINEDatabyDateRange(
-                PROD_NBR, dataRange["n1d"], dataRange["n1d_array"], 11)
-            n2d_DATA = self._getFPYLINEDatabyDateRange(
-                PROD_NBR, dataRange["n2d"], dataRange["n2d_array"], 10)
-            n3d_DATA = self._getFPYLINEDatabyDateRange(
-                PROD_NBR, dataRange["n3d"], dataRange["n3d_array"], 9)
-            n4d_DATA = self._getFPYLINEDatabyDateRange(
-                PROD_NBR, dataRange["n4d"], dataRange["n4d_array"], 8)
-            n5d_DATA = self._getFPYLINEDatabyDateRange(
-                PROD_NBR, dataRange["n5d"], dataRange["n5d_array"], 7)
-            n6d_DATA = self._getFPYLINEDatabyDateRange(
-                PROD_NBR, dataRange["n6d"], dataRange["n6d_array"], 6)
-            n1w_DATA = self._getFPYLINEDatabyDateRange(
-                PROD_NBR, dataRange["n1w"], dataRange["n1w_array"], 5)
-            n2w_DATA = self._getFPYLINEDatabyDateRange(
-                PROD_NBR, dataRange["n2w"], dataRange["n2w_array"], 4)
-            n3w_DATA = self._getFPYLINEDatabyDateRange(
-                PROD_NBR, dataRange["n3w"], dataRange["n3w_array"], 3)
-            n1m_DATA = self._getFPYLINEDatabyDateRange(
-                PROD_NBR, dataRange["n1m"], dataRange["n1m_array"], 2)
-            n2m_DATA = self._getFPYLINEDatabyDateRange(
-                PROD_NBR, dataRange["n2m"], dataRange["n2m_array"], 1)
-            n1s_DATA = self._getFPYLINEDatabyDateRange(
-                PROD_NBR, dataRange["n1s"], dataRange["n1s_array"], 0)
-
-            returnData = DATASERIES = self._groupDATALINE(n1d_DATA, n2d_DATA, n3d_DATA, n4d_DATA, n5d_DATA,
-                                                          n6d_DATA, n1w_DATA, n2w_DATA, n3w_DATA, n1m_DATA, n2m_DATA, n1s_DATA)
-
-            return returnData
-
-        except Exception as e:
-            error_class = e.__class__.__name__  # 取得錯誤類型
-            detail = e.args[0]  # 取得詳細內容
-            cl, exc, tb = sys.exc_info()  # 取得Call Stack
-            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
-            fileName = lastCallStack[0]  # 取得發生的檔案名稱
-            lineNum = lastCallStack[1]  # 取得發生的行號
-            funcName = lastCallStack[2]  # 取得發生的函數名稱
-            self.writeError(
-                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
-            return "error"
-
-    def _getFPYLINEDatabyDateRange(self, PROD_NBR, DATARANGE, ACCT_DATE_ARRAY, DATARANGEID):
-        try:
-            PCBIData = self._getFPYLINEDatabyOPER(
-                "PCBI", PROD_NBR, ACCT_DATE_ARRAY)
-            PCBIResult = self._groupFPYLINEDatabyOPER(
-                PCBIData["dData"], PCBIData["pData"])
-            LAMData = self._getFPYLINEDatabyOPER(
-                "LAM", PROD_NBR, ACCT_DATE_ARRAY)
-            LAMResult = self._groupFPYLINEDatabyOPER(
-                LAMData["dData"], LAMData["pData"])
-            AAFCData = self._getFPYLINEDatabyOPER(
-                "AAFC", PROD_NBR, ACCT_DATE_ARRAY)
-            AAFCResult = self._groupFPYLINEDatabyOPER(
-                AAFCData["dData"], AAFCData["pData"])
-            CKENData = self._getFPYLINEDatabyOPER(
-                "CKEN", PROD_NBR, ACCT_DATE_ARRAY)
-            CKENResult = self._groupFPYLINEDatabyOPER(
-                CKENData["dData"], CKENData["pData"])
-            DKENData = self._getFPYLINEDatabyOPER(
-                "DKEN", PROD_NBR, ACCT_DATE_ARRAY)
-            DKENResult = self._groupFPYLINEDatabyOPER(
-                DKENData["dData"], DKENData["pData"])
-
-            returnData = self._groupFPYLINEData(
-                PROD_NBR, PCBIResult, LAMResult, AAFCResult, CKENResult, DKENResult, DATARANGE, DATARANGEID)
-
-            return returnData
-
-        except Exception as e:
-            error_class = e.__class__.__name__  # 取得錯誤類型
-            detail = e.args[0]  # 取得詳細內容
-            cl, exc, tb = sys.exc_info()  # 取得Call Stack
-            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
-            fileName = lastCallStack[0]  # 取得發生的檔案名稱
-            lineNum = lastCallStack[1]  # 取得發生的行號
-            funcName = lastCallStack[2]  # 取得發生的函數名稱
-            self.writeError(
-                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
-            return "error"
-
-    def _getFPYLINEDatabyOPER(self, OPER, PROD_NBR, ACCT_DATE_ARRAY):
-        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
-        tmpSITE = self.jsonData["SITE"]
-        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
-        try:
-            data = {}
-            if tmpSITE == "TN":
-                data = self._getFPYLINEDatabyOPERFromMongo(
-                    OPER, PROD_NBR, ACCT_DATE_ARRAY)
-            else:
-                data = self._getFPYLINEDatabyOPERFromOracle(
-                    OPER, PROD_NBR, ACCT_DATE_ARRAY)
-            return data
-
-        except Exception as e:
-            error_class = e.__class__.__name__  # 取得錯誤類型
-            detail = e.args[0]  # 取得詳細內容
-            cl, exc, tb = sys.exc_info()  # 取得Call Stack
-            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
-            fileName = lastCallStack[0]  # 取得發生的檔案名稱
-            lineNum = lastCallStack[1]  # 取得發生的行號
-            funcName = lastCallStack[2]  # 取得發生的函數名稱
-            self.writeError(
-                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
-            return "error"
-
-    def _getFPYLINEDatabyOPERFromMongo(self, OPER, PROD_NBR, ACCT_DATE_ARRAY):
-        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
-        tmpSITE = self.jsonData["SITE"]
-        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
-        tmpAPPLICATION = self.jsonData["APPLICATION"]
-
-        getFabData = self.operSetData[tmpFACTORY_ID]
-        numeratorData = getFabData["FPY"]["numerator"][OPER]
-        denominatorValue = getFabData["FPY"]["denominator"][OPER]
-
-        passAggregate = []
-        deftAggregate = []
-
-        # pass
-        passMatch1 = {
-            "$match": {
-                "COMPANY_CODE": tmpCOMPANY_CODE,
-                "SITE": tmpSITE,
-                "FACTORY_ID": tmpFACTORY_ID,
-                "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
-                "LCM_OWNER": {"$in": ["LCM0", "LCME", "PROD", "QTAP", "RES0"]},
-                "$expr": {"$in": [{"$toInt": "$MAIN_WC"}, denominatorValue]},
-                "RW_COUNT": {"$lte": "1"},
-                "PROD_NBR": PROD_NBR
-            }
-        }
-        passGroup1 = {
-            "$group": {
-                "_id": {
-                    "COMPANY_CODE": "$COMPANY_CODE",
-                    "SITE": "$SITE",
-                    "FACTORY_ID": "$FACTORY_ID",
-                    "PROD_NBR": "$PROD_NBR",
-                    "PROCESS": "$PROCESS",
-                    "APPLICATION": "$APPLICATION",
-                    "MAIN_WC": {"$toInt": "$MAIN_WC"}
-                },
-                "PASS_QTY": {
-                    "$sum": {"$toInt": "$QTY"}
-                }
-            }
-        }
-        passProject1 = {
-            "$project": {
-                "_id": 0,
-                "COMPANY_CODE": "$_id.COMPANY_CODE",
-                "SITE": "$_id.SITE",
-                "FACTORY_ID": "$_id.FACTORY_ID",
-                "PROD_NBR": "$_id.PROD_NBR",
-                "PROCESS": "$_id.PROCESS",
-                "APPLICATION": "$_id.APPLICATION",
-                "MAIN_WC": "$_id.MAIN_WC",
-                "PASS_QTY": "$PASS_QTY"
-            }
-        }
-        passGroup2 = {
-            "$group": {
-                "_id": {
-                    "COMPANY_CODE": "$COMPANY_CODE",
-                    "SITE": "$SITE",
-                    "FACTORY_ID": "$FACTORY_ID",
-                    "PROD_NBR": "$PROD_NBR",
-                    "APPLICATION": "$APPLICATION"
-                },
-                "PASSSUMQTY": {
-                    "$sum": {"$toInt": "$PASS_QTY"}
-                }
-            }
-        }
-        passProject2 = {
-            "$project": {
-                "_id": 0,
-                "COMPANY_CODE": "$_id.COMPANY_CODE",
-                "SITE": "$_id.SITE",
-                "FACTORY_ID": "$_id.FACTORY_ID",
-                "PROD_NBR": "$_id.PROD_NBR",
-                "APPLICATION": "$_id.APPLICATION",
-                "OPER": OPER,
-                "PASSSUMQTY": "$PASSSUMQTY"
-            }
-        }
-        passSort = {
-            "$sort": {
-                "COMPANY_CODE": 1,
-                "SITE": 1,
-                "FACTORY_ID": 1,
-                "PROD_NBR": 1,
-                "MAIN_WC": 1,
-                "APPLICATION": 1
-            }
-        }
-
-        # deft
-        deftMatch1 = {
-            "$match": {
-                "COMPANY_CODE": tmpCOMPANY_CODE,
-                "SITE": tmpSITE,
-                "FACTORY_ID": tmpFACTORY_ID,
-                "ACCT_DATE": {"$in": ACCT_DATE_ARRAY},
-                "LCM_OWNER": {"$in": ["LCM0", "LCME", "PROD", "QTAP", "RES0"]},
-                "$expr": {
-                    "$and": [
-                        {"$gte": [{"$toInt": "$MAIN_WC"},
-                                  numeratorData["fromt"]]},
-                        {"$lte": [{"$toInt": "$MAIN_WC"}, numeratorData["tot"]]}
-                    ]
-                },
-                "RW_COUNT": {"$lte": "1"},
-                "PROD_NBR": PROD_NBR
-            }
-        }
-        deftGroup1 = {
-            "$group": {
-                "_id": {
-                    "COMPANY_CODE": "$COMPANY_CODE",
-                    "SITE": "$SITE",
-                    "FACTORY_ID": "$FACTORY_ID",
-                    "PROD_NBR": "$PROD_NBR",
-                    "APPLICATION": "$APPLICATION",
-                    "MAIN_WC": {"$toInt": "$MAIN_WC"}
-                },
-                "DEFT_QTY": {
-                    "$sum": {"$toInt": "$QTY"}
-                }
-            }
-        }
-        deftProject1 = {
-            "$project": {
-                "_id": 0,
-                "COMPANY_CODE": "$_id.COMPANY_CODE",
-                "SITE": "$_id.SITE",
-                "FACTORY_ID": "$_id.FACTORY_ID",
-                "PROD_NBR": "$_id.PROD_NBR",
-                "APPLICATION": "$_id.APPLICATION",
-                "MAIN_WC": "$_id.MAIN_WC",
-                "DEFT_QTY": "$DEFT_QTY"
-            }
-        }
-        deftGroup2 = {
-            "$group": {
-                "_id": {
-                    "COMPANY_CODE": "$COMPANY_CODE",
-                    "SITE": "$SITE",
-                    "FACTORY_ID": "$FACTORY_ID",
-                    "PROD_NBR": "$PROD_NBR",
-                    "APPLICATION": "$APPLICATION"
-                },
-                "DEFTSUMQTY": {
-                    "$sum": {"$toInt": "$DEFT_QTY"}
-                }
-            }
-        }
-        deftProject2 = {
-            "$project": {
-                "_id": 0,
-                "COMPANY_CODE": "$_id.COMPANY_CODE",
-                "SITE": "$_id.SITE",
-                "FACTORY_ID": "$_id.FACTORY_ID",
-                "PROD_NBR": "$_id.PROD_NBR",
-                "APPLICATION": "$_id.APPLICATION",
-                "OPER": OPER,
-                "DEFTSUMQTY": "$DEFTSUMQTY"
-            }
-        }
-        deftSort = {
-            "$sort": {
-                "COMPANY_CODE": 1,
-                "SITE": 1,
-                "FACTORY_ID": 1,
-                "PROD_NBR": 1,
-                "MAIN_WC": 1,
-                "APPLICATION": 1
-            }
-        }
-
-        if tmpAPPLICATION != "ALL":
-            passMatch1["$match"]["APPLICATION"] = tmpAPPLICATION
-            deftMatch1["$match"]["APPLICATION"] = tmpAPPLICATION
-            
-        tmpNG2NG = self.jsonData["NG2NG"] if "NG2NG" in self.jsonData else True
-        if tmpNG2NG is not True:
-            deftMatch1["$match"]["TRANS_TYPE"] = {"$ne":"QRWK"}
-
-        passAggregate.extend(
-            [passMatch1, passGroup1, passProject1, passGroup2, passProject2, passSort])
-        deftAggregate.extend(
-            [deftMatch1, deftGroup1, deftProject1, deftGroup2, deftProject2, deftSort])
-
-        try:
-            self.getMongoConnection()
-            self.setMongoDb("IAMP")
-            self.setMongoCollection("passHisAndCurrent")
-            pData = self.aggregate(passAggregate)
-            self.setMongoCollection("deftHisAndCurrent")
-            dData = self.aggregate(deftAggregate)
-            self.closeMongoConncetion()
-
-            returnData = {
-                "pData": pData,
-                "dData": dData
-            }
-
-            return returnData
-
-        except Exception as e:
-            error_class = e.__class__.__name__  # 取得錯誤類型
-            detail = e.args[0]  # 取得詳細內容
-            cl, exc, tb = sys.exc_info()  # 取得Call Stack
-            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
-            fileName = lastCallStack[0]  # 取得發生的檔案名稱
-            lineNum = lastCallStack[1]  # 取得發生的行號
-            funcName = lastCallStack[2]  # 取得發生的函數名稱
-            self.writeError(
-                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
-            return "error"
-
-    def _getFPYLINEDatabyOPERFromOracle(self, OPER, PROD_NBR, ACCT_DATE_ARRAY):
-        tmpCOMPANY_CODE = self.jsonData["COMPANY_CODE"]
-        tmpSITE = self.jsonData["SITE"]
-        tmpFACTORY_ID = self.jsonData["FACTORY_ID"]
-        tmpAPPLICATION = self.jsonData["APPLICATION"]
-
-        _ACCT_DATE_ARRAY_LIST = ""
-        for x in ACCT_DATE_ARRAY:
-            _ACCT_DATE_ARRAY_LIST = _ACCT_DATE_ARRAY_LIST + f"'{x}',"
-        if _ACCT_DATE_ARRAY_LIST != "":
-            _ACCT_DATE_ARRAY_LIST = _ACCT_DATE_ARRAY_LIST[:-1]
-
-        applicatiionWhere = ""
-        if tmpAPPLICATION != "ALL":
-            applicatiionWhere = f"AND dmo.application = '{tmpAPPLICATION}' "
-        try:
-            passString = f"SELECT \
-                            dlo.company_code   AS company_code, \
-                            dlo.site_code      AS site, \
-                            dlo.factory_code   AS factory_id, \
-                            dmo.code           AS prod_nbr, \
-                            dmo.application    AS APPLICATION, \
-                            dop.name           AS OPER, \
-                            SUM(fpa.sumqty) AS PASSSUMQTY \
-                        FROM \
-                            INTMP_DB.fact_fpy_pass_sum fpa \
-                            LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = fpa.local_id \
-                            LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = fpa.model_id \
-                            LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = fpa.oper_id \
-                        WHERE \
-                            dlo.company_code = '{tmpCOMPANY_CODE}' \
-                            AND dlo.site_code = '{tmpSITE}' \
-                            AND dlo.factory_code = '{tmpFACTORY_ID}' \
-                            AND dop.name = '{OPER}' \
-                            AND fpa.mfgdate in ({_ACCT_DATE_ARRAY_LIST}) \
-                            AND dmo.code = '{PROD_NBR}' \
-                            {applicatiionWhere} \
-                        GROUP BY \
-                            dlo.company_code, \
-                            dlo.site_code, \
-                            dlo.factory_code, \
-                            dmo.code, \
-                            dmo.application, \
-                            dop.name \
-                        HAVING SUM(fpa.sumqty) > 0 "
-            description, data = self.pSelectAndDescription(passString)
-            pData = self._zipDescriptionAndData(description, data)
-            deftString = f"SELECT \
-                            dlo.company_code   AS company_code, \
-                            dlo.site_code      AS site, \
-                            dlo.factory_code   AS factory_id, \
-                            dmo.code           AS prod_nbr, \
-                            dmo.application    AS APPLICATION, \
-                            dop.name           AS OPER, \
-                            SUM(fdf.sumqty) AS DEFTSUMQTY \
-                        FROM \
-                            INTMP_DB.fact_fpy_deft_sum fdf \
-                            LEFT JOIN INTMP_DB.dime_local dlo ON dlo.local_id = fdf.local_id \
-                            LEFT JOIN INTMP_DB.dime_model dmo ON dmo.model_id = fdf.model_id \
-                            LEFT JOIN INTMP_DB.dime_oper dop ON dop.oper_id = fdf.oper_id \
-                        WHERE \
-                            dlo.company_code =  '{tmpCOMPANY_CODE}' \
-                            AND dlo.site_code = '{tmpSITE}' \
-                            AND dlo.factory_code = '{tmpFACTORY_ID}' \
-                            AND dop.name ='{OPER}' \
-                            AND fdf.mfgdate in ({_ACCT_DATE_ARRAY_LIST}) \
-                            AND dmo.code = '{PROD_NBR}' \
-                            {applicatiionWhere} \
-                        GROUP BY \
-                            dlo.company_code, \
-                            dlo.site_code, \
-                            dlo.factory_code, \
-                            dmo.code, \
-                            dmo.application, \
-                            dop.name \
-                        HAVING SUM(fdf.sumqty) > 0 "
-            description, data = self.pSelectAndDescription(deftString)
-            dData = self._zipDescriptionAndData(description, data)
-
-            returnData = {
-                "pData": pData,
-                "dData": dData
-            }
-
-            return returnData
-
-        except Exception as e:
-            error_class = e.__class__.__name__  # 取得錯誤類型
-            detail = e.args[0]  # 取得詳細內容
-            cl, exc, tb = sys.exc_info()  # 取得Call Stack
-            lastCallStack = traceback.extract_tb(tb)[-1]  # 取得Call Stack的最後一筆資料
-            fileName = lastCallStack[0]  # 取得發生的檔案名稱
-            lineNum = lastCallStack[1]  # 取得發生的行號
-            funcName = lastCallStack[2]  # 取得發生的函數名稱
-            self.writeError(
-                f"File:[{fileName}] , Line:{lineNum} , in {funcName} : [{error_class}] {detail}")
-            return "error"
-
-    def _groupFPYLINEDatabyOPER(self, dData, pData):
-        deftData = []
-        for d in dData:
-            deftData.append(d)
-        passData = []
-        for p in pData:
-            passData.append(p)
-        data = []
-        oData = {}
-        for p in passData:
-            d = list(filter(lambda d: d["PROD_NBR"]
-                     == p["PROD_NBR"], deftData))
-            oData["COMPANY_CODE"] = copy.deepcopy(p["COMPANY_CODE"])
-            oData["SITE"] = copy.deepcopy(p["SITE"])
-            oData["FACTORY_ID"] = copy.deepcopy(p["FACTORY_ID"])
-            oData["PROD_NBR"] = copy.deepcopy(p["PROD_NBR"])
-            if "APPLICATION" in p.keys():
-                oData["APPLICATION"] = copy.deepcopy(p["APPLICATION"])
-            else:
-                oData["APPLICATION"] = None
-            oData["OPER"] = copy.deepcopy(p["OPER"])
-            oData["PASSSUMQTY"] = copy.deepcopy(p["PASSSUMQTY"])
-            if d == []:
-                oData["DEFTSUMQTY"] = 0
-            else:
-                oData["DEFTSUMQTY"] = copy.deepcopy(d[0]["DEFTSUMQTY"])
-            if oData["DEFTSUMQTY"] == 0:
-                oData["DEFECT_RATE"] = 0
-            else:
-                if(oData["PASSSUMQTY"] != 0):
-                    oData["DEFECT_RATE"] = round(
-                        oData["DEFTSUMQTY"] / oData["PASSSUMQTY"], 4)
-                else:
-                    oData["DEFECT_RATE"] = 1
-            oData["FPY_RATE"] = round(1 - oData["DEFECT_RATE"], 4)
-            if oData["DEFTSUMQTY"] < oData["PASSSUMQTY"] and oData["FPY_RATE"] > 0:
-                data.append(copy.deepcopy(oData))
-            oData = {}
-        return data
-
-    def _groupFPYLINEData(self, PROD_NBR, PCBI, LAM, AAFC, CKEN, DKEN, DATARANGE, DATARANGEID):
-        PRODData = []
-        PASSQTYSUM = 0
-        PASSOPER = 0
-        DEFTQTYSUM = 0
-
-        d1 = list(filter(lambda d: d["PROD_NBR"]
-                         == PROD_NBR, PCBI))
-        if d1 == []:
-            PCBIFPY = 1
-        else:
-            PCBIFPY = copy.deepcopy(d1[0]["FPY_RATE"])
-            PASSQTYSUM += d1[0]["PASSSUMQTY"]
-            DEFTQTYSUM += d1[0]["DEFTSUMQTY"]
-            PASSOPER += 1
-
-        d2 = list(filter(lambda d: d["PROD_NBR"] == PROD_NBR, LAM))
-        if d2 == []:
-            LAMFPY = 1
-        else:
-            LAMFPY = copy.deepcopy(d2[0]["FPY_RATE"])
-            PASSQTYSUM += d2[0]["PASSSUMQTY"]
-            DEFTQTYSUM += d2[0]["DEFTSUMQTY"]
-            PASSOPER += 1
-
-        d3 = list(filter(lambda d: d["PROD_NBR"]
-                         == PROD_NBR, AAFC))
-        if d3 == []:
-            AAFCFPY = 1
-        else:
-            AAFCFPY = copy.deepcopy(d3[0]["FPY_RATE"])
-            PASSQTYSUM += d3[0]["PASSSUMQTY"]
-            DEFTQTYSUM += d3[0]["DEFTSUMQTY"]
-            PASSOPER += 1
-
-        d4 = list(filter(lambda d: d["PROD_NBR"]
-                         == PROD_NBR, CKEN))
-        if d4 == []:
-            CKENFPY = 1
-        else:
-            CKENFPY = copy.deepcopy(d4[0]["FPY_RATE"])
-            PASSQTYSUM += d4[0]["PASSSUMQTY"]
-            DEFTQTYSUM += d4[0]["DEFTSUMQTY"]
-            PASSOPER += 1
-
-        d5 = list(filter(lambda d: d["PROD_NBR"]
-                         == PROD_NBR, DKEN))
-        if d5 == []:
-            DKENFPY = 1
-        else:
-            DKENFPY = copy.deepcopy(d5[0]["FPY_RATE"])
-            PASSQTYSUM += d5[0]["PASSSUMQTY"]
-            DEFTQTYSUM += d5[0]["DEFTSUMQTY"]
-            PASSOPER += 1
-
-        FPY = round(PCBIFPY * LAMFPY * AAFCFPY * CKENFPY * DKENFPY, 4)
-
-        if d1 == [] and d2 == [] and d3 == [] and d4 == [] and d5 == []:
-            return PRODData
-        else:
-            PRODData.append({
-                "XVALUE": DATARANGEID,
-                "YVALUE": FPY,
-                "RANK": 0,
-                "DATARANGE": DATARANGE,
-                "PROD_NBR": PROD_NBR,
-                "PCBIFPY": PCBIFPY,
-                "LAMFPY": LAMFPY,
-                "AAFCFPY": AAFCFPY,
-                "CKENFPY": CKENFPY,
-                "DKENFPY": DKENFPY,
-                "FPY": FPY,
-                "AvegPASSQTY": round(PASSQTYSUM / PASSOPER, 0),
-                "DEFTSUMQTY": DEFTQTYSUM
-            })
-        return PRODData
 
     def _getMSHIPLINEData(self, PROD_NBR, dataRange):
         try:
