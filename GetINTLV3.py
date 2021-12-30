@@ -679,28 +679,29 @@ class INTLV3(BaseType):
 
                 DATASERIES = self._groupDATALINE(
                     self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(
-                        n1d_DATA["dData"], n1d_DATA["pData"]), tmpOPER, dataRange["n1d"], 11),
+                        n1d_DATA["dData"], n1d_DATA["pData"]), tmpOPER, dataRange["n1d"], 11)["deft"],
                     self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(
-                        n2d_DATA["dData"], n2d_DATA["pData"]), tmpOPER, dataRange["n2d"], 10),
+                        n2d_DATA["dData"], n2d_DATA["pData"]), tmpOPER, dataRange["n2d"], 10)["deft"],
                     self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(
-                        n3d_DATA["dData"], n3d_DATA["pData"]), tmpOPER, dataRange["n3d"], 9),
+                        n3d_DATA["dData"], n3d_DATA["pData"]), tmpOPER, dataRange["n3d"], 9)["deft"],
                     self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(
-                        n4d_DATA["dData"], n4d_DATA["pData"]), tmpOPER, dataRange["n4d"], 8),
+                        n4d_DATA["dData"], n4d_DATA["pData"]), tmpOPER, dataRange["n4d"], 8)["deft"],
                     self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(
-                        n5d_DATA["dData"], n5d_DATA["pData"]), tmpOPER, dataRange["n5d"], 7),
+                        n5d_DATA["dData"], n5d_DATA["pData"]), tmpOPER, dataRange["n5d"], 7)["deft"],
                     self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(
-                        n6d_DATA["dData"], n6d_DATA["pData"]), tmpOPER, dataRange["n6d"], 6),
+                        n6d_DATA["dData"], n6d_DATA["pData"]), tmpOPER, dataRange["n6d"], 6)["deft"],
                     self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(
-                        n1w_DATA["dData"], n1w_DATA["pData"]), tmpOPER, dataRange["n1w"], 5),
+                        n1w_DATA["dData"], n1w_DATA["pData"]), tmpOPER, dataRange["n1w"], 5)["deft"],
                     self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(
-                        n2w_DATA["dData"], n2w_DATA["pData"]), tmpOPER, dataRange["n2w"], 4),
+                        n2w_DATA["dData"], n2w_DATA["pData"]), tmpOPER, dataRange["n2w"], 4)["deft"],
                     self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(
-                        n3w_DATA["dData"], n3w_DATA["pData"]), tmpOPER, dataRange["n3w"], 3),
+                        n3w_DATA["dData"], n3w_DATA["pData"]), tmpOPER, dataRange["n3w"], 3)["deft"],
                     self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(
-                        n1m_DATA["dData"], n1m_DATA["pData"]), tmpOPER, dataRange["n1m"], 2),
+                        n1m_DATA["dData"], n1m_DATA["pData"]), tmpOPER, dataRange["n1m"], 2)["deft"],
                     self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(
-                        n2m_DATA["dData"], n2m_DATA["pData"]), tmpOPER, dataRange["n2m"], 1),
-                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(n1s_DATA["dData"], n1s_DATA["pData"]), tmpOPER, dataRange["n1s"], 0))
+                        n2m_DATA["dData"], n2m_DATA["pData"]), tmpOPER, dataRange["n2m"], 1)["deft"],
+                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(
+                        n1s_DATA["dData"], n1s_DATA["pData"]), tmpOPER, dataRange["n1s"], 0)["deft"])
 
                 getLimitData = self.operSetData[tmpFACTORY_ID]["FPY"]["limit"] if tmpSITE == "TN" else {
                 }
@@ -847,28 +848,29 @@ class INTLV3(BaseType):
 
                 DATASERIES = self._groupDATALINE(
                     self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(
-                        n1d_DATA["dData"], n1d_DATA["pData"]), tmpOPER, dataRange["n1d"], 11),
+                        n1d_DATA["dData"], n1d_DATA["pData"]), tmpOPER, dataRange["n1d"], 11)["deft"],
                     self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(
-                        n2d_DATA["dData"], n2d_DATA["pData"]), tmpOPER, dataRange["n2d"], 10),
+                        n2d_DATA["dData"], n2d_DATA["pData"]), tmpOPER, dataRange["n2d"], 10)["deft"],
                     self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(
-                        n3d_DATA["dData"], n3d_DATA["pData"]), tmpOPER, dataRange["n3d"], 9),
+                        n3d_DATA["dData"], n3d_DATA["pData"]), tmpOPER, dataRange["n3d"], 9)["deft"],
                     self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(
-                        n4d_DATA["dData"], n4d_DATA["pData"]), tmpOPER, dataRange["n4d"], 8),
+                        n4d_DATA["dData"], n4d_DATA["pData"]), tmpOPER, dataRange["n4d"], 8)["deft"],
                     self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(
-                        n5d_DATA["dData"], n5d_DATA["pData"]), tmpOPER, dataRange["n5d"], 7),
+                        n5d_DATA["dData"], n5d_DATA["pData"]), tmpOPER, dataRange["n5d"], 7)["deft"],
                     self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(
-                        n6d_DATA["dData"], n6d_DATA["pData"]), tmpOPER, dataRange["n6d"], 6),
+                        n6d_DATA["dData"], n6d_DATA["pData"]), tmpOPER, dataRange["n6d"], 6)["deft"],
                     self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(
-                        n1w_DATA["dData"], n1w_DATA["pData"]), tmpOPER, dataRange["n1w"], 5),
+                        n1w_DATA["dData"], n1w_DATA["pData"]), tmpOPER, dataRange["n1w"], 5)["deft"],
                     self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(
-                        n2w_DATA["dData"], n2w_DATA["pData"]), tmpOPER, dataRange["n2w"], 4),
+                        n2w_DATA["dData"], n2w_DATA["pData"]), tmpOPER, dataRange["n2w"], 4)["deft"],
                     self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(
-                        n3w_DATA["dData"], n3w_DATA["pData"]), tmpOPER, dataRange["n3w"], 3),
+                        n3w_DATA["dData"], n3w_DATA["pData"]), tmpOPER, dataRange["n3w"], 3)["deft"],
                     self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(
-                        n1m_DATA["dData"], n1m_DATA["pData"]), tmpOPER, dataRange["n1m"], 2),
+                        n1m_DATA["dData"], n1m_DATA["pData"]), tmpOPER, dataRange["n1m"], 2)["deft"],
                     self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(
-                        n2m_DATA["dData"], n2m_DATA["pData"]), tmpOPER, dataRange["n2m"], 1),
-                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(n1s_DATA["dData"], n1s_DATA["pData"]), tmpOPER, dataRange["n1s"], 0))
+                        n2m_DATA["dData"], n2m_DATA["pData"]), tmpOPER, dataRange["n2m"], 1)["deft"],
+                    self._calDRLINEOPER(self._groupPassDeftByPRODandOPER(
+                        n1s_DATA["dData"], n1s_DATA["pData"]), tmpOPER, dataRange["n1s"], 0)["deft"])
 
                 returnData = {
                     "KPITYPE": tmpKPITYPE,
