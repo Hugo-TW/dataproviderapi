@@ -236,6 +236,7 @@ class INTKPI(BaseType):
             tmpOPER = self.jsonData["OPER"] if "OPER" in self.jsonData else "CKEN"
             tmpPROD_NBR = self.jsonData["PROD_NBR"] if "PROD_NBR" in self.jsonData else ""
             tmpNG2NG = self.jsonData["NG2NG"] if "NG2NG" in self.jsonData else True
+            tmpFILTERQTY= self.jsonData["FILTERQTY"] if "FILTERQTY" in self.jsonData else True
 
             # redisKey
             tmp.append(className)
@@ -247,7 +248,8 @@ class INTKPI(BaseType):
             tmp.append(tmpACCT_DATE)
             tmp.append(tmpOPER)
             tmp.append(tmpPROD_NBR) 
-            tmp.append(f'{tmpNG2NG}')              
+            tmp.append(f'{tmpNG2NG}')       
+            tmp.append(f'{tmpFILTERQTY}')             
             redisKey = bottomLine.join(tmp)
             print(redisKey)
             expirTimeKey = tmpFACTORY_ID + '_PASS'
@@ -909,9 +911,13 @@ class INTKPI(BaseType):
         PASSQTYSUM = 0
         DEFTQTYSUM = 0
         PASSOPER = 0
+        tmpFILTERQTY= self.jsonData["FILTERQTY"] if "FILTERQTY" in self.jsonData else True
         for prod in PRODList:
-            passQtyLimt = 300 if prod["APPLICATION"] == "NB" else 500
-            fpyLimt = 0.8 if prod["APPLICATION"] == "NB" else 0.8
+            passQtyLimt = 0
+            fpyLimt = 0
+            if tmpFILTERQTY == True:
+                passQtyLimt = 300 if prod["APPLICATION"] == "NB" else 500
+                fpyLimt = 0.8 if prod["APPLICATION"] == "NB" else 0.8
 
             d1 = list(filter(lambda d: d["PROD_NBR"] == prod["PROD_NBR"] 
                       and d["FPY_RATE"] >= fpyLimt
