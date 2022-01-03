@@ -3287,21 +3287,10 @@ class INTLV3(BaseType):
         (3)  來料責：SQE
         """       
 
-        d = datetime.datetime
-        sd = d.strptime(tmpACCT_DATE,'%Y%m%d')
-        ed = d.strptime("20211227",'%Y%m%d')
-        qq = (sd - ed).days
-        typeQQ = [11,10,9,8,7,6]
         try:
             data = {}
             if tmpSITE == "TN":
-                if tmpFACTORY_ID == "J001" and tmpACCT_DATE >= "20211228": 
-                    if TYPE in typeQQ[:qq] : 
-                        data = self._getMSHIPLV2LINEFromMongoDBbyDeft(getFabData, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE)
-                    else:
-                        data = self._getMSHIPLV2LINEFromMongoDB(getFabData, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE)
-                else:
-                    data = self._getMSHIPLV2LINEFromMongoDB(getFabData, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE)
+                data = self._getMSHIPLV2LINEFromMongoDBbyDeft(getFabData, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE)
             else:
                 data = self._getMSHIPLV2LINEFromOracle(getFabData, PROD_NBR, DATARANGENAME, ACCT_DATE_ARRAY, TYPE)
 
@@ -5042,22 +5031,11 @@ class INTLV3(BaseType):
         tmpKPITYPE = self.jsonData["KPITYPE"]
         tmpACCT_DATE = self.jsonData["ACCT_DATE"]
         tmpAPPLICATION = self.jsonData["APPLICATION"]
-
-        d = datetime.datetime
-        sd = d.strptime(tmpACCT_DATE,'%Y%m%d')
-        ed = d.strptime("20211227",'%Y%m%d')
-        qq = (sd - ed).days
-        typeQQ = [11,10,9,8,7,6]
+        
         try:
             data = {}
             if tmpSITE == "TN":
-                if tmpFACTORY_ID == "J001" and tmpACCT_DATE >= "20211228": 
-                    if DATARANGEID in typeQQ[:qq] : 
-                        data = self._getMSHIPLV2LINEALLFromMongoDBbyDeft( PROD_NBR, DATARANGE, ACCT_DATE_ARRAY, DATARANGEID)
-                    else:
-                        data = self._getMSHIPLV2LINEALLFromMongoDB( PROD_NBR, DATARANGE, ACCT_DATE_ARRAY, DATARANGEID)
-                else:
-                    data = self._getMSHIPLV2LINEALLFromMongoDB( PROD_NBR, DATARANGE, ACCT_DATE_ARRAY, DATARANGEID)
+                data = self._getMSHIPLV2LINEALLFromMongoDBbyDeft( PROD_NBR, DATARANGE, ACCT_DATE_ARRAY, DATARANGEID)
             else:
                 data = self._getMSHIPLV2LINEALLFromOracle( PROD_NBR, DATARANGE, ACCT_DATE_ARRAY, DATARANGEID)
 
