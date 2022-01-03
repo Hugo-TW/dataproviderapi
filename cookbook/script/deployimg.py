@@ -73,6 +73,7 @@ def get_harbor_tags(current_tag):
 
     response = requests.request("GET", url, headers=headers, verify=False)
     res = response.json()
+    print(res)
 
     for i in range(len(res)):
         if res[i]['name'] != current_tag:
